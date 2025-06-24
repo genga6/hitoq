@@ -8,13 +8,16 @@ RUN apt-get update && apt-get install -y \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-ENV PATH="/root/.uv/bin:$PATH"
+
+ENV VENV_PATH="/workspaces/hitoq/backend/.venv"
+ENV PATH="$VENV_PATH/bin:$PATH"
+
 RUN curl -LsSf https://astral.sh/uv/0.7.2/install.sh | sh
 
 RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - && \
-    apt-get update && apt-get install -y nodejs && \
+    apt-get update -y && \
+    apt-get install -y nodejs && \
+    npm install -g pnpm && \
     rm -rf /var/lib/apt/lists/*
-
-RUN npm install -g pnpm
 
 CMD ["bash"]

@@ -2,7 +2,6 @@
 name = "hitoq"
 version = "0.1.0"
 description = "Q&A-based profile viewer"
-readme = "README.md"
 authors = [
     {name="Gengaru", email="gengaru617science@gmail.com"}
 ]
