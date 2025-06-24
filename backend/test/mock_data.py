@@ -1,6 +1,8 @@
 from datetime import datetime
 from uuid import uuid4
 
+USERS: list = []
+
 TEMPLATES = [
     {
         "id": "basic-10",
@@ -27,4 +29,4 @@ QUESTIONS = [
     },
 ]
 
-ANSWERS = []
+ANSWERS: list = []

@@ -12,7 +12,9 @@ Base = declarative_base()
 class User(Base):
     __tablename__ = "users"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id = Column(
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+    )  # TODO: XのユーザーIDに置き換わる
     username = Column(String, nullable=False)
     icon_url = Column(String, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
