@@ -1,24 +1,33 @@
 {
 	"name": "hitoq",
-	"dockerComposeFile": "compose.yaml",
-	"service": "hitoq",
+	"dockerComposeFile": "docker-compose.yml",
+	"service": "dev",
 	"workspaceFolder": "/workspaces/hitoq",
   "overrideCommand": true,
+
 	"customizations": {
 		"vscode": {
 			"extensions": [
+        // Backend
         "ms-python.python",
         "ms-python.vscode-pylance",
         "ms-python.debugpy",
         "ms-python.mypy-type-checker",
 				"charliermarsh.ruff",
-        "tomoki1207.pdf"
+        "tomoki1207.pdf",
+        // Frontend
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "formulahendry.auto-close-tag",
+        "formulahendry.auto-rename-tag", 
+        "oderwat.indent-rainbow",
+        "ms-ceintl.vscode-language-pack-ja"
 			]
 		},
     "settings" : {
       "python.defaultInterpreterPath": ".venv/bin/python3",
       "python.testing.pytestArgs": [
-        "tests"
+        "test"
       ],
       "python.testing.unittestEnabled": false,
       "python.testing.pytestEnabled": true,
@@ -28,26 +37,26 @@
         "editor.codeActionsOnSave": {
           "source.fixAll": true,
           "source.organizeImports": true
-        },
-        "ruff.linting.enabled": true,
-        "python.linting.enabled": true,
-        "python.linting.mypyEnabled": true,
-        "python.analysis.typeCheckingMode": "off",
-        "launch": {
-          "version": "0.2.0",
-          "configurations": [
-            {
-                "name": "Python: Current File",
-                "type": "debugpy",
-                "request": "launch",
-                "program": "${file}",
-                "console": "integratedTerminal",
-                "justMyCode": true
-            }
-          ]
         }
+      }, 
+      "ruff.linting.enabled": true,
+      "python.linting.enabled": true,
+      "python.linting.mypyEnabled": true,
+      "python.analysis.typeCheckingMode": "off"
       }
+    },
+
+  "forwardPorts": [5173, 8000],
+  "portsAttributes": {
+    "5173": {
+      "label": "Vite Dev Server",
+      "onAutoForward": "openBrowser"
+    }, 
+    "8000": {
+      "label": "FastAPI Backend", 
+      "onAutoForward": "openBrowser"
     }
   },
-  "postCreateCommand": "uv python install 3.11 && uv python pin 3.11 && uv venv --python 3.11 && uv sync && uv run pre-commit install"
+
+  "postCreateCommand": "bash .devcontainer/setup.sh"
 }
