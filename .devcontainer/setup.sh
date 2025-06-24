@@ -14,16 +14,18 @@ echo "Backend setup complete"
 echo "Setting up frontend..."
 cd frontend
 
+# https://svelte.jp/docs/svelte/getting-started#Alternatives-to-SvelteKit
 if [ ! -f package.json ]; then
-  pnpm create vite@latest . -- --template svelte-ts --yes
+  pnpm dlx sv create .
 fi
 
 pnpm install
 
+# https://tailwindcss.com/docs/installation/framework-guides/sveltekit
 if ! grep -q '"tailwindcss"' package.json; then
   pnpm add -D tailwindcss @tailwindcss/vite
   npx tailwindcss init -p
-  printf '@tailwind base;\n@tailwind components;\n@tailwind utilities;\n' > src/app.css
+  printf '@import "tailwindcss";\n' > src/app.css
 fi
 cd ..
 
