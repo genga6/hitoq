@@ -15,7 +15,7 @@ echo "Setting up frontend..."
 cd frontend
 
 if [ ! -f package.json ]; then
-  pnpm create vite@latest . -- --template svelte-ts --yes
+  pnpm dlx sv create .
 fi
 
 pnpm install
@@ -23,7 +23,7 @@ pnpm install
 if ! grep -q '"tailwindcss"' package.json; then
   pnpm add -D tailwindcss @tailwindcss/vite
   npx tailwindcss init -p
-  printf '@tailwind base;\n@tailwind components;\n@tailwind utilities;\n' > src/app.css
+  printf '@import "tailwindcss";\n' > src/app.css
 fi
 cd ..
 
