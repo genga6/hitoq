@@ -21,7 +21,8 @@
         "formulahendry.auto-close-tag",
         "formulahendry.auto-rename-tag", 
         "oderwat.indent-rainbow",
-        "ms-ceintl.vscode-language-pack-ja"
+        "ms-ceintl.vscode-language-pack-ja",
+        "svelte.svelte-vscode"
 			]
 		},
     "settings" : {
