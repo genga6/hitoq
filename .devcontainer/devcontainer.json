@@ -8,6 +8,8 @@
 	"customizations": {
 		"vscode": {
 			"extensions": [
+        "oderwat.indent-rainbow",
+        "ms-ceintl.vscode-language-pack-ja",
         // Backend
         "ms-python.python",
         "ms-python.vscode-pylance",
@@ -20,8 +22,6 @@
         "esbenp.prettier-vscode",
         "formulahendry.auto-close-tag",
         "formulahendry.auto-rename-tag", 
-        "oderwat.indent-rainbow",
-        "ms-ceintl.vscode-language-pack-ja",
         "svelte.svelte-vscode"
 			]
 		},
