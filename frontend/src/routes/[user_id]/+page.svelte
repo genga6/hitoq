@@ -12,15 +12,15 @@
     <div class="flex items-start space-x-4">
       <img src={data.profileUserIconUrl || 'https://via.placeholder.com/80'} alt="User Icon" class="w-16 h-16 rounded-full border border-gray-300" />
       <div>
-        <h2 class="text-2xl font-bold text-gray-800">{data.profileUserName}</h2>
-        <p class="text-gray-600 mt-2">{data.bio}</p>
+        <h2 class="text-2xl font-bold text-gray-600">{data.profileUserName}</h2>
+        <p class="text-gray-500 mt-2">{data.bio}</p>
       </div>
     </div>
 
     {#each data.featuredAnswers as item}
       <div class="bg-gray-50 p-4 rounde-lg border border-gray-200">
-        <p class="text-sm text-gray-500">Q. {item.question}</p>
-        <p class="mt-1 text-gray-800">A. {item.answer}</p>
+        <p class="text-sm text-gray-700">Q. {item.question}</p>
+        <p class="mt-1 text-gray-700">A. {item.answer}</p>
       </div>
     {/each}
 
@@ -31,7 +31,7 @@
           on:click={() => goto(`/${data.user_id}/${section.id}`)}
           class="flex items-center justify-between w-full bg-gray-100 px-4 py-3 rounded-lg shadow-sm hover:bg-gray-200 transition"
         >
-          <span>{section.icon} {section.label}</span>
+          <span class="text-gray-700">{section.icon} {section.label}</span>
           <span class="text-gray-500">▶</span>
         </button>
       {/each}

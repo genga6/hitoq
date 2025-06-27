@@ -1,17 +1,11 @@
 import type { PageLoad } from './$types';
+import { getBasicUserData } from '$lib/utils/user';
 
 export const load: PageLoad = async ({ params }) => {
-  const user_id = params.user_id;
-  const profileUserName = user_id === 'gengaru_' ? 'げんがる' : 'ユーザー名';
-  const profileUserIconUrl = 'https://via.placeholder.com/80';
-
-  const loggedInUser = 'gengaru_';
-  const isOwner = loggedInUser === user_id;
+  const baseData = await getBasicUserData(params.user_id);
 
   return {
-    user_id,
-    profileUserName,
-    profileUserIconUrl,
+    ...baseData, 
     bio: '理想と誠実を大事にする、ちょっと好奇心旺盛な人',
     featuredAnswers: [
       { question: '大切にしている価値観は？', answer: '理想と誠実' },
@@ -19,10 +13,9 @@ export const load: PageLoad = async ({ params }) => {
     ],
     sections: [
       { id: 'qna', label: 'パーソナルQ&A', icon: '🗂️' },
-      { id: 'bucketlist', label: 'バケットリスト', icon: '🧭' },
-      { id: 'personality', label: '性格診断', icon: '🧪' },
-      { id: 'games', label: '好きなゲーム', icon: '🎮' }
+      { id: 'bucket_list', label: 'バケットリスト', icon: '🧭' }, 
+      { id: 'personality', label: '性格診断', icon: '🧪' },     // 優先度低い
+      { id: 'life_story', label: '自分史', icon: '📜' }         // 自由記述だと書きにくい？「子供時代（～小学校くらい）、学生時代（中学～大学・大学院）、今・これから？」
     ],
-    isOwner
   };
 };
