@@ -24,7 +24,7 @@
       </div>
     {/each}
 
-    <hr class="my-4" />
+    <hr class="my-4 border-gray-300" />
     <div class="space-y-2">
       {#each data.sections as section}
         <button

@@ -17,7 +17,7 @@
     新たなつながりのきっかけを提供します。
   </p>
 
-  <hr class="w-[48rem] border-t-2 border-orange-300 my-6 mx-auto" />
+  <hr class="w-2/3 border-t-2 border-orange-300 my-6 mx-auto" />
 
   <p class="text-lg text-gray-600 mb-6 max-w-lg leading-relaxed mx-auto">
     hitoQは、X（旧Twitter）アカウントでログインするだけで利用できます。

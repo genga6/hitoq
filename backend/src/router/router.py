@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
 from src.db.models.answer import AnswerCreate, AnswerRead
@@ -57,3 +57,24 @@ def create_answer(answer_in: AnswerCreate, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(answer)
     return answer
+
+
+@router.get("/api/resolve-users-id")
+def resolve_users_id(user_name: str = Query(...), db: Session = Depends(get_db)):
+    users = (
+        db.query(User)
+        .filter(User.username == user_name)
+        .order_by(User.created_at.desc())
+        .all()
+    )
+    if not users:
+        raise HTTPException(status_code=404, detail="User not found")
+    return [
+        {
+            "user_id": u.id,
+            "username": u.username,
+            "created_at": u.created_at.isoformat(),
+            "icon_url": u.icon_url,
+        }
+        for u in users
+    ]
