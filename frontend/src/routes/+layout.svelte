@@ -3,7 +3,6 @@
 	import { onMount, onDestroy } from 'svelte';
   import { browser } from '$app/environment';
   import '../app.css'
-	import { userEvent } from '@vitest/browser/context';
 
   export let data;
   const isLoggedIn = data?.isLoggedIn ?? true;
@@ -108,6 +107,7 @@
           {/each}
         </div>
       {/if}
+    </div>
     
     {#if isLoggedIn}
       <div class="absolute right-0 flex items-center pr-4">
@@ -133,7 +133,6 @@
         {/if}
       </div>
     {/if}
-    </div>
   </div>
 </header>
 
