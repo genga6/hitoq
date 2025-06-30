@@ -23,7 +23,7 @@
     hitoQは、X（旧Twitter）アカウントでログインするだけで利用できます。
   </p>
 
-  <button on:click={login} 
+  <button onclick={login} 
     class="flex items-center space-x-3 bg-black text-white px-6 py-3 rounded-full shadow hover:bg-gray-600 transition font-semibold mb-4 cursor-pointer"
   >
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1227" fill="currentColor" class="w-5 h-5">
