@@ -4,20 +4,21 @@
   import { browser } from '$app/environment';
   import '../app.css'
 
-  export let data;
+  let { data } = $props<{ data?: { isLoggedIn?: boolean } }>();
   const isLoggedIn = data?.isLoggedIn ?? true;
 
-  let searchQuery = '';
-  let candidates: { 
+  let searchQuery = $state('');
+  let candidates = $state<{ 
     user_id: string; 
     username: string; 
     icon_url?: string; 
     created_at: string 
-  }[] = [];
-  let showCandidates = false;
-  let showMenu = false;
-  let menuElement: HTMLDivElement | null = null;
-  let toggleButton: HTMLButtonElement | null = null;
+  }[]>([]);
+  let showCandidates = $state(false);
+  let showMenu = $state(false);
+
+  let menuElement = $state<HTMLDivElement | null>(null);
+  let toggleButton = $state<HTMLButtonElement | null>(null);
 
   const logout = () => {
     alert('ログアウト（未実装）');
