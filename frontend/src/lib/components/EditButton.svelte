@@ -1,5 +1,7 @@
 <script lang="ts">
-  let { onClick } = $props<{ onClick: () => void }>();
+  const { onClick } = $props<{ 
+    onClick: () => void 
+  }>();
 </script>
 
 <div class="text-right pt-4">

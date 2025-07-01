@@ -1,10 +1,15 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-	import { onMount, onDestroy } from 'svelte';
   import { browser } from '$app/environment';
+  import type { Snippet } from 'svelte';
   import '../app.css'
 
-  let { data } = $props<{ data?: { isLoggedIn?: boolean } }>();
+  type Props = {
+    data?: { isLoggedIn?: boolean },
+    children?: Snippet
+  };
+
+  const { data, children }: Props = $props();
   const isLoggedIn = data?.isLoggedIn ?? true;
 
   let searchQuery = $state('');
@@ -17,8 +22,8 @@
   let showCandidates = $state(false);
   let showMenu = $state(false);
 
-  let menuElement = $state<HTMLDivElement | null>(null);
-  let toggleButton = $state<HTMLButtonElement | null>(null);
+  let menuElement: HTMLDivElement | null = null;
+  let toggleButton: HTMLButtonElement | null = null;
 
   const logout = () => {
     alert('ログアウト（未実装）');
@@ -64,16 +69,13 @@
     }
   };
 
-  onMount(() => {
-    if (browser) {
-      window.addEventListener('click', handleClickOutside);
-    }
-  });
-
-  onDestroy(() => {
-    if (browser) {
+  $effect(() => {
+    if (!browser) return;
+    
+    window.addEventListener('click', handleClickOutside);
+    return () => {
       window.removeEventListener('click', handleClickOutside);
-    }
+    };
   });
 </script>
 
@@ -85,7 +87,7 @@
       <input
         type="text"
         bind:value={searchQuery}
-        on:keydown={handleSearch}
+        onkeydown={handleSearch}
         placeholder="ユーザー検索"
         class="w-full px-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-orange-400"
       />
@@ -95,7 +97,7 @@
           {#each candidates as user}
             <button
               class="flex items-center px-4 py-2 hover:bg-orange-100 cursor-pointer gap-3"
-              on:click={() => selectCandidate(user.user_id)}
+              onclick={() => selectCandidate(user.user_id)}
             >
               {#if user.icon_url}
                 <img src={user.icon_url} alt="icon" class="w-6 h-6 rounded-full" />
@@ -114,7 +116,7 @@
       <div class="absolute right-0 flex items-center pr-4">
         <button
           bind:this={toggleButton}
-          on:click={() => showMenu = !showMenu}
+          onclick={() => showMenu = !showMenu}
           class="w-12 h-12 flex items-center justify-center rounded-full border border-gray-300 hover:ring-2 ring-orange-400 transition"
           aria-label="ユーザーメニューを開く"
         >
@@ -129,7 +131,7 @@
             class="absolute top-full right-0 mt-2 w-40 bg-white border border-gray-200 rounded-lg shadow-lg z-10"
           >
             <a href="/settings" class="block px-4 py-2 hover:bg-gray-100">設定</a>
-            <button on:click={logout} class="w-full text-left px-4 py-2 hover:bg-gray-100">ログアウト</button>
+            <button onclick={logout} class="w-full text-left px-4 py-2 hover:bg-gray-100">ログアウト</button>
           </div>
         {/if}
       </div>
@@ -137,7 +139,7 @@
   </div>
 </header>
 
-<slot />
+{@render children?.()}
 
 <footer class="w-full bg-gray-100 text-center text-sm text-gray-500 py-4">
   © 2025 hitoQ

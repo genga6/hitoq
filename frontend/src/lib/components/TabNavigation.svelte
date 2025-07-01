@@ -1,6 +1,11 @@
 <script lang="ts">
   import { page } from '$app/state';
-  let userId = $state<string>();
+  
+  type Props = {
+    userId: string;
+  };
+  const { userId }: Props = $props();
+  console.log('TabNavigation userId:', userId);
 
   const tabs = [
     { path: `/${userId}`,               label: 'トップ' },
