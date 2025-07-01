@@ -1,27 +1,20 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import EditButton from '$lib/components/EditButton.svelte';
-  export let data;
 
-  const editProfile = () => {
-    goto(`/${data.userId}/edit`);
-  };
-
-  export let lifeStory: {
-    childhood?: string;
-    studentDays?: string;
-    now?: string;
-  };
-  export let isOwner: boolean;
+  const { lifeStory, isOwner } = $props<{
+    lifeStory?: {
+      childhood?: string;
+      studentDays?: string;
+      now?: string;
+    } | null;
+    isOwner: boolean;
+  }>();
 
   let editedStory = {
-    childhood: lifeStory?.childhood || '',
-    studentDays: lifeStory?.studentDays || '',
-    now: lifeStory?.now || ''
-  };
-
-  const saveLifeStory = () => {
-    alert('保存機能は未実装です');
+    childhood: lifeStory?.childhood ?? '',
+    studentDays: lifeStory?.studentDays ?? '',
+    now: lifeStory?.now ?? ''
   };
 </script>
 
@@ -36,7 +29,7 @@
       class="w-full p-3 border border-gray-300 rounded-md text-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-400"
     ></textarea>
   {:else}
-    <p class="whitespace-pre-line text-gray-700">{lifeStory?.childhood || '準備中'}</p>
+    <p class="whitespace-pre-line text-gray-700">{lifeStory?.childhood ?? '準備中'}</p>
   {/if}
 </section>
 
@@ -51,7 +44,7 @@
       class="w-full p-3 border border-gray-300 rounded-md text-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-400"
     ></textarea>
   {:else}
-    <p class="whitespace-pre-line text-gray-700">{lifeStory?.studentDays || '準備中'}</p>
+    <p class="whitespace-pre-line text-gray-700">{lifeStory?.studentDays ?? '準備中'}</p>
   {/if}
 </section>
 
@@ -66,10 +59,6 @@
       class="w-full p-3 border border-gray-300 rounded-md text-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-400"
     ></textarea>
   {:else}
-    <p class="whitespace-pre-line text-gray-700">{lifeStory?.now || '準備中'}</p>
+    <p class="whitespace-pre-line text-gray-700">{lifeStory?.now ?? '準備中'}</p>
   {/if}
 </section>
-
-{#if data.isOwner}
-  <EditButton onClick={editProfile} />
-{/if}

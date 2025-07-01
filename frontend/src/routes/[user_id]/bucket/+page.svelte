@@ -1,7 +1,8 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import EditButton from '$lib/components/EditButton.svelte';
-  export let data;
+  
+  const { data } = $props<{ data: any }>();
 
   const editProfile = () => {
     goto(`/${data.userId}/edit`);
