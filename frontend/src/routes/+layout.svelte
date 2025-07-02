@@ -1,6 +1,7 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import { browser } from '$app/environment';
+  import { useClickOutside } from '$lib/utils/useClickOutside';
   import type { Snippet } from 'svelte';
   import '../app.css'
 
@@ -59,23 +60,11 @@
     showCandidates = false;
   }
 
-  const handleClickOutside = (event: MouseEvent) => {
-    const target = event.target as Node;
-    if (
-      menuElement && !menuElement.contains(target) &&
-      toggleButton && !toggleButton.contains(target)
-    ) {
-      showMenu = false;
-    }
-  };
-
   $effect(() => {
     if (!browser) return;
-    
-    window.addEventListener('click', handleClickOutside);
-    return () => {
-      window.removeEventListener('click', handleClickOutside);
-    };
+      return useClickOutside(menuElement, [toggleButton], () => {
+        showMenu = false;
+      });
   });
 </script>
 

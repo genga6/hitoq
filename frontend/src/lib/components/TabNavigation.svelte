@@ -8,11 +8,10 @@
   console.log('TabNavigation userId:', userId);
 
   const tabs = [
-    { path: `/${userId}`,               label: 'トップ' },
+    { path: `/${userId}`,               label: 'プロフィール' },
     { path: `/${userId}/qna`,           label: 'パーソナルQ&A' },
     { path: `/${userId}/bucket`,        label: 'バケットリスト' },
     { path: `/${userId}/personality`,   label: '性格診断' },
-    { path: `/${userId}/story`,         label: '自分史' }
   ];
 </script>
 

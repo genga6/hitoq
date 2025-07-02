@@ -13,7 +13,7 @@
   <img
     src={userIconUrl || 'https://via.placeholder.com/80'}
     alt="User Icon"
-    class="w-16 h-16 rounded-full border border-gray-300"
+    class="w-20 h-20 rounded-full border border-gray-300"
   />
   <div>
     <h2 class="text-2xl font-bold text-gray-700">{userName}</h2>
