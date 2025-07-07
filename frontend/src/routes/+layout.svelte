@@ -31,25 +31,6 @@
     // Cookie削除、セッション無効化など
   };
 
-  const handleSearch = async (e: KeyboardEvent) => {
-    if (e.key === 'Enter' && searchQuery.trim() !== '') {
-      const query = searchQuery.trim().replace(/^@/, '');
-      
-      const res = await fetch(`/api/resolve-users-id?user_name=${encodeURIComponent(query)}`);
-      if (res.ok) {
-        const candidates = await res.json();
-
-        if (candidates.length === 1) {
-          goto(`/${candidates[0].user_id}`);
-        } else {
-          showCandidateList(candidates);
-        }
-      } else {
-        alert('ユーザーが見つかりません');
-      }
-    }
-  };
-
   function showCandidateList(list: typeof candidates) {
     candidates = list;
     showCandidates = true;
@@ -62,10 +43,74 @@
 
   $effect(() => {
     if (!browser) return;
-      return useClickOutside(menuElement, [toggleButton], () => {
-        showMenu = false;
-      });
+
+    const unregisterMenu = useClickOutside(menuElement, [toggleButton], () => {
+      showMenu = false;
+    });
+
+    const unregisterCandidates = useClickOutside(candidatesElement, [searchInputElement], () => {
+      showCandidates = false;
+      noResults = false;
+    });
+
+    return () => {
+      unregisterMenu();
+      unregisterCandidates();
+    };
   });
+
+  let isLoading = $state(false);
+  let noResults = $state(false);
+  let debounceTimer: number;
+
+  const handleInput = () => {
+    clearTimeout(debounceTimer);
+    showCandidates = false;
+    noResults = false;
+
+    debounceTimer = setTimeout(() => {
+      if (searchQuery.trim() !== '') {
+        performSearch();
+      }
+    }, 300);
+  };
+
+  const performSearch = async () => {
+    isLoading = true;
+    noResults = false;
+    const query = searchQuery.trim().replace(/^@/, '');
+    
+    try {
+      const res = await fetch(`/api/resolve-users-id?user_name=${encodeURIComponent(query)}`);
+      if (res.ok) {
+        const candidatesData = await res.json();
+        if (candidatesData.length === 1) {
+          goto(`/${candidatesData[0].user_id}`);
+        } else if (candidatesData.length > 0) {
+          showCandidateList(candidatesData);
+        } else {
+          noResults = true;
+        }
+      } else {
+        noResults = true;
+      }
+    } catch (error) {
+      console.error('Search failed:', error);
+      noResults = true;
+    } finally {
+      isLoading = false;
+    }
+  };
+
+  const handleKeydown = (e: KeyboardEvent) => {
+    if (e.key === 'Enter' && searchQuery.trim() !== '') {
+      clearTimeout(debounceTimer);
+      performSearch();
+    }
+  };
+
+  let candidatesElement: HTMLDivElement | null = null;
+  let searchInputElement: HTMLInputElement | null = null;
 </script>
 
 <header class="w-full bg-white shadow-md py-8">
@@ -76,27 +121,46 @@
       <input
         type="text"
         bind:value={searchQuery}
-        onkeydown={handleSearch}
+        oninput={handleInput}
+        onkeydown={handleKeydown}
         placeholder="ユーザー検索"
         class="w-full px-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-orange-400"
       />
 
-      {#if showCandidates}
-        <div class="absolute left-1/2 -translate-x-1/2 mt-2 w-1/2 bg-white border border-gray-300 rounded-lg shadow z-50">
-          {#each candidates as user}
-            <button
-              class="flex items-center px-4 py-2 hover:bg-orange-100 cursor-pointer gap-3"
-              onclick={() => selectCandidate(user.user_id)}
-            >
-              {#if user.icon_url}
-                <img src={user.icon_url} alt="icon" class="w-6 h-6 rounded-full" />
-              {/if}
-              <div class="flex flex-col">
-                <span class="font-medium text-sm">{user.username}</span>
-                <span class="text-xs text-gray-500">{user.created_at.slice(0, 10)}</span>
-              </div>
-            </button>
-          {/each}
+      {#if isLoading}
+        <div class="absolute right-3 top-1/2 -translate-y-1/2">
+          <svg class="animate-spin h-5 w-5 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+        </div>
+      {/if}
+
+      {#if showCandidates || noResults}
+        <div 
+          bind:this={candidatesElement}
+          class="absolute left-1/2 -translate-x-1/2 mt-2 w-full bg-white border border-gray-300 rounded-lg shadow z-50"
+        >
+          {#if showCandidates}
+            {#each candidates as user}
+              <button
+                class="flex items-center px-4 py-2 hover:bg-orange-100 cursor-pointer gap-3"
+                onclick={() => selectCandidate(user.user_id)}
+              >
+                {#if user.icon_url}
+                  <img src={user.icon_url} alt="icon" class="w-6 h-6 rounded-full" />
+                {/if}
+                <div class="flex flex-col">
+                  <span class="font-medium text-sm">{user.username}</span>
+                  <span class="text-xs text-gray-500">{user.created_at.slice(0, 10)}</span>
+                </div>
+              </button>
+            {/each}
+          {:else if noResults}
+            <div class="px-4 py-3 text-sm text-gray-500">
+              ユーザーが見つかりませんでした。
+            </div>
+          {/if}
         </div>
       {/if}
     </div>
