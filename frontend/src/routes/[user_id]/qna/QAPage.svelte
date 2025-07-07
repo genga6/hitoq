@@ -17,7 +17,7 @@
       templateTitle: template.title,
       answers: template.questions.map(q => ({ question: q, answer: '' })),
     };
-    
+
     // TODO: ここでサーバーに新しいグループを作成するAPIを叩く
     // const createdGroup = await fetch('/api/qa', { method: 'POST', body: JSON.stringify(newAnswerGroup) });
     // const result = await createdGroup.json();
@@ -65,7 +65,7 @@
                 </svg>
             </button>
         </div>
-        
+
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {#each availableTemplates as template (template.id)}
             <button

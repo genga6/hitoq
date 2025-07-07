@@ -1,7 +1,7 @@
 // import type { PageServerLoad } from './$types';
 // import { API_BASE_URL } from '$env/static/private';
 // import { error } from '@sveltejs/kit';
-// import { qaTemplates } from '$lib/qa-templates'; 
+// import { qaTemplates } from '$lib/qa-templates';
 
 // export const load: PageServerLoad = async ({ fetch, cookies }) => {
 //   const authToken = cookies.get('auth_token');

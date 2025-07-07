@@ -14,11 +14,11 @@
   const isLoggedIn = data?.isLoggedIn ?? true;
 
   let searchQuery = $state('');
-  let candidates = $state<{ 
-    user_id: string; 
-    username: string; 
-    icon_url?: string; 
-    created_at: string 
+  let candidates = $state<{
+    user_id: string;
+    username: string;
+    icon_url?: string;
+    created_at: string
   }[]>([]);
   let showCandidates = $state(false);
   let showMenu = $state(false);
@@ -79,7 +79,7 @@
     isLoading = true;
     noResults = false;
     const query = searchQuery.trim().replace(/^@/, '');
-    
+
     try {
       const res = await fetch(`/api/resolve-users-id?user_name=${encodeURIComponent(query)}`);
       if (res.ok) {
@@ -137,7 +137,7 @@
       {/if}
 
       {#if showCandidates || noResults}
-        <div 
+        <div
           bind:this={candidatesElement}
           class="absolute left-1/2 -translate-x-1/2 mt-2 w-full bg-white border border-gray-300 rounded-lg shadow z-50"
         >
@@ -164,7 +164,7 @@
         </div>
       {/if}
     </div>
-    
+
     {#if isLoggedIn}
       <div class="absolute right-0 flex items-center pr-4">
         <button
@@ -179,8 +179,8 @@
         </button>
 
         {#if showMenu}
-          <div 
-            bind:this={menuElement} 
+          <div
+            bind:this={menuElement}
             class="absolute top-full right-0 mt-2 w-40 bg-white border border-gray-200 rounded-lg shadow-lg z-10"
           >
             <a href="/settings" class="block px-4 py-2 hover:bg-gray-100">設定</a>

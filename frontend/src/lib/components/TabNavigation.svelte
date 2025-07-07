@@ -1,6 +1,6 @@
 <script lang="ts">
   import { page } from '$app/state';
-  
+
   type Props = {
     userId: string;
   };

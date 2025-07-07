@@ -6,7 +6,7 @@
   console.log('データ', data)
 </script>
 
-<QAPage 
+<QAPage
   initialAnswerGroups={data.userAnswerGroups}
   availableTemplates={data.availableTemplates}
 />

@@ -10,7 +10,7 @@
       userIconUrl?: string;
       isOwner: boolean;
       bio?: string;
-    }, 
+    },
     children?: Snippet;
   };
   let { data, children }: Props = $props();

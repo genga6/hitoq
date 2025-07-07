@@ -2,6 +2,6 @@
 export const load = async () => {
   return {
     isLoggedIn: true,
-    userName: 'げんがる'
+    userName: "げんがる",
   };
 };

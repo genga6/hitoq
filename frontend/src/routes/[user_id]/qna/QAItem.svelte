@@ -3,11 +3,11 @@
   import { fade } from 'svelte/transition';
   import { tick } from 'svelte';
 
-  const { 
-    question, 
+  const {
+    question,
     answer: initialAnswer,
-    onSave: onSaveProp 
-  } = $props<{ 
+    onSave: onSaveProp
+  } = $props<{
     question: string;
     answer: string;
     onSave?: (newAnswer: string) => Promise<void>;
@@ -38,7 +38,7 @@
     if (isEditing) return;
     tempAnswer = answer;
     isEditing = true;
-    
+
     await tick();
     if(textareaElement) {
       adjustTextareaHeight();
