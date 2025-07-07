@@ -141,7 +141,7 @@
         <div transition:fade={{ duration: 200 }}>
           <p class="text-sm text-orange-600 font-medium mb-1 tracking-wide">{item.label}</p>
           <p class="text-lg font-semibold text-gray-700 break-words">{item.value}</p>
-          
+
           <!-- Edit Icon on Hover -->
           <div class="absolute top-4 right-4 text-gray-400 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">

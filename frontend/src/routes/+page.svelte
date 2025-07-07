@@ -4,13 +4,13 @@
   };
 
   const handleSearch = (event: Event) => {
-    event.preventDefault(); 
-    
+    event.preventDefault();
+
     // 入力値を取得して検索処理を行う（ここは将来的に実装）
     const form = event.target as HTMLFormElement;
     const input = form.querySelector('input[type="text"]') as HTMLInputElement;
     const username = input.value;
-    
+
     if (username) {
       alert(`「${username}」を検索します（未実装）`);
       // 将来的には window.location.href = `/user/${username}`; のような処理になる
@@ -38,7 +38,7 @@
   <h2 class="text-2xl font-bold mb-4">さあ、はじめよう</h2>
   <p class="text-gray-600 mb-6">Xアカウントでログインするだけ。3分であなたのページが完成します。</p>
 
-  <button onclick={login} 
+  <button onclick={login}
     class="flex items-center space-x-3 bg-black text-white px-8 py-3 rounded-full shadow-lg hover:bg-gray-800 transition-transform
     hover:scale-105 font-semibold mb-8 text-lg"
   >

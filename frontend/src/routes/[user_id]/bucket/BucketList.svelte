@@ -16,7 +16,7 @@
   let { buckets: initialBuckets } = $props();
   let buckets = $state<Bucket[]>(initialBuckets || []);
 
-  let nextId = $derived(() => 
+  let nextId = $derived(() =>
     Math.max(0, ...buckets.map(b => b.id)) + 1
   );
 
@@ -24,7 +24,7 @@
     const tempItem = {
       id: nextId(),
       content: '',
-      checked: false, 
+      checked: false,
       isNew: true,
     };
     buckets = [...buckets, tempItem];

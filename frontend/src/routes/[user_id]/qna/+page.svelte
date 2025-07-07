@@ -1,16 +1,12 @@
 <script lang="ts">
-  import { goto } from '$app/navigation';
-  import EditButton from '$lib/components/EditButton.svelte';
-  
-  const { data } = $props<{ data: any }>();
+  import QAPage from './QAPage.svelte'
+  import type { PageData } from './$types';
 
-  const editProfile = () => {
-    goto(`/${data.userId}/edit`);
-  };
+  const { data } = $props();
+  console.log('データ', data)
 </script>
 
-<!-- 何を表示するか検討中 -->
-
-{#if data.isOwner}
-  <EditButton onClick={editProfile} />
-{/if}
+<QAPage
+  initialAnswerGroups={data.userAnswerGroups}
+  availableTemplates={data.availableTemplates}
+/>

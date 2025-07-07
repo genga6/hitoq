@@ -89,8 +89,8 @@
         type="button"
         onclick={onToggle}
         class={`flex-shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all duration-200
-          ${checked 
-            ? 'bg-orange-500 border-orange-500 text-white hover:bg-orange-600' 
+          ${checked
+            ? 'bg-orange-500 border-orange-500 text-white hover:bg-orange-600'
             : 'border-gray-300 text-transparent hover:border-orange-400 hover:text-orange-400'}`}
         aria-label="Toggle complete"
       >
