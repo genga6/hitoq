@@ -24,6 +24,8 @@
   async function addItem() {
     if (!isOwner) return;
 
+    buckets = buckets.filter(b => !b.isNew || b.content.trim() !== '');
+
     const tempItem = {
       id: nextId(),
       content: '',
@@ -42,27 +44,38 @@
 
   function editItem(id: number, newContent: string) {
     buckets = buckets.map(b =>
-      b.id === id ? { ...b, content: newContent } : b
+      b.id === id ? { ...b, content: newContent, isNew: false } : b
     );
   }
 
-  function deleteItem(id: number) {
+  function deleteItem(id: number, force: boolean = false) {
     const item = buckets.find(b => b.id === id);
     if (!item) return;
-    const confirmed = confirm(`「${item.content}」を削除してもよろしいですか？`);
-    if (confirmed) {
+
+    if (force || confirm(`「${item.content || '新しいバケット'}」を削除してもよろしいですか？`)) {
       buckets = buckets.filter(b => b.id !== id);
+    }
+  }
+
+  function handleSave(id: number, newContent: string) {
+    const item = buckets.find(b => b.id === id);
+    if (!item) return;
+
+    if (item.isNew && newContent.trim() === '') {
+      deleteItem(id, true);
+    } else {
+      editItem(id, newContent);
     }
   }
 </script>
 
 <div class="space-y-2">
-  {#each buckets.filter(Boolean) as bucket (bucket.id)}
+  {#each buckets as bucket (bucket.id)}
     <BucketListItem
       {bucket}
       {isOwner}
       onToggle={() => toggleItem(bucket.id)}
-      onSave={(newContent) => editItem(bucket.id, newContent)}
+      onSave={(newContent) => handleSave(bucket.id, newContent)}
       onDelete={() => deleteItem(bucket.id)}
     />
   {/each}

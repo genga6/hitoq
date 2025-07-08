@@ -2,7 +2,7 @@
 	import Editable from "$lib/components/Editable.svelte";
 
   const { bucket, isOwner, onToggle, onSave, onDelete } = $props<{
-    bucket: { content: string; checked: boolean };
+    bucket: { content: string; checked: boolean; isNew?: boolean };
     isOwner: boolean;
     onToggle: () => void;
     onSave: (newContent: string) => void;
@@ -36,7 +36,13 @@
       </svg>
     </button>
 
-    <Editable {isOwner} value={bucket.content} {onSave} input_type="input">
+    <Editable 
+      {isOwner} 
+      value={bucket.content} 
+      {onSave} 
+      input_type="input"
+      startInEditMode={bucket.isNew ?? false}  
+    >
       <span class={`font-semibold transition-colors ${bucket.checked ? 'line-through text-gray-400' : 'text-gray-800'}`}>
         {bucket.content}
       </span>  
