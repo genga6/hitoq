@@ -57,15 +57,13 @@
 </script>
 
 <div class="space-y-2">
-  {#each buckets as bucket (bucket.id)}
+  {#each buckets.filter(Boolean) as bucket (bucket.id)}
     <BucketListItem
-      content={bucket.content}
-      checked={bucket.checked}
-      isNew={bucket.isNew}
-      onToggle={() => toggleItem(bucket.id)}
-      onEdit={(newContent) => editItem(bucket.id, newContent)}
-      onDelete={() => deleteItem(bucket.id)}
+      {bucket}
       {isOwner}
+      onToggle={() => toggleItem(bucket.id)}
+      onSave={(newContent) => editItem(bucket.id, newContent)}
+      onDelete={() => deleteItem(bucket.id)}
     />
   {/each}
 
