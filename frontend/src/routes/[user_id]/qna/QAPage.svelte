@@ -2,6 +2,7 @@
   import type { QATemplate, UserAnswerGroup } from '$lib/types/qna';
   import QAGroup from './QAGroup.svelte';
   import { slide } from 'svelte/transition';
+  import { fade } from 'svelte/transition';
 
   const { initialAnswerGroups, availableTemplates, isOwner } = $props<{
     initialAnswerGroups: UserAnswerGroup[];
@@ -29,13 +30,32 @@
 
     showTemplateSelector = false;
   }
+
+  function handleAnswerUpdate(groupIndex: number, questionIndex: number, newAnswer: string) {
+    const newAnswerGroups = [...answerGroups];
+    const updatedGroup = { ...newAnswerGroups[groupIndex] }; 
+    const updatedAnswers = [...updatedGroup.answers]; 
+
+    updatedAnswers[questionIndex] = { ...updatedAnswers[questionIndex], answer: newAnswer };
+    updatedGroup.answers = updatedAnswers;
+    newAnswerGroups[groupIndex] = updatedGroup;
+    answerGroups = newAnswerGroups;
+
+    console.log('State updated!', answerGroups);
+  }
 </script>
 
 <div>
   {#if answerGroups.length > 0}
     <div class="space-y-6">
-      {#each answerGroups as group (group.templateId)}
-        <QAGroup answerGroup={group} {isOwner} />
+      {#each answerGroups as group, groupIndex (group.templateId)}
+        <QAGroup 
+          answerGroup={group} 
+          {isOwner} 
+          onAnswerUpdate={(questionIndex, newAnswer) => 
+            handleAnswerUpdate(groupIndex, questionIndex, newAnswer)
+          }
+        />
       {/each}
     </div>
   {:else if isOwner}
