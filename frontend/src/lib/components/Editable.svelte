@@ -10,7 +10,8 @@
     onSave, 
     children, 
     as: Element = 'div', // div or span
-    input_type: inputType = 'textarea'  // input or textarea
+    input_type: inputType = 'textarea',  // input or textarea
+    startInEditMode = false
   } = $props<{
     isOwner: boolean;
     value: string;
@@ -18,9 +19,10 @@
     children: Snippet;
     as?: 'div' | 'span';
     input_type?: 'input' | 'textarea';
+    startInEditMode?: boolean;
   }>();
 
-  let isEditing = $state(false);
+  let isEditing = $state(startInEditMode);
   let tempValue = $state(value);
 
   let containerElement: HTMLElement | null = $state(null);
@@ -45,10 +47,7 @@
     if(!isEditing) return;
 
     isEditing = false;
-
-    if (value !== tempValue) {
-      onSave(tempValue);
-    }
+    onSave(tempValue);
   }
 
   function cancelEdit() {
