@@ -3,7 +3,11 @@
   import type { UserAnswerGroup } from '$lib/types/qna';
   import { slide } from 'svelte/transition';
 
-  const { answerGroup }: { answerGroup: UserAnswerGroup } = $props();
+  const { answerGroup, isOwner } = $props<{
+    answerGroup: UserAnswerGroup;
+    isOwner: boolean;
+  }>();
+
   let isOpen = $state(false)
 </script>
 
@@ -31,7 +35,7 @@
       class="space-y-6 border-t border-gray-200 px-6 pb-8 pt-6"
     >
       {#each answerGroup.answers as qa, i (qa.question)}
-        <QAItem question={qa.question} answer={qa.answer} />
+        <QAItem question={qa.question} answer={qa.answer} {isOwner} />
       {/each}
     </div>
   {/if}

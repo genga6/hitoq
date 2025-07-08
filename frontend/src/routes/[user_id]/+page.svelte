@@ -7,17 +7,25 @@
     value: string;
   }[];
 
-  const { data }: { data: { profileItems: ProfileItems } } = $props();
+  type Props = {
+    data: {
+      profileItems: ProfileItems;
+      isOwner: boolean;
+    }
+  };
+
+  const { data }: Props = $props();
+  const { isOwner } = data;
+
   let profileItems = $state(data.profileItems);
   let isEditing = $state(profileItems.map(() => false));
   let tempItems = $state([...profileItems]);
 
   let containerElements: (HTMLDivElement | null)[] = Array(profileItems.length).fill(null);
-
   let ignoreElements: HTMLElement[] = [];
 
   function startEdit(index: number) {
-    if (isEditing[index]) return;
+    if (!isOwner || isEditing[index]) return;
 
     isEditing = isEditing.map((_, i) => i === index);
     tempItems[index] = { ...profileItems[index] };
@@ -63,10 +71,11 @@
 
 <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
   {#each profileItems as item, index}
+    <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
     <div
       bind:this={containerElements[index]}
-      role="button"
-      tabindex="0"
+      role={isOwner ? "button" : "region"}
+      tabindex={isOwner ? 0 : -1}
       onclick={() => !isEditing[index] && startEdit(index)}
       onkeydown={(e) => {
         if ((e.key === 'Enter' || e.key === ' ') && !isEditing[index]) {
@@ -74,10 +83,12 @@
           startEdit(index);
         }
       }}
-      class="group relative rounded-3xl border border-orange-200 bg-white p-6 transition-all duration-300 hover:shadow-lg hover:border-orange-300"
-      class:cursor-pointer={!isEditing[index]}
+      class="group relative rounded-3xl border border-orange-200 bg-white p-6 transition-all duration-300"
+      class:hover:shadow-lg={isOwner}
+      class:hover:border-orange-300={isOwner}
+      class:cursor-pointer={isOwner && !isEditing[index]}
     >
-      {#if isEditing[index]}
+      {#if isOwner && isEditing[index]}
         <div class="flex flex-col gap-2 trasition:fade={{ duration: 200 }}">
           <!-- label -->
           <input
@@ -143,12 +154,14 @@
           <p class="text-lg font-semibold text-gray-700 break-words">{item.value}</p>
 
           <!-- Edit Icon on Hover -->
-          <div class="absolute top-4 right-4 text-gray-400 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                <path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z" />
-                <path fill-rule="evenodd" d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" clip-rule="evenodd" />
-            </svg>
-          </div>
+          {#if isOwner}
+            <div class="absolute top-4 right-4 text-gray-400 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z" />
+                  <path fill-rule="evenodd" d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" clip-rule="evenodd" />
+              </svg>
+            </div>
+          {/if}
         </div>
       {/if}
     </div>

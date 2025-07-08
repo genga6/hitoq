@@ -11,9 +11,10 @@
 
   type Props = {
     buckets: Bucket[];
+    isOwner: boolean;
   };
 
-  let { buckets: initialBuckets } = $props();
+  let { buckets: initialBuckets, isOwner } = $props();
   let buckets = $state<Bucket[]>(initialBuckets || []);
 
   let nextId = $derived(() =>
@@ -21,6 +22,8 @@
   );
 
   async function addItem() {
+    if (!isOwner) return;
+
     const tempItem = {
       id: nextId(),
       content: '',
@@ -62,15 +65,18 @@
       onToggle={() => toggleItem(bucket.id)}
       onEdit={(newContent) => editItem(bucket.id, newContent)}
       onDelete={() => deleteItem(bucket.id)}
+      {isOwner}
     />
   {/each}
 
-  <div class="flex justify-center mt-4">
-    <button
-      onclick={addItem}
-      class="w-1/2 mt-4 py-2 px-4 rounded-xl bg-orange-100 text-orange-500 font-semibold hover:bg-orange-200 active:bg-orange-300 transition duration-200"
-    >
-      ＋ 新しいバケットを追加
-    </button>
-  </div>
+  {#if isOwner}
+    <div class="flex justify-center mt-4">
+      <button
+        onclick={addItem}
+        class="w-1/2 mt-4 py-2 px-4 rounded-xl bg-orange-100 text-orange-500 font-semibold hover:bg-orange-200 active:bg-orange-300 transition duration-200"
+      >
+        ＋ 新しいバケットを追加
+      </button>
+    </div>
+  {/if}
 </div>
