@@ -1,58 +1,96 @@
+import enum
 import uuid
+from datetime import datetime
 
-from sqlalchemy import Column, DateTime, ForeignKey, Integer, String
+from sqlalchemy import DateTime, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
 
-Base = declarative_base()
+
+# https://docs.sqlalchemy.org/en/20/orm/quickstart.html
+class Base(DeclarativeBase):
+    pass
 
 
 class User(Base):
     __tablename__ = "users"
 
-    id = Column(
+    id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
     )  # TODO: XのユーザーIDに置き換わる
-    username = Column(String, nullable=False)
-    icon_url = Column(String, nullable=True)
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    user_name: Mapped[str]  # Xのユーザー名
+    bio: Mapped[str | None]
+    icon_url: Mapped[str | None]
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
 
-    answers = relationship("Answer", back_populates="user")
+    answers: Mapped[list["Answer"]] = relationship(back_populates="user")
+    profile_items: Mapped[list["ProfileItem"]] = relationship(
+        back_populates="user", cascade="all, delete-orphan"
+    )
+    bucket_list_items: Mapped[list["BucketListItem"]] = relationship(
+        back_populates="user", cascade="all, delete-orphan"
+    )
 
 
-class Template(Base):
-    __tablename__ = "templates"
+class ProfileItem(Base):
+    __tablename__ = "profile_items"
 
-    id = Column(String, primary_key=True)
-    title = Column(String, nullable=False)
-    description = Column(String, nullable=True)
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    id: Mapped[uuid.UUID] = mapped_column(primary_key=True)
+    user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id"))
+    label: Mapped[str]
+    value: Mapped[str]
+    display_order: Mapped[int]
 
-    questions = relationship("Question", back_populates="template")
+
+class BucketListItem(Base):
+    __tablename__ = "bucket_list_items"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id"))
+    content: Mapped[str]
+    is_completed: Mapped[bool] = mapped_column(default=False)
+    display_order: Mapped[int]
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+
+    user: Mapped["User"] = relationship(back_populates="bucket_list_items")
+
+
+class QuestionCategoryEnum(enum.Enum):
+    self_introduction = "self-introduction"
+    values = "values"
+    otaku = "otaku"
+    misc = "misc"
 
 
 class Question(Base):
     __tablename__ = "questions"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    template_id = Column(String, ForeignKey("templates.id"), nullable=True)
-    order = Column(Integer, nullable=False)
-    text = Column(String, nullable=False)
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    id: Mapped[int] = mapped_column(primary_key=True)
+    category: Mapped[QuestionCategoryEnum]
+    text: Mapped[str]
+    display_order: Mapped[int]
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
 
-    answers = relationship("Answer", back_populates="question")
+    answers: Mapped[list["Answer"]] = relationship(back_populates="question")
 
 
 class Answer(Base):
     __tablename__ = "answers"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
-    question_id = Column(UUID(as_uuid=True), ForeignKey("questions.id"), nullable=False)
-    text = Column(String, nullable=False)
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id"))
+    question_id: Mapped[int] = mapped_column(ForeignKey("questions.id"))
+    answer_text: Mapped[str]
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
 
-    user = relationship("User", back_populates="answers")
-    question = relationship("Question", back_populates="answers")
+    user: Mapped["User"] = relationship(back_populates="answers")
+    question: Mapped["Question"] = relationship(back_populates="answers")

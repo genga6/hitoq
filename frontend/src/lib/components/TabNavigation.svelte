@@ -1,11 +1,11 @@
 <script lang="ts">
   import { page } from '$app/state';
+  import type { Profile } from '$lib/types/profile';
 
   type Props = {
-    userId: string;
+    userId: Profile['userId'];
   };
   const { userId }: Props = $props();
-  console.log('TabNavigation userId:', userId);
 
   const tabs = [
     { path: `/${userId}`,               label: 'プロフィール' },

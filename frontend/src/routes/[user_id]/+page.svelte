@@ -1,22 +1,17 @@
 <script lang="ts">
   import Editable from "$lib/components/Editable.svelte";
 
-  type ProfileItems = {
-    label: string;
-    value: string;
-  }[];
+  import type { ProfileCardPageData } from "$lib/types/page";
+  import type { ProfileItem } from "$lib/types/profile";
 
   type Props = {
-    data: {
-      profileItems: ProfileItems;
-      isOwner: boolean;
-    }
+    data: ProfileCardPageData;
   };
 
   const { data }: Props = $props();
   const { isOwner, profileItems: initialProfileItems } = data;
 
-  let profileItems = $state(initialProfileItems);
+  let profileItems = $state<ProfileItem[]>(initialProfileItems);
 
   function handleItemSave(index: number, field: 'label' | 'value', newValue: string) {
     // Replace API call
@@ -29,7 +24,7 @@
 </script>
 
 <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
-  {#each profileItems as item, index (index)}
+  {#each profileItems as item, index (item.id)}
     <div
       class="group relative rounded-3xl border border-orange-200 bg-white p-6 transition-all duration-300 {isOwner ? 'hover:shadow-lg hover:border-orange-300' : ''}"
     >

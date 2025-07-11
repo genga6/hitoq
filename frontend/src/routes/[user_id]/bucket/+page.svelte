@@ -1,11 +1,9 @@
 <script lang="ts">
   import BucketList from './BucketList.svelte';
+  import type { BucketListPageData } from '$lib/types/page';
 
   type Props = {
-    data: {
-      buckets: any[]; // 本来はBucket型
-      isOwner: boolean;
-    }
+    data: BucketListPageData;
   };
 
   const { data } = $props();

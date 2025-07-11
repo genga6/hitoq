@@ -3,6 +3,8 @@
   import { browser } from '$app/environment';
   import { useClickOutside } from '$lib/utils/useClickOutside';
   import type { Snippet } from 'svelte';
+
+  import type { UserCandidate } from '$lib/types/profile';
   import '../app.css'
 
   type Props = {
@@ -14,12 +16,8 @@
   const isLoggedIn = data?.isLoggedIn ?? true;
 
   let searchQuery = $state('');
-  let candidates = $state<{
-    user_id: string;
-    username: string;
-    icon_url?: string;
-    created_at: string
-  }[]>([]);
+
+  let candidates = $state<UserCandidate[]>([]);
   let showCandidates = $state(false);
   let showMenu = $state(false);
 
@@ -31,7 +29,7 @@
     // Cookie削除、セッション無効化など
   };
 
-  function showCandidateList(list: typeof candidates) {
+  function showCandidateList(list: UserCandidate[]) {
     candidates = list;
     showCandidates = true;
   }
@@ -83,9 +81,9 @@
     try {
       const res = await fetch(`/api/resolve-users-id?user_name=${encodeURIComponent(query)}`);
       if (res.ok) {
-        const candidatesData = await res.json();
+        const candidatesData = await res.json() as UserCandidate[];
         if (candidatesData.length === 1) {
-          goto(`/${candidatesData[0].user_id}`);
+          goto(`/${candidatesData[0].userId}`);
         } else if (candidatesData.length > 0) {
           showCandidateList(candidatesData);
         } else {
@@ -145,14 +143,14 @@
             {#each candidates as user}
               <button
                 class="flex items-center px-4 py-2 hover:bg-orange-100 cursor-pointer gap-3"
-                onclick={() => selectCandidate(user.user_id)}
+                onclick={() => selectCandidate(user.userId)}
               >
-                {#if user.icon_url}
-                  <img src={user.icon_url} alt="icon" class="w-6 h-6 rounded-full" />
+                {#if user.iconUrl}
+                  <img src={user.iconUrl} alt="icon" class="w-6 h-6 rounded-full" />
                 {/if}
                 <div class="flex flex-col">
-                  <span class="font-medium text-sm">{user.username}</span>
-                  <span class="text-xs text-gray-500">{user.created_at.slice(0, 10)}</span>
+                  <span class="font-medium text-sm">{user.userName}</span>
+                  <span class="text-xs text-gray-500">{user.createdAt.slice(0, 10)}</span>
                 </div>
               </button>
             {/each}
