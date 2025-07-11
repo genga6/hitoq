@@ -4,29 +4,31 @@
   import { tick } from 'svelte';
   import type { Snippet } from "svelte";
 
-  const {
-    isOwner, 
-    value, 
-    onSave, 
-    children, 
-    as: Element = 'div', // div or span
-    input_type: inputType = 'textarea',  // input or textarea
-    startInEditMode = false
-  } = $props<{
+  type Props = {
     isOwner: boolean;
     value: string;
     onSave: (newValue: string) => void;
     children: Snippet;
     as?: 'div' | 'span';
-    input_type?: 'input' | 'textarea';
+    inputType?: 'input' | 'textarea';
     startInEditMode?: boolean;
-  }>();
+  };
+
+  const {
+    isOwner, 
+    value, 
+    onSave, 
+    children, 
+    as: Element = 'div',
+    inputType = 'textarea',
+    startInEditMode = false
+  } = $props<Props>();
 
   let isEditing = $state(startInEditMode);
   let tempValue = $state(value);
 
   let containerElement: HTMLElement | null = $state(null);
-  let inputElement: HTMLElement | null = $state(null);
+  let inputElement: HTMLInputElement | HTMLTextAreaElement | null = $state(null);
 
   async function startEdit() {
     if (!isOwner || isEditing) return;
@@ -37,7 +39,7 @@
     await tick();
     if(inputElement) {
       inputElement.focus();
-      if (inputType === 'textarea' && inputElement instanceof HTMLTextAreaElement) {
+      if (inputElement instanceof HTMLTextAreaElement) {
         adjustTextareaHeight(inputElement);
       }
     }
@@ -46,8 +48,10 @@
   function confirmEdit() {
     if(!isEditing) return;
 
+    if (tempValue.trim() !== value.trim()) {
+      onSave(tempValue);
+    }
     isEditing = false;
-    onSave(tempValue);
   }
 
   function cancelEdit() {
@@ -60,9 +64,23 @@
   }
 
   $effect(() => {
+    const handleKeydown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        cancelEdit();
+      }
+    };
+    
+    if (isEditing) {
+      window.addEventListener('keydown', handleKeydown);
+    }
+    
     if (isEditing && containerElement) {
-      const cleanup = useClickOutside(containerElement, [], confirmEdit);
-      return cleanup;
+      const cleanupClickOutside = useClickOutside(containerElement, [], confirmEdit);
+      
+      return () => {
+        window.removeEventListener('keydown', handleKeydown);
+        cleanupClickOutside();
+      };
     }
   });
 </script>

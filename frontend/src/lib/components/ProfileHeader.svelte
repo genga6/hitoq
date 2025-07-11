@@ -1,17 +1,15 @@
 <script lang="ts">
   type Props = {
     userName: string;
-    userIconUrl?: string;
+    iconUrl?: string;
     bio?: string;
   };
-  const { userName, userIconUrl, bio }: Props = $props();
-  console.log('ProfileHeader props:', { userName, userIconUrl, bio });
-
+  const { userName, iconUrl, bio }: Props = $props();
 </script>
 
 <div class="flex items-start space-x-4">
   <img
-    src={userIconUrl || 'https://via.placeholder.com/80'}
+    src={iconUrl || 'https://via.placeholder.com/80'}
     alt="User Icon"
     class="w-20 h-20 rounded-full border border-gray-300"
   />

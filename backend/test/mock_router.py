@@ -3,10 +3,10 @@ from uuid import UUID, uuid4
 
 from fastapi import APIRouter
 
-from src.db.models.answer import AnswerCreate, AnswerRead
-from src.db.models.question import QuestionRead
-from src.db.models.template import TemplateRead
-from src.db.models.user import UserCreate, UserRead
+from src.db.schemas.answer import AnswerCreate, AnswerRead
+from src.db.schemas.question import QuestionRead
+from src.db.schemas.template import TemplateRead
+from src.db.schemas.user import UserCreate, UserRead
 from test.mock_data import ANSWERS, QUESTIONS, TEMPLATES, USERS
 
 router = APIRouter()
