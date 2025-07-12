@@ -1,10 +1,10 @@
-from humps import camelize
+import humps
 from pydantic import BaseModel
 
 
 def to_camel(string: str) -> str:
     # snake_case -> camel_case
-    return camelize(string)
+    return humps.camelize(string)
 
 
 class OrmBaseModel(BaseModel):

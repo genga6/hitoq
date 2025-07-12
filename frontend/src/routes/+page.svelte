@@ -20,7 +20,7 @@
   };
 </script>
 
-<main class="min-h-screen flex flex-col items-center justify-center p-8 bg-gray-50 text-gray-800">
+<main class="min-h-screen flex flex-col items-center justify-center p-8 bg-gray-50 text-gray-700">
   <h1 class="text-5xl font-bold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-amber-500">
     見えない「好き」で、つながろう。
   </h1>
@@ -39,13 +39,12 @@
   <p class="text-gray-600 mb-6">Xアカウントでログインするだけ。3分であなたのページが完成します。</p>
 
   <button onclick={login}
-    class="flex items-center space-x-3 bg-black text-white px-8 py-3 rounded-full shadow-lg hover:bg-gray-800 transition-transform
-    hover:scale-105 font-semibold mb-8 text-lg"
+    class="flex items-center space-x-3 bg-black text-white px-8 py-3 rounded-full shadow-lg hover:bg-gray-800
+    transition-transform hover:scale-105 font-semibold mb-8 text-lg"
   >
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1227" fill="currentColor" class="w-6 h-6">
       <path d="M745 561L1167 0H1064L698 482 389 0H0L455 704 0 1227H103L494 717 823 1227H1200L745 561ZM576 649L514 558 172 101H342L622 531 685 622 1041 1117H873L576 649Z" />
     </svg>
-    <span>Xでログインして作成する
-    </span>
+    <span>Xでログイン</span>
   </button>
 </main>

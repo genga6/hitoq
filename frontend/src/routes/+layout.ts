@@ -1,7 +1,7 @@
 // テスト用
 export const load = async () => {
   return {
-    isLoggedIn: true,
+    isLoggedIn: false,
     userName: "げんがる",
   };
 };

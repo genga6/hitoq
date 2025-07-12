@@ -1,32 +1,16 @@
-// import type { PageServerLoad } from './$types';
-// import { API_BASE_URL } from '$env/static/private';
-// import { error } from '@sveltejs/kit';
-// import { qaTemplates } from '$lib/qa-templates';
+import type { PageServerLoad } from "./$types";
+import { getQnAPageData } from "$lib/api/client";
+import { error } from "@sveltejs/kit";
 
-// export const load: PageServerLoad = async ({ fetch, cookies }) => {
-//   const authToken = cookies.get('auth_token');
-//   if (!authToken) {
-//     throw error(401, 'Authentication required');
-//   }
+export const load: PageServerLoad = async ({ params }) => {
+  const userId = params.user_id;
 
-//   const response = await fetch(`${API_BASE_URL}/me/qa-answers`, {
-//     headers: {
-//       'Authorization': `Bearer ${authToken}`
-//     }
-//   });
-
-//   if (!response.ok) {
-//     throw error(response.status, 'Failed to load your Q&A answers.');
-//   }
-
-//   const userAnswerGroups = await response.json();
-//   const answeredTemplateIds = userAnswerGroups.map(group => group.templateId);
-//   const availableTemplates = qaTemplates.filter(
-//     template => !answeredTemplateIds.includes(template.id)
-//   );
-
-//   return {
-//     userAnswerGroups,
-//     availableTemplates
-//   };
-// };
+  try {
+    const { userAnswerGroups, availableTemplates } =
+      await getQnAPageData(userId);
+    return { userAnswerGroups, availableTemplates };
+  } catch (e) {
+    console.error("Error loading Q&A data:", e);
+    throw error(404, "Q&Aデータが見つかりませんでした");
+  }
+};

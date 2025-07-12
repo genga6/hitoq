@@ -1,28 +1,34 @@
-from datetime import datetime
-
 from src.schema.answer import AnswerBase
-from src.schema.bucket_list_item import BucketListItemBase
-from src.schema.profile_item import ProfileItemBase
+from src.schema.bucket_list_item import BucketListItemRead
+from src.schema.common import OrmBaseModel
+from src.schema.profile_item import ProfileItemRead
 from src.schema.question import QuestionRead
-from src.schema.user import UserRead
 
 
-class ProfileItemReadForUser(ProfileItemBase):
-    id: int
+class ProfilePageData(OrmBaseModel):
+    profile_items: list[ProfileItemRead] = []
 
 
-class BucketListItemReadForUser(BucketListItemBase):
-    id: int
-    created_at: datetime
+class BucketListPageData(OrmBaseModel):
+    bucket_list_items: list[BucketListItemRead] = []
 
 
-class AnswerReadForUser(AnswerBase):
-    id: int
-    created_at: datetime
+class AnsweredQARead(AnswerBase):
     question: QuestionRead
 
 
-class UserReadWithDetails(UserRead):
-    profile_items: list[ProfileItemReadForUser] = []
-    bucket_list_items: list[BucketListItemReadForUser] = []
-    answers: list[AnswerReadForUser] = []
+class UserAnswerGroupRead(OrmBaseModel):
+    template_id: str
+    template_title: str
+    answers: list[AnsweredQARead]
+
+
+class AvailableQATemplateRead(OrmBaseModel):
+    id: str
+    title: str
+    questions: list[QuestionRead]
+
+
+class QnAPageData(OrmBaseModel):
+    user_answer_groups: list[UserAnswerGroupRead]
+    available_templates: list[AvailableQATemplateRead]
