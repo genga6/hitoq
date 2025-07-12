@@ -43,7 +43,7 @@ def read_profile_page_data(user_id: str, db: Session = Depends(get_db)):
     user = user_service.get_user_with_profile_items(db, user_id=user_id)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
-    return user
+    return {"profile_items": user.profile_items}
 
 
 @page_router.get("/bucket-list", response_model=BucketListPageData)
@@ -51,7 +51,7 @@ def read_bucket_list_page_data(user_id: str, db: Session = Depends(get_db)):
     user = user_service.get_user_with_bucket_list_items(db, user_id=user_id)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
-    return user
+    return {"bucket_list_items": user.bucket_list_items}
 
 
 @page_router.get("/qna", response_model=QnAPageData)
@@ -59,7 +59,22 @@ def read_qna_page_data(user_id: str, db: Session = Depends(get_db)):
     user = user_service.get_user_with_qna_items(db, user_id=user_id)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
-    return user
+    user_answer_groups = qna_service.get_user_qna(db, user_id)
+    all_questions_grouped = qna_service.get_all_questions_grouped(db)
+    available_templates = []
+    for category, questions in all_questions_grouped.items():
+        if not any(group.template_id == category.name for group in user_answer_groups):
+            available_templates.append(
+                {
+                    "id": category.name,
+                    "title": qna_service.get_category_title(category),
+                    "questions": questions,
+                }
+            )
+    return {
+        "user_answer_groups": user_answer_groups,
+        "available_templates": available_templates,
+    }
 
 
 @resource_router.post("", response_model=UserRead, status_code=201)
@@ -175,4 +190,5 @@ def create_new_answer(
 def resolve_user_by_username(
     user_name: str = Query(..., min_length=1), db: Session = Depends(get_db)
 ):
+    print(f"Received user_name: {user_name}")
     return user_service.get_user_by_username(db, user_name=user_name)
