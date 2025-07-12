@@ -1,4 +1,3 @@
-import uuid
 from datetime import datetime
 
 from src.schema.common import OrmBaseModel
@@ -11,7 +10,7 @@ class UserBase(OrmBaseModel):
 
 
 class UserCreate(UserBase):
-    id: uuid.UUID
+    id: str
 
 
 class UserUpdate(OrmBaseModel):
@@ -21,5 +20,5 @@ class UserUpdate(OrmBaseModel):
 
 
 class UserRead(UserBase):
-    id: uuid.UUID
+    id: str
     created_at: datetime

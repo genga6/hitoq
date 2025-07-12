@@ -3,7 +3,6 @@ import uuid
 from datetime import datetime
 
 from sqlalchemy import DateTime, ForeignKey
-from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
 
@@ -16,8 +15,8 @@ class Base(DeclarativeBase):
 class User(Base):
     __tablename__ = "users"
 
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+    user_id: Mapped[str] = mapped_column(
+        primary_key=True
     )  # TODO: XのユーザーIDに置き換わる
     user_name: Mapped[str]  # Xのユーザー名
     bio: Mapped[str | None]
@@ -39,7 +38,7 @@ class ProfileItem(Base):
     __tablename__ = "profile_items"
 
     id: Mapped[uuid.UUID] = mapped_column(primary_key=True)
-    user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id"))
+    user_id: Mapped[str] = mapped_column(ForeignKey("users.user_id"))
     label: Mapped[str]
     value: Mapped[str]
     display_order: Mapped[int]
@@ -49,7 +48,7 @@ class BucketListItem(Base):
     __tablename__ = "bucket_list_items"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id"))
+    user_id: Mapped[str] = mapped_column(ForeignKey("users.user_id"))
     content: Mapped[str]
     is_completed: Mapped[bool] = mapped_column(default=False)
     display_order: Mapped[int]
@@ -85,7 +84,7 @@ class Answer(Base):
     __tablename__ = "answers"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id"))
+    user_id: Mapped[str] = mapped_column(ForeignKey("users.user_id"))
     question_id: Mapped[int] = mapped_column(ForeignKey("questions.id"))
     answer_text: Mapped[str]
     created_at: Mapped[datetime] = mapped_column(

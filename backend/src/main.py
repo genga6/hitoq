@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 
-from src.router import qna, user, utils
+from src.router import router
 
 app = FastAPI(
     title="hitoQ API",
@@ -8,11 +8,15 @@ app = FastAPI(
     version="0.1.0",
 )
 
-app.include_router(user.router)
-app.include_router(qna.router)
-app.include_router(utils.router)
+app.include_router(router.page_router)
+app.include_router(router.resource_router)
 
 
 @app.get("/")
 def root():
     return {"message": "Welcome to hitoQ API!"}
+
+
+@app.get("/health")
+def health():
+    return {"status": "ok"}

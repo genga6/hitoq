@@ -1,17 +1,38 @@
-import uuid
+from sqlalchemy.orm import Session, joinedload
 
-from fastapi import HTTPException
-from sqlalchemy.orm import Session
-
-from src.db.tables import User
+from src.db.tables import Answer, User
 from src.schema.user import UserCreate
 
 
-def get_user(db: Session, user_id: uuid.UUID) -> User:
-    user = db.query(User).filter(User.id == user_id).first()
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-    return user
+def get_user(db: Session, user_id: str) -> User | None:
+    return db.query(User).filter(User.user_id == user_id).first()
+
+
+def get_user_with_profile_items(db: Session, user_id: str) -> User | None:
+    return (
+        db.query(User)
+        .options(joinedload(User.profile_items))
+        .filter(User.user_id == user_id)
+        .first()
+    )
+
+
+def get_user_with_bucket_list_items(db: Session, user_id: str) -> User | None:
+    return (
+        db.query(User)
+        .options(joinedload(User.bucket_list_items))
+        .filter(User.user_id == user_id)
+        .first()
+    )
+
+
+def get_user_with_qna_items(db: Session, user_id: str) -> User | None:
+    return (
+        db.query(User)
+        .options(joinedload(User.answers).joinedload(Answer.question))
+        .filter(User.user_id == user_id)
+        .first()
+    )
 
 
 def get_user_by_username(db: Session, user_name: str) -> list[User]:
@@ -22,12 +43,18 @@ def get_users(db: Session, skip: int = 0, limit: int = 100) -> list[User]:
     return db.query(User).offset(skip).limit(limit).all()
 
 
-def create_user(db: Session, user_in: UserCreate) -> User:
-    existing_user = db.query(User).filter(User.user_name == user_in.user_name).first()
-    if existing_user:
-        raise HTTPException(status_code=400, detail="Username already registered")
+def upsert_user(db: Session, user_in: UserCreate) -> User:
+    db_user = get_user(db, user_in.id)
+    if db_user:
+        print(f"Updating existing user: {user_in.id}")
+        update_data = user_in.model_dump(exclude_unset=True)
 
-    db_user = User(**user_in.model_dump())
+        for key, value in update_data.items():
+            setattr(db_user, key, value)
+    else:
+        print(f"Creating new user: {user_in.id}")
+        db_user = User(**user_in.model_dump())
+
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
