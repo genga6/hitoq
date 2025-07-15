@@ -3,10 +3,10 @@ import { getProfilePageData } from "$lib/api/client";
 import { error } from "@sveltejs/kit";
 
 export const load: PageServerLoad = async ({ params }) => {
-  const userId = params.user_id;
+  const userName = params.user_name;
 
   try {
-    const { profileItems } = await getProfilePageData(userId);
+    const { profileItems } = await getProfilePageData(userName);
     return { profileItems };
   } catch (e) {
     console.error("Error loading profile items:", e);

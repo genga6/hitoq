@@ -27,7 +27,8 @@ app.add_middleware(
 
 app.add_middleware(SessionMiddleware, secret_key=os.getenv("SESSION_SECRET_KEY"))
 
-app.include_router(router.page_router)
+app.include_router(router.username_router)
+app.include_router(router.global_router)
 app.include_router(router.resource_router)
 app.include_router(auth.auth_router, prefix="/auth", tags=["Authentication"])
 

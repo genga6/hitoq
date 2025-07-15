@@ -5,14 +5,14 @@ export type QuestionCategory =
   | "misc";
 
 export interface Question {
-  id: number;
+  questionId: number;
   text: string;
   category: QuestionCategory;
   displayOrder: number;
 }
 
 export interface Answer {
-  id: number;
+  answerId: number;
   userId: string;
   questionId: number;
   answerText: string;

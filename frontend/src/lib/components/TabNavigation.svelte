@@ -3,14 +3,14 @@
   import type { Profile } from '$lib/types/profile';
 
   type Props = {
-    userId: Profile['userId'];
+    userName: Profile['userName'];
   };
-  const { userId }: Props = $props();
+  const { userName }: Props = $props();
 
   const tabs = [
-    { path: `/${userId}`,               label: 'プロフィール' },
-    { path: `/${userId}/qna`,           label: 'パーソナルQ&A' },
-    { path: `/${userId}/bucket`,        label: 'バケットリスト' }
+    { path: `/${userName}`,               label: 'プロフィール' },
+    { path: `/${userName}/qna`,           label: 'パーソナルQ&A' },
+    { path: `/${userName}/bucket`,        label: 'バケットリスト' }
   ];
 </script>
 

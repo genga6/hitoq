@@ -27,39 +27,44 @@ from src.service import (
     user_service,
 )
 
-page_router = APIRouter(
-    prefix="/users/{user_id}",
-    tags=["Page Data"],
-)
-
 resource_router = APIRouter(
+    prefix="/users/{user_id}",
+    tags=["Resources (by UserID)"],
+)
+
+username_router = APIRouter(
+    prefix="/users/by-username/{user_name}",
+    tags=["Page Data (by UserName)"],
+)
+
+global_router = APIRouter(
     prefix="/users",
-    tags=["Resources"],
+    tags=["Global User Resources"],
 )
 
 
-@page_router.get("/profile", response_model=ProfilePageData)
-def read_profile_page_data(user_id: str, db: Session = Depends(get_db)):
-    user = user_service.get_user_with_profile_items(db, user_id=user_id)
+@username_router.get("/profile", response_model=ProfilePageData)
+def read_profile_page_data(user_name: str, db: Session = Depends(get_db)):
+    user = user_service.get_user_by_username(db, user_name=user_name)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     return {"profile_items": user.profile_items}
 
 
-@page_router.get("/bucket-list", response_model=BucketListPageData)
-def read_bucket_list_page_data(user_id: str, db: Session = Depends(get_db)):
-    user = user_service.get_user_with_bucket_list_items(db, user_id=user_id)
+@username_router.get("/bucket-list", response_model=BucketListPageData)
+def read_bucket_list_page_data(user_name: str, db: Session = Depends(get_db)):
+    user = user_service.get_user_by_username(db, user_name=user_name)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     return {"bucket_list_items": user.bucket_list_items}
 
 
-@page_router.get("/qna", response_model=QnAPageData)
-def read_qna_page_data(user_id: str, db: Session = Depends(get_db)):
-    user = user_service.get_user_with_qna_items(db, user_id=user_id)
+@username_router.get("/qna", response_model=QnAPageData)
+def read_qna_page_data(user_name: str, db: Session = Depends(get_db)):
+    user = user_service.get_user_by_username(db, user_name=user_name)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
-    user_answer_groups = qna_service.get_user_qna(db, user_id)
+    user_answer_groups = qna_service.get_user_qna(db, user.user_id)
     all_questions_grouped = qna_service.get_all_questions_grouped(db)
     available_templates = []
     for category, questions in all_questions_grouped.items():
@@ -77,28 +82,8 @@ def read_qna_page_data(user_id: str, db: Session = Depends(get_db)):
     }
 
 
-@resource_router.post("", response_model=UserRead, status_code=201)
-def upsert_user_endpoint(user_in: UserCreate, db: Session = Depends(get_db)):
-    return user_service.upsert_user(db=db, user_in=user_in)
-
-
-@resource_router.get("", response_model=list[UserRead])
-def read_all_users_endpoint(
-    skip: int = 0, limit: int = 100, db: Session = Depends(get_db)
-):
-    return user_service.get_users(db, skip=skip, limit=limit)
-
-
-@resource_router.get("/{user_id}", response_model=UserRead)
-def read_user_by_id_endpoint(user_id: str, db: Session = Depends(get_db)):
-    user = user_service.get_user(db, user_id=user_id)
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-    return user
-
-
 @resource_router.post(
-    "/{user_id}/profile-items",
+    "/profile-items",
     response_model=ProfileItemRead,
     status_code=201,
 )
@@ -108,9 +93,7 @@ def create_profile_item_endpoint(
     return profile_service.create_profile_item(db=db, user_id=user_id, item_in=item_in)
 
 
-@resource_router.put(
-    "/{user_id}/profile-items/{item_id}", response_model=ProfileItemRead
-)
+@resource_router.put("profile-items/{item_id}", response_model=ProfileItemRead)
 def update_profile_item_endpoint(
     user_id: str,
     item_id: int,
@@ -122,7 +105,7 @@ def update_profile_item_endpoint(
     )
 
 
-@resource_router.delete("/{user_id}/profile-items/{item_id}", status_code=204)
+@resource_router.delete("/profile-items/{item_id}", status_code=204)
 def delete_profile_item_endpoint(
     user_id: str, item_id: int, db: Session = Depends(get_db)
 ):
@@ -131,7 +114,7 @@ def delete_profile_item_endpoint(
 
 
 @resource_router.post(
-    "/{user_id}/bucket-list-items",
+    "/bucket-list-items",
     response_model=BucketListItemRead,
     status_code=201,
 )
@@ -143,9 +126,7 @@ def create_bucket_list_item_endpoint(
     )
 
 
-@resource_router.put(
-    "/{user_id}/bucket-list-items/{item_id}", response_model=BucketListItemRead
-)
+@resource_router.put("/bucket-list-items/{item_id}", response_model=BucketListItemRead)
 def update_bucket_list_item_endpoint(
     user_id: str,
     item_id: int,
@@ -157,7 +138,7 @@ def update_bucket_list_item_endpoint(
     )
 
 
-@resource_router.delete("/{user_id}/bucket-list-items/{item_id}", status_code=204)
+@resource_router.delete("/bucket-list-items/{item_id}", status_code=204)
 def delete_bucket_list_item_endpoint(
     user_id: str, item_id: int, db: Session = Depends(get_db)
 ):
@@ -167,14 +148,7 @@ def delete_bucket_list_item_endpoint(
     return None
 
 
-@resource_router.get("/questions", response_model=list[QuestionRead])
-def read_all_questions(db: Session = Depends(get_db)):
-    return qna_service.get_all_questions(db=db)
-
-
-@resource_router.post(
-    "/{user_id}/questions/{question_id}/answers", response_model=AnswerRead
-)
+@resource_router.post("/questions/{question_id}/answers", response_model=AnswerRead)
 def create_new_answer(
     user_id: str,
     question_id: int,
@@ -186,9 +160,42 @@ def create_new_answer(
     )
 
 
-@resource_router.get("/resolve-users-id", response_model=list[UserRead])
+@global_router.post("", response_model=UserRead, status_code=201)
+def upsert_user_endpoint(user_in: UserCreate, db: Session = Depends(get_db)):
+    return user_service.upsert_user(db=db, user_in=user_in)
+
+
+@global_router.get("", response_model=list[UserRead])
+def read_all_users_endpoint(
+    skip: int = 0, limit: int = 100, db: Session = Depends(get_db)
+):
+    return user_service.get_users(db, skip=skip, limit=limit)
+
+
+@global_router.get("/{user_id}", response_model=UserRead)
+def read_user_by_id_endpoint(user_id: str, db: Session = Depends(get_db)):
+    user = user_service.get_user(db, user_id=user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return user
+
+
+@global_router.get("/by-username/{user_name}", response_model=UserRead)
+def read_user_by_username_endpoint(user_name: str, db: Session = Depends(get_db)):
+    user = user_service.get_user_by_username(db, user_name=user_name)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return user
+
+
+@global_router.get("/resolve-users-id", response_model=list[UserRead])
 def resolve_user_by_username(
     user_name: str = Query(..., min_length=1), db: Session = Depends(get_db)
 ):
     print(f"Received user_name: {user_name}")
     return user_service.get_user_by_username(db, user_name=user_name)
+
+
+@global_router.get("/questions", response_model=list[QuestionRead])
+def read_all_questions(db: Session = Depends(get_db)):
+    return qna_service.get_all_questions(db=db)

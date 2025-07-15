@@ -1,20 +1,20 @@
 <script lang="ts">
   type Props = {
-    userName: string;
+    displayName: string;
     iconUrl?: string;
     bio?: string;
   };
-  const { userName, iconUrl, bio }: Props = $props();
+  const { displayName, iconUrl, bio }: Props = $props();
 </script>
 
 <div class="flex items-start space-x-4">
   <img
-    src={iconUrl || 'https://via.placeholder.com/80'}
+    src={iconUrl}
     alt="User Icon"
     class="w-20 h-20 rounded-full border border-gray-300"
   />
   <div>
-    <h2 class="text-2xl font-bold text-gray-700">{userName}</h2>
+    <h2 class="text-2xl font-bold text-gray-700">{displayName}</h2>
 
     {#if bio}
       <p class="text-gray-700 mt-2 whitespace-pre-line">{bio}</p>

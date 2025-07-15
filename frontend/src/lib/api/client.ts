@@ -20,8 +20,8 @@ async function fetchApi<T>(path: string, options?: RequestInit): Promise<T> {
 }
 
 // User related APIs
-export const getUserById = async (userId: string): Promise<Profile> => {
-  return fetchApi<Profile>(`/users/${userId}`);
+export const getUserByUserName = async (userName: string): Promise<Profile> => {
+  return fetchApi<Profile>(`/users/by-username/${userName}`);
 };
 
 export const resolveUsersById = async (
@@ -34,29 +34,29 @@ export const resolveUsersById = async (
 
 // Profile Page Data
 export const getProfilePageData = async (
-  userId: string,
+  userName: string,
 ): Promise<{ profile: Profile; profileItems: ProfileItem[] }> => {
   const data = await fetchApi<{
     profile: Profile;
     profileItems: ProfileItem[];
-  }>(`/users/${userId}/profile`);
+  }>(`/users/by-username/${userName}/profile`);
   return { profile: data.profile, profileItems: data.profileItems };
 };
 
 // Bucket List Page Data
 export const getBucketListPageData = async (
-  userId: string,
+  userName: string,
 ): Promise<{ profile: Profile; bucketListItems: BucketListItem[] }> => {
   const data = await fetchApi<{
     profile: Profile;
     bucketListItems: BucketListItem[];
-  }>(`/users/${userId}/bucket-list`);
+  }>(`/users/by-username/${userName}/bucket-list`);
   return { profile: data.profile, bucketListItems: data.bucketListItems };
 };
 
 // Q&A Page Data
 export const getQnAPageData = async (
-  userId: string,
+  userName: string,
 ): Promise<{
   profile: Profile;
   userAnswerGroups: UserAnswerGroup[];
@@ -66,7 +66,7 @@ export const getQnAPageData = async (
     profile: Profile;
     userAnswerGroups: UserAnswerGroup[];
     availableTemplates: QATemplate[];
-  }>(`/users/${userId}/qna`);
+  }>(`/users/by-username/${userName}/qna`);
   return {
     profile: data.profile,
     userAnswerGroups: data.userAnswerGroups,

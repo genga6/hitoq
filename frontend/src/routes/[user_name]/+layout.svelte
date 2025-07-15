@@ -14,10 +14,10 @@
 <main class="min-h-screen bg-gray-100 p-4 flex justify-center">
   <div class="bg-white shadow-lg rounded-2xl p-6 max-w-3xl w-full space-y-6">
     <ProfileHeader 
-      userName={data.profile.userName} 
+      displayName={data.profile.displayName} 
       iconUrl={data.profile.iconUrl}
       bio={data.profile.bio} />
-    <TabNavigation userId={data.profile.userId} />
+    <TabNavigation userName={data.profile.userName} />
     {@render children?.()}
   </div>
 </main>

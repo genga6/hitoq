@@ -19,6 +19,7 @@ REDIRECT_URI = "http://127.0.0.1:8000/auth/callback/twitter"
 TWITTER_AUTH_URL = "https://twitter.com/i/oauth2/authorize"
 TWITTER_TOKEN_URL = "https://api.twitter.com/2/oauth2/token"
 TWITTER_USER_ME_URL = "https://api.twitter.com/2/users/me"
+FRONTEND_URL = "http://localhost:5173"
 
 
 # https://docs.x.com/resources/fundamentals/authentication/oauth-2-0/user-access-token
@@ -95,8 +96,9 @@ async def auth_twitter_callback(
 
         user_data = user_response.json()["data"]
         user_in = UserCreate(
-            id=user_data["id"],
-            user_name=user_data["name"],
+            user_id=user_data["id"],
+            user_name=user_data["username"],
+            display_name=user_data["name"],
             icon_url=user_data.get("profile_image_url"),
         )
         user = user_service.upsert_user(db, user_in=user_in)
@@ -104,7 +106,7 @@ async def auth_twitter_callback(
         jwt_payload = {"sub": user.user_id}
         jwt_token = jwt.encode(jwt_payload, SECRET_KEY, algorithm="HS256")
 
-        response = RedirectResponse(url=f"/user/{user.user_id}")
+        response = RedirectResponse(url=f"{FRONTEND_URL}/{user.user_name}")
         response.set_cookie(
             key="jwt",
             value=jwt_token,
@@ -112,6 +114,6 @@ async def auth_twitter_callback(
             max_age=2592000,
             samesite="lax",
             httponly=True,
-            secure=True,
+            secure=False,  # TODO: http -> False, https -> True
         )
         return response

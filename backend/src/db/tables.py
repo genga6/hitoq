@@ -2,7 +2,7 @@ import enum
 import uuid
 from datetime import datetime
 
-from sqlalchemy import DateTime, ForeignKey
+from sqlalchemy import DateTime, ForeignKey, String
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
 
@@ -15,10 +15,13 @@ class Base(DeclarativeBase):
 class User(Base):
     __tablename__ = "users"
 
-    user_id: Mapped[str] = mapped_column(primary_key=True)  # XのユーザーID
-    user_name: Mapped[str]  # Xのユーザー名
-    bio: Mapped[str | None]
-    icon_url: Mapped[str | None]
+    user_id: Mapped[str] = mapped_column(String, primary_key=True)
+    user_name: Mapped[str] = mapped_column(
+        String(100), unique=True, index=True, nullable=False
+    )
+    display_name: Mapped[str] = mapped_column(String(100), nullable=False)
+    bio: Mapped[str | None] = mapped_column(String(300), nullable=True)
+    icon_url: Mapped[str | None] = mapped_column(String(512), nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )
@@ -35,7 +38,7 @@ class User(Base):
 class ProfileItem(Base):
     __tablename__ = "profile_items"
 
-    id: Mapped[uuid.UUID] = mapped_column(primary_key=True)
+    profile_item_id: Mapped[uuid.UUID] = mapped_column(primary_key=True)
     user_id: Mapped[str] = mapped_column(ForeignKey("users.user_id"))
     label: Mapped[str]
     value: Mapped[str]
@@ -47,7 +50,7 @@ class ProfileItem(Base):
 class BucketListItem(Base):
     __tablename__ = "bucket_list_items"
 
-    id: Mapped[int] = mapped_column(primary_key=True)
+    bucket_list_item_id: Mapped[int] = mapped_column(primary_key=True)
     user_id: Mapped[str] = mapped_column(ForeignKey("users.user_id"))
     content: Mapped[str]
     is_completed: Mapped[bool] = mapped_column(default=False)
@@ -69,7 +72,7 @@ class QuestionCategoryEnum(enum.Enum):
 class Question(Base):
     __tablename__ = "questions"
 
-    id: Mapped[int] = mapped_column(primary_key=True)
+    question_id: Mapped[int] = mapped_column(primary_key=True)
     category: Mapped[QuestionCategoryEnum]
     text: Mapped[str]
     display_order: Mapped[int]
@@ -83,9 +86,9 @@ class Question(Base):
 class Answer(Base):
     __tablename__ = "answers"
 
-    id: Mapped[int] = mapped_column(primary_key=True)
+    answer_id: Mapped[int] = mapped_column(primary_key=True)
     user_id: Mapped[str] = mapped_column(ForeignKey("users.user_id"))
-    question_id: Mapped[int] = mapped_column(ForeignKey("questions.id"))
+    question_id: Mapped[int] = mapped_column(ForeignKey("questions.question_id"))
     answer_text: Mapped[str]
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
