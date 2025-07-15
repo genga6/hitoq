@@ -3,11 +3,11 @@ import { getQnAPageData } from "$lib/api/client";
 import { error } from "@sveltejs/kit";
 
 export const load: PageServerLoad = async ({ params }) => {
-  const userId = params.user_id;
+  const userName = params.user_name;
 
   try {
     const { userAnswerGroups, availableTemplates } =
-      await getQnAPageData(userId);
+      await getQnAPageData(userName);
     return { userAnswerGroups, availableTemplates };
   } catch (e) {
     console.error("Error loading Q&A data:", e);

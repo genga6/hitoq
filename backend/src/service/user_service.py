@@ -35,8 +35,8 @@ def get_user_with_qna_items(db: Session, user_id: str) -> User | None:
     )
 
 
-def get_user_by_username(db: Session, user_name: str) -> list[User]:
-    return db.query(User).filter(User.user_name == user_name).all()
+def get_user_by_username(db: Session, user_name: str) -> User | None:
+    return db.query(User).filter(User.user_name == user_name).first()
 
 
 def get_users(db: Session, skip: int = 0, limit: int = 100) -> list[User]:
@@ -44,15 +44,15 @@ def get_users(db: Session, skip: int = 0, limit: int = 100) -> list[User]:
 
 
 def upsert_user(db: Session, user_in: UserCreate) -> User:
-    db_user = get_user(db, user_in.id)
+    db_user = get_user_by_username(db, user_in.user_name)
     if db_user:
-        print(f"Updating existing user: {user_in.id}")
+        print(f"Updating existing user: {user_in.user_name}")
         update_data = user_in.model_dump(exclude_unset=True)
 
         for key, value in update_data.items():
             setattr(db_user, key, value)
     else:
-        print(f"Creating new user: {user_in.id}")
+        print(f"Creating new user: {user_in.user_name}")
         db_user = User(**user_in.model_dump())
 
     db.add(db_user)

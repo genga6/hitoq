@@ -3,10 +3,10 @@ import { getBucketListPageData } from "$lib/api/client";
 import { error } from "@sveltejs/kit";
 
 export const load: PageServerLoad = async ({ params }) => {
-  const userId = params.user_id;
+  const userName = params.user_name;
 
   try {
-    const { bucketListItems } = await getBucketListPageData(userId);
+    const { bucketListItems } = await getBucketListPageData(userName);
     return { bucketListItems };
   } catch (e) {
     console.error("Error loading bucket list items:", e);

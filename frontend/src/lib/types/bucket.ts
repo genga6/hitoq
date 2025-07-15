@@ -1,5 +1,5 @@
 export interface BucketListItem {
-  id: number;
+  bucketListItemId: number;
   content: string;
   isCompleted: boolean;
   displayOrder: number;
