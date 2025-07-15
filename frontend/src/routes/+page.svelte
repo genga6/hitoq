@@ -1,6 +1,8 @@
 <script lang="ts">
+  import { redirectToTwitterLogin } from '$lib/auth';
+
   const login = () => {
-    alert('Xログインはまだ未実装です');
+    redirectToTwitterLogin();
   };
 
   const handleSearch = (event: Event) => {
