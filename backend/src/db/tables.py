@@ -15,9 +15,7 @@ class Base(DeclarativeBase):
 class User(Base):
     __tablename__ = "users"
 
-    user_id: Mapped[str] = mapped_column(
-        primary_key=True
-    )  # TODO: XのユーザーIDに置き換わる
+    user_id: Mapped[str] = mapped_column(primary_key=True)  # XのユーザーID
     user_name: Mapped[str]  # Xのユーザー名
     bio: Mapped[str | None]
     icon_url: Mapped[str | None]
@@ -42,6 +40,8 @@ class ProfileItem(Base):
     label: Mapped[str]
     value: Mapped[str]
     display_order: Mapped[int]
+
+    user: Mapped["User"] = relationship(back_populates="profile_items")
 
 
 class BucketListItem(Base):
