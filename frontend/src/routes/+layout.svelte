@@ -3,22 +3,20 @@
   import { browser } from '$app/environment';
   import { useClickOutside } from '$lib/utils/useClickOutside';
   import { resolveUsersById } from '$lib/api/client';
+  import { redirectToTwitterLogin, logout as authLogout, refreshAccessToken, getCurrentUser } from '$lib/api/client';
   import type { Snippet } from 'svelte';
 
   import type { UserCandidate } from '$lib/types/profile';
   import '../app.css'
 
-  const login = () => {
-    alert('Xログインはまだ未実装です');
-  };
-
   type Props = {
-    data?: { isLoggedIn?: boolean },
+    data?: { isLoggedIn?: boolean; user?: any; userName?: string },
     children?: Snippet
   };
 
   const { data, children }: Props = $props();
-  const isLoggedIn = data?.isLoggedIn ?? false;
+  let isLoggedIn = $state(data?.isLoggedIn ?? false);
+  let currentUser = $state(data?.user ?? null);
 
   let searchQuery = $state('');
 
@@ -29,9 +27,15 @@
   let menuElement: HTMLDivElement | null = null;
   let toggleButton: HTMLButtonElement | null = null;
 
-  const logout = () => {
-    alert('ログアウト（未実装）');
-    // Cookie削除、セッション無効化など
+  const login = () => {
+    redirectToTwitterLogin();
+  };
+
+  const logout = async () => {
+    await authLogout();
+    isLoggedIn = false;
+    currentUser = null;
+    showMenu = false;
   };
 
   function showCandidateList(list: UserCandidate[]) {
@@ -56,9 +60,42 @@
       noResults = false;
     });
 
+    const checkAuthInitially = async () => {
+      try {
+        const user = await getCurrentUser();
+        if (user) {
+          isLoggedIn = true;
+          currentUser = user;
+        } else {
+          isLoggedIn = false;
+          currentUser = null;
+        }
+      } catch (error) {
+        console.error('認証状態の確認に失敗しました:', error);
+        isLoggedIn = false;
+        currentUser = null;
+      }
+    };
+
+    checkAuthInitially();
+
+    let refreshInterval: number;
+    if (isLoggedIn) {
+      refreshInterval = setInterval(async () => {
+        const success = await refreshAccessToken();
+        if (!success) {
+          console.warn('トークンの更新に失敗しました。再ログインが必要です。');
+          authLogout();
+        }
+      }, 13 * 60 * 1000); // 13分間隔
+    }
+
     return () => {
       unregisterMenu();
       unregisterCandidates();
+      if (refreshInterval) {
+        clearInterval(refreshInterval);
+      }
     };
   });
 
@@ -169,12 +206,16 @@
           <button
             bind:this={toggleButton}
             onclick={() => showMenu = !showMenu}
-            class="w-12 h-12 flex items-center justify-center rounded-full border border-gray-300 hover:ring-2 ring-orange-400 transition"
+            class="w-12 h-12 flex items-center justify-center rounded-full border border-gray-300 hover:ring-2 ring-orange-400 transition overflow-hidden"
             aria-label="ユーザーメニューを開く"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1227" fill="currentColor" class="w-4 h-4 text-black">
-              <path fill-rule="evenodd" d="M7.5 6a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM3.751 20.105a8.25 8.25 0 0116.498 0 .75.75 0 01-.437.695A18.683 18.683 0 0112 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 01-.437-.695z" clip-rule="evenodd" />
-            </svg>
+            {#if currentUser?.iconUrl}
+              <img src={currentUser.iconUrl} alt="ユーザーアイコン" class="w-full h-full object-cover rounded-full" />
+            {:else}
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6 text-gray-600">
+                <path fill-rule="evenodd" d="M7.5 6a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM3.751 20.105a8.25 8.25 0 0116.498 0 .75.75 0 01-.437.695A18.683 18.683 0 0112 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 01-.437-.695z" clip-rule="evenodd" />
+              </svg>
+            {/if}
           </button>
 
           {#if showMenu}

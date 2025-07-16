@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { redirectToTwitterLogin } from '$lib/auth';
+  import { redirectToTwitterLogin } from '$lib/api/client';
 
   const login = () => {
     redirectToTwitterLogin();

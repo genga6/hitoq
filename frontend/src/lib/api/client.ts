@@ -19,6 +19,41 @@ async function fetchApi<T>(path: string, options?: RequestInit): Promise<T> {
   return response.json();
 }
 
+async function fetchApiWithAuth<T>(
+  path: string,
+  options?: RequestInit,
+): Promise<T> {
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    ...options,
+    credentials: "include", // Cookieを自動的に送信
+  });
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.detail || "API request failed");
+  }
+  return response.json();
+}
+
+// サーバーサイド用のfetch関数（Cookieを手動で渡す）
+async function fetchApiWithCookies<T>(
+  path: string,
+  cookieHeader: string,
+  options?: RequestInit,
+): Promise<T> {
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    ...options,
+    headers: {
+      ...options?.headers,
+      Cookie: cookieHeader,
+    },
+  });
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.detail || "API request failed");
+  }
+  return response.json();
+}
+
 // User related APIs
 export const getUserByUserName = async (userName: string): Promise<Profile> => {
   return fetchApi<Profile>(`/users/by-username/${userName}`);
@@ -79,7 +114,7 @@ export const createProfileItem = async (
   userId: string,
   item: Partial<ProfileItem>,
 ): Promise<ProfileItem> => {
-  return fetchApi<ProfileItem>(`/users/${userId}/profile-items`, {
+  return fetchApiWithAuth<ProfileItem>(`/users/${userId}/profile-items`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(item),
@@ -91,18 +126,21 @@ export const updateProfileItem = async (
   itemId: number,
   item: Partial<ProfileItem>,
 ): Promise<ProfileItem> => {
-  return fetchApi<ProfileItem>(`/users/${userId}/profile-items/${itemId}`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(item),
-  });
+  return fetchApiWithAuth<ProfileItem>(
+    `/users/${userId}/profile-items/${itemId}`,
+    {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(item),
+    },
+  );
 };
 
 export const deleteProfileItem = async (
   userId: string,
   itemId: number,
 ): Promise<void> => {
-  await fetchApi<void>(`/users/${userId}/profile-items/${itemId}`, {
+  await fetchApiWithAuth<void>(`/users/${userId}/profile-items/${itemId}`, {
     method: "DELETE",
   });
 };
@@ -112,11 +150,14 @@ export const createBucketListItem = async (
   userId: string,
   item: Partial<BucketListItem>,
 ): Promise<BucketListItem> => {
-  return fetchApi<BucketListItem>(`/users/${userId}/bucket-list-items`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(item),
-  });
+  return fetchApiWithAuth<BucketListItem>(
+    `/users/${userId}/bucket-list-items`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(item),
+    },
+  );
 };
 
 export const updateBucketListItem = async (
@@ -124,7 +165,7 @@ export const updateBucketListItem = async (
   itemId: number,
   item: Partial<BucketListItem>,
 ): Promise<BucketListItem> => {
-  return fetchApi<BucketListItem>(
+  return fetchApiWithAuth<BucketListItem>(
     `/users/${userId}/bucket-list-items/${itemId}`,
     {
       method: "PUT",
@@ -138,7 +179,7 @@ export const deleteBucketListItem = async (
   userId: string,
   itemId: number,
 ): Promise<void> => {
-  await fetchApi<void>(`/users/${userId}/bucket-list-items/${itemId}`, {
+  await fetchApiWithAuth<void>(`/users/${userId}/bucket-list-items/${itemId}`, {
     method: "DELETE",
   });
 };
@@ -149,13 +190,94 @@ export const createAnswer = async (
   questionId: number,
   answerText: string,
 ): Promise<Answer> => {
-  return fetchApi<Answer>(`/users/${userId}/questions/${questionId}/answers`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ answer_text: answerText }),
-  });
+  return fetchApiWithAuth<Answer>(
+    `/users/${userId}/questions/${questionId}/answers`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ answer_text: answerText }),
+    },
+  );
 };
 
 export const getAllQuestions = async (): Promise<Question[]> => {
   return fetchApi<Question[]>(`/users/questions`);
+};
+
+// Authentication APIs
+export const redirectToTwitterLogin = () => {
+  window.location.href = `${API_BASE_URL}/auth/login/twitter`;
+};
+
+export const logout = async () => {
+  try {
+    await fetchApiWithAuth<void>("/auth/logout", {
+      method: "POST",
+    });
+  } catch (error) {
+    console.error("ログアウトに失敗しました:", error);
+    // Manual cookie deletion as fallback
+    document.cookie =
+      "access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT";
+    document.cookie =
+      "refresh_token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT";
+  }
+  // ページリロードの代わりにリダイレクトを使用
+  window.location.href = "/";
+};
+
+export const getCurrentUser = async () => {
+  try {
+    const user = await fetchApiWithAuth<any>("/auth/me", {
+      method: "GET",
+    });
+    return user;
+  } catch (error) {
+    console.error("ユーザー情報の取得に失敗しました:", error);
+    return null;
+  }
+};
+
+export const refreshAccessToken = async (): Promise<boolean> => {
+  try {
+    await fetchApiWithAuth<void>("/auth/refresh", {
+      method: "POST",
+    });
+    return true;
+  } catch (error) {
+    console.error("トークンの更新に失敗しました:", error);
+    return false;
+  }
+};
+
+export const checkAuthStatus = async (): Promise<boolean> => {
+  const user = await getCurrentUser();
+  return user !== null;
+};
+
+// Server-side authentication APIs
+export const getCurrentUserServer = async (cookieHeader: string) => {
+  try {
+    const user = await fetchApiWithCookies<any>("/auth/me", cookieHeader, {
+      method: "GET",
+    });
+    return user;
+  } catch (error) {
+    console.error("サーバーサイドでのユーザー情報の取得に失敗しました:", error);
+    return null;
+  }
+};
+
+export const refreshAccessTokenServer = async (
+  cookieHeader: string,
+): Promise<boolean> => {
+  try {
+    await fetchApiWithCookies<void>("/auth/refresh", cookieHeader, {
+      method: "POST",
+    });
+    return true;
+  } catch (error) {
+    console.error("サーバーサイドでのトークン更新に失敗しました:", error);
+    return false;
+  }
 };
