@@ -193,3 +193,5 @@ cython_debug/
 .cursorindexingignore
 
 .pnpm-store/
+
+.node_modules/

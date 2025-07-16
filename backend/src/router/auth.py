@@ -18,7 +18,7 @@ auth_router = APIRouter()
 REDIRECT_URI = "http://127.0.0.1:8000/auth/callback/twitter"
 TWITTER_AUTH_URL = "https://twitter.com/i/oauth2/authorize"
 TWITTER_TOKEN_URL = "https://api.twitter.com/2/oauth2/token"
-TWITTER_USER_ME_URL = "https://api.twitter.com/2/users/me"
+TWITTER_USER_ME_URL = "https://api.twitter.com/2/users/me"  # https://docs.x.com/x-api/users/user-lookup-me
 FRONTEND_URL = "http://localhost:5173"
 
 
@@ -90,16 +90,26 @@ async def auth_twitter_callback(
             headers={
                 "Authorization": f"Bearer {access_token}",
             },
+            params={"user.fields": "profile_image_url,description"},
         )
+
         if user_response.status_code != 200:
             raise HTTPException(status_code=400, detail="Invalid user data")
 
         user_data = user_response.json()["data"]
+        profile_image_url = user_data.get("profile_image_url")
+
+        # By removing `_normal`, we got the original size URL
+        high_res_url = (
+            profile_image_url.replace("_normal", "") if profile_image_url else None
+        )
+
         user_in = UserCreate(
             user_id=user_data["id"],
             user_name=user_data["username"],
             display_name=user_data["name"],
-            icon_url=user_data.get("profile_image_url"),
+            bio=user_data.get("description"),
+            icon_url=high_res_url,
         )
         user = user_service.upsert_user(db, user_in=user_in)
 
