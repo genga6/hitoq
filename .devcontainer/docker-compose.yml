@@ -6,7 +6,6 @@ services:
     volumes:
       - ../:/workspaces/hitoq:cached
       - /workspaces/hitoq/frontend/node_modules
-      - /workspaces/hitoq/node_modules
     ports:
       - "5173:5173"
       - "8000:8000"
