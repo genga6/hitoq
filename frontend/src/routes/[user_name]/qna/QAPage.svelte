@@ -10,7 +10,7 @@
     isOwner: boolean;
   }>();
 
-  let answerGroups = $state(initialAnswerGroups);
+  let answerGroups = $state(initialAnswerGroups || []);
   let showTemplateSelector = $state(false);
 
   async function addQAGroup(template: QATemplate) {
@@ -46,7 +46,7 @@
 </script>
 
 <div>
-  {#if answerGroups.length > 0}
+  {#if answerGroups && answerGroups.length > 0}
     <div class="space-y-6">
       {#each answerGroups as group, groupIndex (group.templateId)}
         <QAGroup 

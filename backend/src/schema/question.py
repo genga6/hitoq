@@ -21,5 +21,5 @@ class QuestionUpdate(OrmBaseModel):
 
 
 class QuestionRead(QuestionBase):
-    id: int
+    question_id: int
     created_at: datetime

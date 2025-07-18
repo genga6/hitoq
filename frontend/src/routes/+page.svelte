@@ -1,5 +1,17 @@
 <script lang="ts">
   import { redirectToTwitterLogin } from '$lib/api/client';
+  import { goto } from '$app/navigation';
+
+  let { data } = $props();
+
+  $effect(() => {
+    // ログイン済みの場合はプロフィールページにリダイレクト
+    console.log('Page effect - data:', data);
+    if (data?.isLoggedIn && data?.userName) {
+      console.log('Redirecting to:', `/${data.userName}`);
+      goto(`/${data.userName}`);
+    }
+  });
 
   const login = () => {
     redirectToTwitterLogin();
@@ -23,8 +35,8 @@
 </script>
 
 <main class="min-h-screen flex flex-col items-center justify-center p-8 bg-gray-50 text-gray-700">
-  <h1 class="text-5xl font-bold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-amber-500">
-    見えない「好き」で、つながろう。
+  <h1 class="text-5xl font-bold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-amber-500">
+    あなたの「好き」を、もっと伝えよう
   </h1>
 
   <p class="text-lg text-gray-600 leading-relaxed mb-12 max-w-2xl text-center">
@@ -33,8 +45,24 @@
     hitoQは、簡単なQ&Aに答えるだけで「あなたのこと」が伝わるページを作れるサービスです。
   </p>
 
-  <div class="bg-white p-4 rounded-xl shadow-lg mb-12 w-full max-w-md">
-    <img src="/path/to/sample-image.png" alt="hitoQのプロフィールサンプル" class="rounded-lg" />
+  <div class="grid md:grid-cols-3 gap-8 mb-12 max-w-4xl">
+    <div class="text-center p-6 bg-white rounded-lg shadow-sm">
+      <div class="text-3xl mb-4">💬</div>
+      <h3 class="text-xl font-semibold mb-2">質問に答えるだけ</h3>
+      <p class="text-gray-600">好きなもの、価値観、趣味について簡単な質問に答えるだけ。複雑な設定は不要です。</p>
+    </div>
+    
+    <div class="text-center p-6 bg-white rounded-lg shadow-sm">
+      <div class="text-3xl mb-4">🎯</div>
+      <h3 class="text-xl font-semibold mb-2">あなたらしさを表現</h3>
+      <p class="text-gray-600">やりたいことリスト（バケットリスト）やQ&Aで、プロフィールでは伝わらない「本当のあなた」を表現できます。</p>
+    </div>
+    
+    <div class="text-center p-6 bg-white rounded-lg shadow-sm">
+      <div class="text-3xl mb-4">🔗</div>
+      <h3 class="text-xl font-semibold mb-2">簡単にシェア</h3>
+      <p class="text-gray-600">作成したページは専用URLで簡単にシェア。SNSでの自己紹介がもっと深くなります。</p>
+    </div>
   </div>
 
   <h2 class="text-2xl font-bold mb-4">さあ、はじめよう</h2>

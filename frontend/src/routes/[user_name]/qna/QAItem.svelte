@@ -15,7 +15,7 @@
 </script>
 
 <div class="group relative rounded-xl p-4 transition-colors duration-300 {isOwner ? 'hover:bg-orange-50/50' : ''}">
-  <p class="mb-2 text-medium font-medium text-orange-600">{question}</p>
+  <p class="mb-2 text-medium font-medium text-orange-600">{typeof question === 'string' ? question : question.text}</p>
 
   <Editable {isOwner} value={answer} onSave={handleSave} input_type="textarea">
     {#if answer}
@@ -23,8 +23,8 @@
         {answer}
       </p>
     {:else}
-      <p class="text-lg font-semibold text-gray-400">
-        {isOwner ? 'クリックして回答' : '未回答'}
+      <p class="text-lg font-semibold">
+        <span class="text-base text-gray-400 italic">ー</span>
       </p>
     {/if}
   </Editable>

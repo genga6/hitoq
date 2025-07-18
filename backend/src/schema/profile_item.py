@@ -20,5 +20,5 @@ class ProfileItemUpdate(OrmBaseModel):
 
 
 class ProfileItemRead(ProfileItemBase):
-    id: int
-    user_id: uuid.UUID
+    profile_item_id: uuid.UUID
+    user_id: str

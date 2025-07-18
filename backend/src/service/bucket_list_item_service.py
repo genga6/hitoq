@@ -10,7 +10,10 @@ def _get_user_bucket_list_item(
 ) -> BucketListItem:
     item = (
         db.query(BucketListItem)
-        .filter(BucketListItem.id == item_id, BucketListItem.user_id == user_id)
+        .filter(
+            BucketListItem.bucket_list_item_id == item_id,
+            BucketListItem.user_id == user_id,
+        )
         .first()
     )
     if not item:
@@ -19,7 +22,11 @@ def _get_user_bucket_list_item(
 
 
 def get_bucket_list_item(db: Session, item_id: int) -> BucketListItem:
-    item = db.query(BucketListItem).filter(BucketListItem.id == item_id).first()
+    item = (
+        db.query(BucketListItem)
+        .filter(BucketListItem.bucket_list_item_id == item_id)
+        .first()
+    )
     if not item:
         raise HTTPException(status_code=404, detail="Bucket list item not found")
     return item

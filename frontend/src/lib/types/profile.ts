@@ -1,5 +1,5 @@
 export interface ProfileItem {
-  profileItemId: number;
+  profileItemId: string;
   label: string;
   value: string;
   displayOrder: number;

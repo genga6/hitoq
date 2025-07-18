@@ -26,6 +26,7 @@ from src.service import (
     qna_service,
     user_service,
 )
+from src.service.question_templates import get_category_title
 
 resource_router = APIRouter(
     prefix="/users/{user_id}",
@@ -48,7 +49,10 @@ def read_profile_page_data(user_name: str, db: Session = Depends(get_db)):
     user = user_service.get_user_by_username(db, user_name=user_name)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
-    return {"profile_items": user.profile_items}
+    user_with_items = user_service.get_user_with_profile_items(db, user.user_id)
+    if not user_with_items:
+        raise HTTPException(status_code=404, detail="User not found")
+    return {"profile": user_with_items, "profile_items": user_with_items.profile_items}
 
 
 @username_router.get("/bucket-list", response_model=BucketListPageData)
@@ -56,7 +60,13 @@ def read_bucket_list_page_data(user_name: str, db: Session = Depends(get_db)):
     user = user_service.get_user_by_username(db, user_name=user_name)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
-    return {"bucket_list_items": user.bucket_list_items}
+    user_with_items = user_service.get_user_with_bucket_list_items(db, user.user_id)
+    if not user_with_items:
+        raise HTTPException(status_code=404, detail="User not found")
+    return {
+        "profile": user_with_items,
+        "bucket_list_items": user_with_items.bucket_list_items,
+    }
 
 
 @username_router.get("/qna", response_model=QnAPageData)
@@ -64,19 +74,26 @@ def read_qna_page_data(user_name: str, db: Session = Depends(get_db)):
     user = user_service.get_user_by_username(db, user_name=user_name)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
+
+    user_with_items = user_service.get_user_with_qna_items(db, user.user_id)
+    if not user_with_items:
+        raise HTTPException(status_code=404, detail="User not found")
     user_answer_groups = qna_service.get_user_qna(db, user.user_id)
     all_questions_grouped = qna_service.get_all_questions_grouped(db)
+
     available_templates = []
     for category, questions in all_questions_grouped.items():
         if not any(group.template_id == category.name for group in user_answer_groups):
             available_templates.append(
                 {
                     "id": category.name,
-                    "title": qna_service.get_category_title(category),
+                    "title": get_category_title(category),
                     "questions": questions,
                 }
             )
+
     return {
+        "profile": user_with_items,
         "user_answer_groups": user_answer_groups,
         "available_templates": available_templates,
     }
@@ -93,10 +110,10 @@ def create_profile_item_endpoint(
     return profile_service.create_profile_item(db=db, user_id=user_id, item_in=item_in)
 
 
-@resource_router.put("profile-items/{item_id}", response_model=ProfileItemRead)
+@resource_router.put("/profile-items/{item_id}", response_model=ProfileItemRead)
 def update_profile_item_endpoint(
     user_id: str,
-    item_id: int,
+    item_id: str,
     item_in: ProfileItemUpdate,
     db: Session = Depends(get_db),
 ):
@@ -107,7 +124,7 @@ def update_profile_item_endpoint(
 
 @resource_router.delete("/profile-items/{item_id}", status_code=204)
 def delete_profile_item_endpoint(
-    user_id: str, item_id: int, db: Session = Depends(get_db)
+    user_id: str, item_id: str, db: Session = Depends(get_db)
 ):
     profile_service.delete_profile_item(db=db, user_id=user_id, item_id=item_id)
     return None
@@ -188,12 +205,15 @@ def read_user_by_username_endpoint(user_name: str, db: Session = Depends(get_db)
     return user
 
 
-@global_router.get("/resolve-users-id", response_model=list[UserRead])
+@global_router.get("/resolve-users-id", response_model=UserRead)
 def resolve_user_by_username(
     user_name: str = Query(..., min_length=1), db: Session = Depends(get_db)
 ):
     print(f"Received user_name: {user_name}")
-    return user_service.get_user_by_username(db, user_name=user_name)
+    user = user_service.get_user_by_username(db, user_name=user_name)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return user
 
 
 @global_router.get("/questions", response_model=list[QuestionRead])

@@ -1,4 +1,3 @@
-import uuid
 from datetime import datetime
 
 from src.schema.common import OrmBaseModel
@@ -21,6 +20,6 @@ class BucketListItemUpdate(OrmBaseModel):
 
 
 class BucketListItemRead(BucketListItemBase):
-    id: int
-    user_id: uuid.UUID
+    bucket_list_item_id: int
+    user_id: str
     created_at: datetime

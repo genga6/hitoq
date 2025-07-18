@@ -43,7 +43,7 @@ export const load: LayoutServerLoad = async ({ cookies }) => {
       return {
         isLoggedIn: true,
         user: user,
-        userName: user.user_name,
+        userName: user.userName,
       };
     }
 

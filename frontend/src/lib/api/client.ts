@@ -62,12 +62,18 @@ export const getUserByUserName = async (userName: string): Promise<Profile> => {
 export const resolveUsersById = async (
   userName: string,
 ): Promise<UserCandidate[]> => {
-  return fetchApi<UserCandidate[]>(
-    `/users/resolve-users-id?user_name=${encodeURIComponent(userName)}`,
-  );
+  try {
+    const user = await fetchApi<UserCandidate>(
+      `/users/resolve-users-id?user_name=${encodeURIComponent(userName)}`,
+    );
+    return [user];
+  } catch {
+    return [];
+  }
 };
 
 // Profile Page Data
+// TODO: タブによる画面遷移のたびに、サーバーにリクエストを送る仕様を再検討する（キャッシュなど？）
 export const getProfilePageData = async (
   userName: string,
 ): Promise<{ profile: Profile; profileItems: ProfileItem[] }> => {
@@ -228,7 +234,7 @@ export const logout = async () => {
 
 export const getCurrentUser = async () => {
   try {
-    const user = await fetchApiWithAuth<any>("/auth/me", {
+    const user = await fetchApiWithAuth<Profile>("/auth/me", {
       method: "GET",
     });
     return user;
@@ -258,11 +264,16 @@ export const checkAuthStatus = async (): Promise<boolean> => {
 // Server-side authentication APIs
 export const getCurrentUserServer = async (cookieHeader: string) => {
   try {
-    const user = await fetchApiWithCookies<any>("/auth/me", cookieHeader, {
+    const user = await fetchApiWithCookies<Profile>("/auth/me", cookieHeader, {
       method: "GET",
     });
     return user;
   } catch (error) {
+    // 認証エラーは正常な状態なので、詳細なログは出力しない
+    if (error instanceof Error && error.message.includes("Not authenticated")) {
+      return null;
+    }
+    // 予期しないエラーの場合のみログを出力
     console.error("サーバーサイドでのユーザー情報の取得に失敗しました:", error);
     return null;
   }

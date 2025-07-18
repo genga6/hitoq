@@ -1,6 +1,7 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import { browser } from '$app/environment';
+  import { invalidateAll } from '$app/navigation';
   import { useClickOutside } from '$lib/utils/useClickOutside';
   import { resolveUsersById } from '$lib/api/client';
   import { redirectToTwitterLogin, logout as authLogout, refreshAccessToken, getCurrentUser } from '$lib/api/client';
@@ -36,6 +37,8 @@
     isLoggedIn = false;
     currentUser = null;
     showMenu = false;
+    // すべてのサーバー側データを無効化してキャッシュをクリア
+    await invalidateAll();
   };
 
   function showCandidateList(list: UserCandidate[]) {
@@ -150,7 +153,7 @@
 
 <header class="w-full bg-white shadow-md py-8">
   <div class="relative max-w-2xl mx-auto flex items-center justify-between px-4">
-    <a href="/" class="text-2xl font-bold text-orange-400">hitoQ</a>
+    <a href={isLoggedIn && currentUser ? `/${currentUser.userName}` : "/"} class="text-2xl font-bold text-orange-400">hitoQ</a>
 
     <div class="absolute left-1/2 -translate-x-1/2 w-1/2">
       <input
@@ -223,7 +226,11 @@
               bind:this={menuElement}
               class="absolute top-full right-0 mt-2 w-40 bg-white border border-gray-200 rounded-lg shadow-lg z-10"
             >
-              <a href="/settings" class="block px-4 py-2 hover:bg-gray-100">設定</a>
+              <a 
+                href="/{currentUser?.userName}/settings" 
+                class="block px-4 py-2 hover:bg-gray-100"
+              >設定
+              </a>
               <button onclick={logout} class="w-full text-left px-4 py-2 hover:bg-gray-100">ログアウト</button>
             </div>
           {/if}

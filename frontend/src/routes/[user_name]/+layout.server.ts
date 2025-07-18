@@ -1,21 +1,40 @@
 import type { LayoutServerLoad } from "./$types";
-import { getUserByUserName } from "$lib/api/client";
+import { getUserByUserName, getCurrentUserServer } from "$lib/api/client";
 import { error } from "@sveltejs/kit";
 
-export const load: LayoutServerLoad = async ({ params, locals }) => {
+export const load: LayoutServerLoad = async ({
+  params,
+  request,
+  setHeaders,
+}) => {
   const userName = params.user_name;
-  const loggedInUser = locals.user; // ログインユーザーの情報はlocalsから取得
+  const cookieHeader = request.headers.get("cookie") || "";
+
+  // キャッシュを無効化
+  setHeaders({
+    "Cache-Control": "no-cache, no-store, must-revalidate",
+    Pragma: "no-cache",
+    Expires: "0",
+  });
+
+  let currentUser = null;
+  try {
+    currentUser = await getCurrentUserServer(cookieHeader);
+  } catch (e) {
+    // 認証エラーは正常な状態
+    currentUser = null;
+  }
 
   try {
     const profile = await getUserByUserName(userName);
-    const isOwner = loggedInUser?.userName === userName; // ログインユーザーと表示ユーザーが一致するか
+    const isOwner = currentUser?.userName === userName;
 
     return {
       isOwner,
       profile,
     };
   } catch (e) {
-    console.error("Error loading profile data:", e);
+    console.error("Error loading profile data for user:", userName, e);
     throw error(404, "ユーザーが見つかりませんでした");
   }
 };
