@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session, joinedload
 from src.db.tables import Answer, Question, QuestionCategoryEnum
 from src.schema.answer import AnswerCreate
 from src.schema.composite_schema import AnsweredQARead, UserAnswerGroupRead
+from src.service.question_templates import get_category_title, get_default_templates
 
 
 def get_user_qna(db: Session, user_id: str) -> list[UserAnswerGroupRead]:
@@ -49,15 +50,7 @@ def get_all_questions_grouped(
     return grouped_questions
 
 
-def get_category_title(category: QuestionCategoryEnum) -> str:
-    # 本来はDBや設定ファイルで管理するのが望ましい
-    title_map = {
-        QuestionCategoryEnum.self_introduction: "自己紹介のための20の質問",
-        QuestionCategoryEnum.values: "価値観を知る30の質問",
-        QuestionCategoryEnum.otaku: "オタクを語る50の質問",
-        QuestionCategoryEnum.misc: "その他",
-    }
-    return title_map.get(category, "Q&A")
+# Remove this function as it's now imported from question_templates
 
 
 def get_all_questions(db: Session) -> list[Question]:
@@ -74,3 +67,23 @@ def create_answer(
     db.commit()
     db.refresh(db_answer)
     return db_answer
+
+
+def initialize_default_questions(db: Session) -> None:
+    """Initialize default questions in the database if they don't exist."""
+    # Check if questions already exist
+    existing_questions = db.query(Question).first()
+    if existing_questions:
+        return
+
+    # Get default templates and create questions
+    templates = get_default_templates()
+
+    for template in templates:
+        for i, question_text in enumerate(template.questions, 1):
+            question = Question(
+                category=template.category, text=question_text, display_order=i
+            )
+            db.add(question)
+
+    db.commit()

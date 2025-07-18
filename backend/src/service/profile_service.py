@@ -5,10 +5,10 @@ from src.db.tables import ProfileItem
 from src.schema.profile_item import ProfileItemCreate, ProfileItemUpdate
 
 
-def _get_profile_item(db: Session, user_id: str, item_id: int) -> ProfileItem:
+def _get_profile_item(db: Session, user_id: str, item_id: str) -> ProfileItem:
     item = (
         db.query(ProfileItem)
-        .filter(ProfileItem.id == item_id, ProfileItem.user_id == user_id)
+        .filter(ProfileItem.profile_item_id == item_id, ProfileItem.user_id == user_id)
         .first()
     )
     if not item:
@@ -27,7 +27,7 @@ def create_profile_item(
 
 
 def update_profile_item(
-    db: Session, user_id: str, item_id: int, item_in: ProfileItemUpdate
+    db: Session, user_id: str, item_id: str, item_in: ProfileItemUpdate
 ) -> ProfileItem:
     db_item = _get_profile_item(db, user_id, item_id)
     update_data = item_in.model_dump(exclude_unset=True)
@@ -39,7 +39,7 @@ def update_profile_item(
     return db_item
 
 
-def delete_profile_item(db: Session, user_id: str, item_id: int):
+def delete_profile_item(db: Session, user_id: str, item_id: str):
     db_item = _get_profile_item(db, user_id, item_id)
     db.delete(db_item)
     db.commit()

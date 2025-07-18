@@ -22,3 +22,18 @@ export interface QandA {
   question: Question;
   answer?: Answer;
 }
+
+export interface QATemplate {
+  id: string;
+  title: string;
+  questions: string[];
+}
+
+export interface UserAnswerGroup {
+  templateId: string;
+  templateTitle: string;
+  answers: Array<{
+    question: string;
+    answer: string;
+  }>;
+}

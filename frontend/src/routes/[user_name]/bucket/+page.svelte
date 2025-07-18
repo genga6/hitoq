@@ -7,7 +7,16 @@
   };
 
   const { data } = $props();
-  let { buckets, isOwner } = data;
+  const { bucketListItems, isOwner } = data;
+  
+  // Map bucketListItems to the format expected by BucketList component
+  const buckets = (bucketListItems || []).map(item => ({
+    id: item.bucketListItemId,
+    content: item.content,
+    checked: item.isCompleted,
+    displayOrder: item.displayOrder,
+    isNew: false
+  }));
 </script>
 
 <BucketList {buckets} {isOwner} />
