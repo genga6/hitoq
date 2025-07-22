@@ -1,11 +1,7 @@
-"""基本的なAPIエンドポイントのテスト"""
-
 from fastapi.testclient import TestClient
 
 
 class TestBasicEndpoints:
-    """基本的なエンドポイントのテスト"""
-
     def test_root_endpoint(self, client: TestClient):
         """ルートエンドポイントのテスト"""
         response = client.get("/")

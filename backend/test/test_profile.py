@@ -6,8 +6,6 @@ from test.test_fixtures import create_test_user
 
 
 class TestProfileItemEndpoints:
-    """プロフィールアイテム エンドポイントのテスト"""
-
     def test_create_profile_item_success(
         self, client: TestClient, test_db_session, sample_profile_item_data
     ):

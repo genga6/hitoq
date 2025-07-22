@@ -1,13 +1,9 @@
-"""バケットリスト関連エンドポイントのテスト（修正版）"""
-
 from fastapi.testclient import TestClient
 
 from test.test_fixtures import create_test_user
 
 
 class TestBucketListEndpoints:
-    """バケットリストアイテム エンドポイントのテスト"""
-
     def test_create_bucket_list_item_success(
         self, client: TestClient, test_db_session, sample_bucket_list_item_data
     ):

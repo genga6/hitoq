@@ -6,8 +6,6 @@ from test.test_fixtures import create_test_user
 
 @pytest.mark.integration
 class TestUserWorkflow:
-    """ユーザーのワークフロー統合テスト"""
-
     def test_complete_user_profile_workflow(self, client: TestClient, test_db_session):
         """完全なユーザープロフィール作成ワークフローのテスト"""
         # 1. ユーザーを作成
