@@ -4,8 +4,6 @@ from test.test_fixtures import create_multiple_test_users, create_test_user
 
 
 class TestGlobalUserRoutes:
-    """グローバルユーザールートのテスト (/users)"""
-
     def test_create_user_success(self, client: TestClient, sample_user_data):
         """ユーザー作成の成功テスト"""
         response = client.post("/users", json=sample_user_data)

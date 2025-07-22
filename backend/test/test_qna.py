@@ -4,8 +4,6 @@ from test.test_fixtures import create_test_user
 
 
 class TestQnAEndpoints:
-    """Q&A エンドポイントのテスト"""
-
     def test_create_answer_success(
         self, client: TestClient, test_db_session, sample_answer_data
     ):

@@ -9,8 +9,6 @@ from test.test_fixtures import create_test_user
 
 
 class TestAuthHelpers:
-    """認証ヘルパー関数のテスト"""
-
     def test_create_access_token(self):
         """アクセストークンの作成テスト"""
         user_id = "test_user_123"
@@ -147,17 +145,14 @@ class TestAuthEndpoints:
         }
         mock_client.get.return_value = user_response
 
-        # セッションにstate と code_verifierを設定
-        with client:
-            with client.session_transaction() as session:
-                session["state"] = "test_state"
-                session["code_verifier"] = "test_code_verifier"
+        client.cookies.set("state", "test_state")
+        client.cookies.set("code_verifier", "test_code_verifier")
 
-            response = client.get(
-                "/auth/callback/twitter",
-                params={"code": "test_code", "state": "test_state"},
-                follow_redirects=False,
-            )
+        response = client.get(
+            "/auth/callback/twitter",
+            params={"code": "test_code", "state": "test_state"},
+            follow_redirects=False,
+        )
 
-            assert response.status_code in [302, 307]  # Allow both redirect codes
-            assert "localhost:5173" in response.headers["location"]
+        assert response.status_code in [302, 307]  # Allow both redirect codes
+        assert "localhost:5173" in response.headers["location"]
