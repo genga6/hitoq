@@ -1,0 +1,251 @@
+import base64
+import hashlib
+import secrets
+from datetime import datetime, timedelta, timezone
+
+import httpx
+import jwt
+from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi.responses import JSONResponse, RedirectResponse
+from sqlalchemy.orm import Session
+
+from src.config import SECRET_KEY, TWITTER_CLIENT_ID, TWITTER_CLIENT_SECRET
+from src.db.session import get_db
+from src.schema.user import UserCreate, UserRead
+from src.service import user_service
+
+auth_router = APIRouter()
+
+REDIRECT_URI = "http://localhost:8000/auth/callback/twitter"
+TWITTER_AUTH_URL = "https://twitter.com/i/oauth2/authorize"
+TWITTER_TOKEN_URL = "https://api.twitter.com/2/oauth2/token"
+TWITTER_USER_ME_URL = "https://api.twitter.com/2/users/me"  # https://docs.x.com/x-api/users/user-lookup-me
+FRONTEND_URL = "http://localhost:5173"
+
+ACCESS_TOKEN_EXPIRE_MINUTES = 15
+REFRESH_TOKEN_EXPIRE_DAYS = 7
+
+# リフレッシュトークンのブラックリスト（本番環境ではRedisなどを使用）
+blacklisted_tokens = set()
+
+
+def _create_access_token(user_id: str) -> str:
+    now = datetime.now(timezone.utc)
+    expire = now + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    payload = {"sub": user_id, "type": "access", "exp": expire}
+    return jwt.encode(payload, SECRET_KEY, algorithm="HS256")
+
+
+def _create_refresh_token(user_id: str) -> str:
+    now = datetime.now(timezone.utc)
+    expire = now + timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS)
+    payload = {
+        "sub": user_id,
+        "type": "refresh",
+        "exp": expire,
+        "iat": datetime.now(timezone.utc),
+    }
+    return jwt.encode(payload, SECRET_KEY, algorithm="HS256")
+
+
+def _verify_token(token: str, token_type: str = "access"):
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+
+        if payload.get("type") != token_type:
+            raise HTTPException(status_code=401, detail="Invalid token type")
+
+        if token_type == "refresh" and token in blacklisted_tokens:
+            raise HTTPException(status_code=401, detail="Token has been revoked")
+
+        return payload
+    except jwt.ExpiredSignatureError as e:
+        raise HTTPException(status_code=401, detail="Token expired") from e
+    except jwt.InvalidTokenError as e:
+        raise HTTPException(status_code=401, detail="Invalid token") from e
+
+
+def _get_current_user(request: Request, db: Session = Depends(get_db)):
+    token = request.cookies.get("access_token")
+    if not token:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+
+    payload = _verify_token(token, "access")
+    user_id = payload.get("sub")
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+    user = user_service.get_user(db, user_id=user_id)
+    if not user:
+        raise HTTPException(status_code=401, detail="User not found")
+
+    return user
+
+
+# https://docs.x.com/resources/fundamentals/authentication/oauth-2-0/user-access-token
+@auth_router.get("/login/twitter")
+async def login_twitter(request: Request):
+    state = secrets.token_urlsafe(16)
+    code_verifier = secrets.token_urlsafe(32)
+
+    request.session["state"] = state
+    request.session["code_verifier"] = code_verifier
+
+    code_challenge_hash = hashlib.sha256(code_verifier.encode()).digest()
+    code_challenge = base64.urlsafe_b64encode(code_challenge_hash).decode().rstrip("=")
+
+    params = {
+        "response_type": "code",
+        "client_id": TWITTER_CLIENT_ID,
+        "redirect_uri": REDIRECT_URI,
+        "scope": "users.read tweet.read",
+        "state": state,
+        "code_challenge": code_challenge,
+        "code_challenge_method": "S256",
+    }
+    auth_url = httpx.URL(TWITTER_AUTH_URL, params=params)
+    return RedirectResponse(url=str(auth_url))
+
+
+# This func requests an access token from Twitter's API using code passed from Twitter and redirects to the frontend
+@auth_router.get("/callback/twitter")
+async def auth_twitter_callback(
+    request: Request, code: str, state: str, db: Session = Depends(get_db)
+):
+    session_state = request.session.pop("state", None)
+    if session_state is None or session_state != state:
+        raise HTTPException(status_code=400, detail="Invalid state parameter")
+
+    code_verifier = request.session.pop("code_verifier", None)
+    if code_verifier is None:
+        raise HTTPException(
+            status_code=400, detail="Code verifier not found in session"
+        )
+
+    headers = {
+        "Content-Type": "application/x-www-form-urlencoded",
+    }
+    data = {
+        "code": code,
+        "grant_type": "authorization_code",
+        "client_id": TWITTER_CLIENT_ID,
+        "redirect_uri": REDIRECT_URI,
+        "code_verifier": code_verifier,
+    }
+    async with httpx.AsyncClient() as client:
+        token_response = await client.post(
+            TWITTER_TOKEN_URL,
+            data=data,
+            auth=(TWITTER_CLIENT_ID, TWITTER_CLIENT_SECRET),
+            headers=headers,
+        )
+        if token_response.status_code != 200:
+            raise HTTPException(status_code=400, detail="Invalid token response")
+
+        token_data = token_response.json()
+        access_token = token_data["access_token"]
+
+        user_response = await client.get(
+            TWITTER_USER_ME_URL,
+            headers={
+                "Authorization": f"Bearer {access_token}",
+            },
+            params={"user.fields": "profile_image_url,description"},
+        )
+
+        if user_response.status_code != 200:
+            raise HTTPException(status_code=400, detail="Invalid user data")
+
+        user_data = user_response.json()["data"]
+        profile_image_url = user_data.get("profile_image_url")
+
+        # By removing `_normal`, we got the original size URL
+        high_res_url = (
+            profile_image_url.replace("_normal", "") if profile_image_url else None
+        )
+
+        user_in = UserCreate(
+            user_id=user_data["id"],
+            user_name=user_data["username"],
+            display_name=user_data["name"],
+            bio=user_data.get("description"),
+            icon_url=high_res_url,
+        )
+        user = user_service.upsert_user(db, user_in=user_in)
+
+        access_token = _create_access_token(user.user_id)
+        refresh_token = _create_refresh_token(user.user_id)
+
+        response = RedirectResponse(url=f"{FRONTEND_URL}/{user.user_name}")
+
+        response.set_cookie(
+            key="access_token",
+            value=access_token,
+            path="/",
+            max_age=ACCESS_TOKEN_EXPIRE_MINUTES * 60,  # 15分
+            samesite="lax",
+            httponly=True,
+            secure=False,  # TODO: http -> False, https -> True
+        )
+
+        response.set_cookie(
+            key="refresh_token",
+            value=refresh_token,
+            path="/",
+            max_age=REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60,  # 7日
+            samesite="lax",
+            httponly=True,
+            secure=False,  # TODO: http -> False, https -> True
+        )
+
+        return response
+
+
+@auth_router.post("/refresh")
+async def refresh_token(request: Request, db: Session = Depends(get_db)):
+    refresh_token = request.cookies.get("refresh_token")
+    if not refresh_token:
+        raise HTTPException(status_code=401, detail="Refresh token not found")
+
+    payload = _verify_token(refresh_token, "refresh")
+    user_id = payload.get("sub")
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Invalid refresh token")
+
+    user = user_service.get_user(db, user_id=user_id)
+    if not user:
+        raise HTTPException(status_code=401, detail="User not found")
+
+    new_access_token = _create_access_token(user.user_id)
+
+    response = JSONResponse(content={"message": "Token refreshed successfully"})
+    response.set_cookie(
+        key="access_token",
+        value=new_access_token,
+        path="/",
+        max_age=ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+        samesite="lax",
+        httponly=True,
+        secure=False,
+    )
+
+    return response
+
+
+@auth_router.get("/me", response_model=UserRead)
+async def get_current_user_info(current_user=Depends(_get_current_user)):
+    return current_user
+
+
+@auth_router.post("/logout")
+async def logout(request: Request):
+    refresh_token = request.cookies.get("refresh_token")
+
+    if refresh_token:
+        blacklisted_tokens.add(refresh_token)
+
+    response = JSONResponse(content={"message": "Logged out successfully"})
+    response.delete_cookie(key="access_token", path="/")
+    response.delete_cookie(key="refresh_token", path="/")
+
+    return response
