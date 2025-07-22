@@ -1,4 +1,3 @@
-import uuid
 from datetime import datetime
 
 from src.schema.common import OrmBaseModel
@@ -17,7 +16,7 @@ class AnswerUpdate(OrmBaseModel):
 
 
 class AnswerRead(AnswerBase):
-    id: int
-    user_id: uuid.UUID
+    answer_id: int
+    user_id: str
     question_id: int
     created_at: datetime

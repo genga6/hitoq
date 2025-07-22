@@ -1,3 +1,5 @@
+import uuid
+
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
@@ -6,6 +8,14 @@ from src.schema.profile_item import ProfileItemCreate, ProfileItemUpdate
 
 
 def _get_profile_item(db: Session, user_id: str, item_id: str) -> ProfileItem:
+    # Convert string item_id to UUID if needed
+    if isinstance(item_id, str):
+        try:
+            item_id = uuid.UUID(item_id)
+        except ValueError as e:
+            # Invalid UUID format, return None to trigger 404
+            raise HTTPException(status_code=404, detail="Profile item not found") from e
+
     item = (
         db.query(ProfileItem)
         .filter(ProfileItem.profile_item_id == item_id, ProfileItem.user_id == user_id)
@@ -19,7 +29,9 @@ def _get_profile_item(db: Session, user_id: str, item_id: str) -> ProfileItem:
 def create_profile_item(
     db: Session, user_id: str, item_in: ProfileItemCreate
 ) -> ProfileItem:
-    db_item = ProfileItem(user_id=user_id, **item_in.model_dump())
+    db_item = ProfileItem(
+        profile_item_id=uuid.uuid4(), user_id=user_id, **item_in.model_dump()
+    )
     db.add(db_item)
     db.commit()
     db.refresh(db_item)
