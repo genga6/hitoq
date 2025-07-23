@@ -18,7 +18,6 @@
 
   function handleItemSave(index: number, field: 'label' | 'value', newValue: string) {
     // Replace API call
-    console.log(`Saving item ${index}, field ${field} to ${newValue}`);
 
     const newItems = [...profileItems];
     newItems[index] = { ...newItems[index], [field]: newValue };

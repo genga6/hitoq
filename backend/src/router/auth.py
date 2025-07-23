@@ -1,5 +1,6 @@
 import base64
 import hashlib
+import os
 import secrets
 from datetime import datetime, timedelta, timezone
 
@@ -16,11 +17,15 @@ from src.service import user_service
 
 auth_router = APIRouter()
 
-REDIRECT_URI = "http://localhost:8000/auth/callback/twitter"
+# Environment-based configuration
+REDIRECT_URI = os.getenv(
+    "TWITTER_REDIRECT_URI", "http://localhost:8000/auth/callback/twitter"
+)
 TWITTER_AUTH_URL = "https://twitter.com/i/oauth2/authorize"
 TWITTER_TOKEN_URL = "https://api.twitter.com/2/oauth2/token"
 TWITTER_USER_ME_URL = "https://api.twitter.com/2/users/me"  # https://docs.x.com/x-api/users/user-lookup-me
-FRONTEND_URL = "http://localhost:5173"
+# Use first URL from FRONTEND_URLS as primary frontend URL
+FRONTEND_URL = os.getenv("FRONTEND_URLS", "http://localhost:5173").split(",")[0].strip()
 
 ACCESS_TOKEN_EXPIRE_MINUTES = 15
 REFRESH_TOKEN_EXPIRE_DAYS = 7
@@ -185,7 +190,7 @@ async def auth_twitter_callback(
             max_age=ACCESS_TOKEN_EXPIRE_MINUTES * 60,  # 15分
             samesite="lax",
             httponly=True,
-            secure=False,  # TODO: http -> False, https -> True
+            secure=os.getenv("COOKIE_SECURE", "false").lower() == "true",
         )
 
         response.set_cookie(
@@ -195,7 +200,7 @@ async def auth_twitter_callback(
             max_age=REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60,  # 7日
             samesite="lax",
             httponly=True,
-            secure=False,  # TODO: http -> False, https -> True
+            secure=os.getenv("COOKIE_SECURE", "false").lower() == "true",
         )
 
         return response
@@ -226,7 +231,7 @@ async def refresh_token(request: Request, db: Session = Depends(get_db)):
         max_age=ACCESS_TOKEN_EXPIRE_MINUTES * 60,
         samesite="lax",
         httponly=True,
-        secure=False,
+        secure=os.getenv("COOKIE_SECURE", "false").lower() == "true",
     )
 
     return response

@@ -209,7 +209,6 @@ def read_user_by_username_endpoint(user_name: str, db: Session = Depends(get_db)
 def resolve_user_by_username(
     user_name: str = Query(..., min_length=1), db: Session = Depends(get_db)
 ):
-    print(f"Received user_name: {user_name}")
     user = user_service.get_user_by_username(db, user_name=user_name)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")

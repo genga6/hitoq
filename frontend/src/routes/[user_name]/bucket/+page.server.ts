@@ -9,10 +9,6 @@ export const load: PageServerLoad = async ({ params, request }) => {
 
   try {
     const rawData = await getBucketListPageData(userName);
-    console.log(
-      "Raw bucket list API response:",
-      JSON.stringify(rawData, null, 2),
-    );
 
     const { profile, bucketListItems } = rawData;
 
