@@ -6,9 +6,7 @@
 
   $effect(() => {
     // ログイン済みの場合はプロフィールページにリダイレクト
-    console.log('Page effect - data:', data);
     if (data?.isLoggedIn && data?.userName) {
-      console.log('Redirecting to:', `/${data.userName}`);
       goto(`/${data.userName}`);
     }
   });
@@ -26,10 +24,8 @@
     const username = input.value;
 
     if (username) {
-      alert(`「${username}」を検索します（未実装）`);
-      // 将来的には window.location.href = `/user/${username}`; のような処理になる
-    } else {
-      alert('ユーザー名を入力してください。');
+      // TODO: 検索機能の実装
+      goto(`/${username}`);
     }
   };
 </script>

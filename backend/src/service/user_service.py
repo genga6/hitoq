@@ -80,13 +80,11 @@ def upsert_user(db: Session, user_in: UserCreate) -> User:
     is_new_user = db_user is None
 
     if db_user:
-        print(f"Updating existing user: {user_in.user_name}")
         update_data = user_in.model_dump(exclude_unset=True)
 
         for key, value in update_data.items():
             setattr(db_user, key, value)
     else:
-        print(f"Creating new user: {user_in.user_name}")
         db_user = User(**user_in.model_dump())
 
     db.add(db_user)

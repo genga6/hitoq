@@ -3,7 +3,6 @@
   import type { PageData } from './$types';
 
   const { data }: { data: PageData } = $props();
-  console.log('データ', data)
 </script>
 
 <QAPage

@@ -41,7 +41,6 @@
     newAnswerGroups[groupIndex] = updatedGroup;
     answerGroups = newAnswerGroups;
 
-    console.log('State updated!', answerGroups);
   }
 </script>
 
