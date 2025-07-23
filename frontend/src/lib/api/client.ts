@@ -72,6 +72,20 @@ export const resolveUsersById = async (
   }
 };
 
+export const searchUsersByDisplayName = async (
+  query: string,
+  limit: number = 10,
+): Promise<UserCandidate[]> => {
+  try {
+    const users = await fetchApi<UserCandidate[]>(
+      `/users/search/users?q=${encodeURIComponent(query)}&limit=${limit}`,
+    );
+    return users;
+  } catch {
+    return [];
+  }
+};
+
 // Profile Page Data
 // TODO: タブによる画面遷移のたびに、サーバーにリクエストを送る仕様を再検討する（キャッシュなど？）
 export const getProfilePageData = async (

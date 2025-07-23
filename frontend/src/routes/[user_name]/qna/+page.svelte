@@ -9,4 +9,5 @@
   initialAnswerGroups={data.userAnswerGroups}
   availableTemplates={data.availableTemplates}
   isOwner={data.isOwner}
+  userId={data.profile.userId}
 />
