@@ -1,6 +1,5 @@
 <script lang="ts">
   import { redirectToTwitterLogin } from '$lib/api/client';
-  import { goto } from '$app/navigation';
 
   let { data } = $props();
 
@@ -13,20 +12,6 @@
 
   const login = () => {
     redirectToTwitterLogin();
-  };
-
-  const handleSearch = (event: Event) => {
-    event.preventDefault();
-
-    // 入力値を取得して検索処理を行う（ここは将来的に実装）
-    const form = event.target as HTMLFormElement;
-    const input = form.querySelector('input[type="text"]') as HTMLInputElement;
-    const username = input.value;
-
-    if (username) {
-      // TODO: 検索機能の実装
-      goto(`/${username}`);
-    }
   };
 </script>
 

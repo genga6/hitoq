@@ -3,11 +3,13 @@
   import QAGroup from './QAGroup.svelte';
   import { slide } from 'svelte/transition';
   import { fade } from 'svelte/transition';
+  import { getCurrentUser } from '$lib/api/client';
 
-  const { initialAnswerGroups, availableTemplates, isOwner } = $props<{
+  const { initialAnswerGroups, availableTemplates, isOwner, userId } = $props<{
     initialAnswerGroups: UserAnswerGroup[];
     availableTemplates: QATemplate[];
     isOwner: boolean;
+    userId: string;
   }>();
 
   let answerGroups = $state(initialAnswerGroups || []);
@@ -31,16 +33,29 @@
     showTemplateSelector = false;
   }
 
-  function handleAnswerUpdate(groupIndex: number, questionIndex: number, newAnswer: string) {
-    const newAnswerGroups = [...answerGroups];
-    const updatedGroup = { ...newAnswerGroups[groupIndex] }; 
-    const updatedAnswers = [...updatedGroup.answers]; 
+  async function handleAnswerUpdate(groupIndex: number, questionIndex: number, newAnswer: string) {
+    const group = answerGroups[groupIndex];
+    const answer = group.answers[questionIndex];
+    
+    if (!answer) return;
 
-    updatedAnswers[questionIndex] = { ...updatedAnswers[questionIndex], answer: newAnswer };
-    updatedGroup.answers = updatedAnswers;
-    newAnswerGroups[groupIndex] = updatedGroup;
-    answerGroups = newAnswerGroups;
+    try {
+      // TODO: 現在のデータ構造ではquestionIdが取得できないため、
+      // 実際のAPI呼び出しは一時的にコメントアウト
+      // const { createAnswer } = await import('$lib/api/client');
+      // await createAnswer(userId, questionId, newAnswer);
 
+      const newAnswerGroups = [...answerGroups];
+      const updatedGroup = { ...newAnswerGroups[groupIndex] }; 
+      const updatedAnswers = [...updatedGroup.answers]; 
+
+      updatedAnswers[questionIndex] = { ...updatedAnswers[questionIndex], answer: newAnswer };
+      updatedGroup.answers = updatedAnswers;
+      newAnswerGroups[groupIndex] = updatedGroup;
+      answerGroups = newAnswerGroups;
+    } catch (error) {
+      console.error('回答の保存に失敗しました:', error);
+    }
   }
 </script>
 
@@ -51,7 +66,7 @@
         <QAGroup 
           answerGroup={group} 
           {isOwner} 
-          onAnswerUpdate={(questionIndex, newAnswer) => 
+          onAnswerUpdate={(questionIndex: number, newAnswer: string) => 
             handleAnswerUpdate(groupIndex, questionIndex, newAnswer)
           }
         />

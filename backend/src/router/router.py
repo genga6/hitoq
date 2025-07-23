@@ -215,6 +215,17 @@ def resolve_user_by_username(
     return user
 
 
+@global_router.get("/search/users", response_model=list[UserRead])
+def search_users_by_display_name(
+    q: str = Query(..., min_length=1, description="Search query for display name"),
+    limit: int = Query(10, ge=1, le=50, description="Maximum number of results"),
+    db: Session = Depends(get_db),
+):
+    """Search users by display name with partial matching."""
+    users = user_service.search_users_by_display_name(db, display_name=q, limit=limit)
+    return users
+
+
 @global_router.get("/questions", response_model=list[QuestionRead])
 def read_all_questions(db: Session = Depends(get_db)):
     return qna_service.get_all_questions(db=db)

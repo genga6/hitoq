@@ -19,4 +19,4 @@
   }));
 </script>
 
-<BucketList {buckets} {isOwner} />
+<BucketList {buckets} {isOwner} userId={data.profile.userId} />

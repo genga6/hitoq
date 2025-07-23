@@ -14,14 +14,31 @@
   const isOwner = data.isOwner;
   const initialProfileItems = data.profileItems;
 
-  let profileItems = $state<ProfileItem[]>(Array.isArray(initialProfileItems) ? initialProfileItems : []);
+  let profileItems = $state<ProfileItem[]>(
+    Array.isArray(initialProfileItems) 
+      ? [...initialProfileItems].sort((a, b) => a.displayOrder - b.displayOrder)
+      : []
+  );
 
-  function handleItemSave(index: number, field: 'label' | 'value', newValue: string) {
-    // Replace API call
+  async function handleItemSave(index: number, field: 'label' | 'value', newValue: string) {
+    const item = profileItems[index];
+    if (!item) return;
 
-    const newItems = [...profileItems];
-    newItems[index] = { ...newItems[index], [field]: newValue };
-    profileItems = newItems;
+    try {
+      const { updateProfileItem } = await import('$lib/api/client');
+      const updatedItem = await updateProfileItem(
+        data.profile.userId,
+        item.profileItemId,
+        { [field]: newValue }
+      );
+
+      const newItems = [...profileItems];
+      newItems[index] = updatedItem;
+      profileItems = newItems;
+    } catch (error) {
+      console.error('プロフィール項目の更新に失敗しました:', error);
+      // エラーの場合は元の値に戻す
+    }
   }
 </script>
 
