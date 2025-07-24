@@ -9,6 +9,7 @@ from src.service.question_templates import get_category_title, get_default_templ
 
 
 def get_user_qna(db: Session, user_id: str) -> list[UserAnswerGroupRead]:
+    # ユーザーの回答を取得
     user_answers = (
         db.query(Answer)
         .options(joinedload(Answer.question))
@@ -16,19 +17,37 @@ def get_user_qna(db: Session, user_id: str) -> list[UserAnswerGroupRead]:
         .all()
     )
 
-    grouped_answers = defaultdict(list)
+    # 回答をquestion_idでマッピング
+    answers_by_question_id = {answer.question_id: answer for answer in user_answers}
+
+    # 回答済みの質問のカテゴリを取得
+    answered_categories = set()
     for answer in user_answers:
         if answer.question:
-            grouped_answers[answer.question.category].append(
+            answered_categories.add(answer.question.category)
+
+    # カテゴリ内のすべての質問を取得し、回答状況と合わせて返す
+    user_answer_groups = []
+    for category in answered_categories:
+        # このカテゴリのすべての質問を取得
+        category_questions = (
+            db.query(Question)
+            .filter(Question.category == category)
+            .order_by(Question.display_order)
+            .all()
+        )
+
+        # 各質問に対して回答があるかチェック
+        answers = []
+        for question in category_questions:
+            user_answer = answers_by_question_id.get(question.question_id)
+            answers.append(
                 AnsweredQARead(
-                    answer_text=answer.answer_text,
-                    question=answer.question,
+                    answer_text=user_answer.answer_text if user_answer else "",
+                    question=question,
                 )
             )
 
-    user_answer_groups = []
-    for category, answers in grouped_answers.items():
-        # TODO: フロントエンドのテンプレートIDとバックエンドのカテゴリの紐付け
         user_answer_groups.append(
             UserAnswerGroupRead(
                 template_id=category.name,

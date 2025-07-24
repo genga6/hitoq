@@ -6,15 +6,17 @@
     id: number;
     content: string;
     checked: boolean;
+    displayOrder?: number;
     isNew?: boolean;
   };
 
   type Props = {
     buckets: Bucket[];
     isOwner: boolean;
+    userId: string;
   };
 
-  let { buckets: initialBuckets, isOwner } = $props();
+  let { buckets: initialBuckets, isOwner, userId }: Props = $props();
   let buckets = $state<Bucket[]>(initialBuckets || []);
 
   let nextId = $derived(() =>
@@ -36,29 +38,78 @@
     await tick(); // Wait for the DOM to update
   }
 
-  function toggleItem(id: number) {
-    buckets = buckets.map(b =>
-      b.id === id ? { ...b, checked: !b.checked } : b
-    );
+  async function toggleItem(id: number) {
+    const item = buckets.find((b: Bucket) => b.id === id);
+    if (!item || item.isNew) return;
+
+    try {
+      const { updateBucketListItem } = await import('$lib/api/client');
+      await updateBucketListItem(userId, id, { isCompleted: !item.checked });
+
+      buckets = buckets.map((b: Bucket) =>
+        b.id === id ? { ...b, checked: !b.checked } : b
+      );
+    } catch (error) {
+      console.error('バケットリスト項目の更新に失敗しました:', error);
+    }
   }
 
-  function editItem(id: number, newContent: string) {
-    buckets = buckets.map(b =>
-      b.id === id ? { ...b, content: newContent, isNew: false } : b
-    );
+  async function editItem(id: number, newContent: string) {
+    const item = buckets.find((b: Bucket) => b.id === id);
+    if (!item) return;
+
+    try {
+      if (item.isNew) {
+        const { createBucketListItem } = await import('$lib/api/client');
+        const maxDisplayOrder = Math.max(0, ...buckets.filter(b => !b.isNew).map(b => b.displayOrder || 0));
+        const createdItem = await createBucketListItem(userId, { 
+          content: newContent,
+          displayOrder: maxDisplayOrder + 1
+        });
+        
+        // 作成されたアイテムの実際のIDで更新
+        buckets = buckets.map((b: Bucket) =>
+          b.id === id ? { 
+            ...b, 
+            id: createdItem.bucketListItemId,
+            content: newContent,
+            displayOrder: createdItem.displayOrder,
+            isNew: false 
+          } : b
+        );
+      } else {
+        const { updateBucketListItem } = await import('$lib/api/client');
+        await updateBucketListItem(userId, id, { content: newContent });
+        
+        buckets = buckets.map((b: Bucket) =>
+          b.id === id ? { ...b, content: newContent } : b
+        );
+      }
+    } catch (error) {
+      console.error('バケットリスト項目の保存に失敗しました:', error);
+    }
   }
 
-  function deleteItem(id: number, force: boolean = false) {
-    const item = buckets.find(b => b.id === id);
+  async function deleteItem(id: number, force: boolean = false) {
+    const item = buckets.find((b: Bucket) => b.id === id);
     if (!item) return;
 
     if (force || confirm(`「${item.content || '新しいバケット'}」を削除してもよろしいですか？`)) {
-      buckets = buckets.filter(b => b.id !== id);
+      try {
+        if (!item.isNew) {
+          const { deleteBucketListItem } = await import('$lib/api/client');
+          await deleteBucketListItem(userId, id);
+        }
+
+        buckets = buckets.filter((b: Bucket) => b.id !== id);
+      } catch (error) {
+        console.error('バケットリスト項目の削除に失敗しました:', error);
+      }
     }
   }
 
   function handleSave(id: number, newContent: string) {
-    const item = buckets.find(b => b.id === id);
+    const item = buckets.find((b: Bucket) => b.id === id);
     if (!item) return;
 
     if (item.isNew && newContent.trim() === '') {
@@ -75,7 +126,7 @@
       {bucket}
       {isOwner}
       onToggle={() => toggleItem(bucket.id)}
-      onSave={(newContent) => handleSave(bucket.id, newContent)}
+      onSave={(newContent: string) => handleSave(bucket.id, newContent)}
       onDelete={() => deleteItem(bucket.id)}
     />
   {/each}

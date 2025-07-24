@@ -3,18 +3,18 @@
   import type { UserAnswerGroup } from '$lib/types/qna';
   import { slide } from 'svelte/transition';
 
-  const { answerGroup, isOwner, onAnswerUpdate } = $props<{
+  const { answerGroup, isOwner, onAnswerUpdate, isOpen, onToggle } = $props<{
     answerGroup: UserAnswerGroup;
     isOwner: boolean;
     onAnswerUpdate: (questionIndex: number, newAnswer: string) => void;
+    isOpen: boolean;
+    onToggle: () => void;
   }>();
-
-  let isOpen = $state(false)
 </script>
 
 <div class="mb-6 rounded-3xl border border-gray-200 bg-white shadow-sm transition-shadow hover:shadow-md">
   <button
-    onclick={() => (isOpen = !isOpen)}
+    onclick={onToggle}
     class="flex w-full items-center justify-between p-6 text-left aria-expanded={isOpen}"
   >
     <h3 class="text-xl font-bold text-gray-800">{answerGroup.templateTitle}</h3>
@@ -35,10 +35,10 @@
       transition:slide={{ duration:300 }}
       class="space-y-6 border-t border-gray-200 px-6 pb-8 pt-6"
     >
-      {#each answerGroup.answers as qa, i (qa.question)}
+      {#each answerGroup.answers as qa, i (`${answerGroup.templateId}-${qa.question.questionId}-${i}`)}
         <QAItem 
-          question={qa.question} 
-          answer={qa.answer} 
+          question={qa.question.text} 
+          answer={qa.answerText} 
           {isOwner} 
           onUpdate={(newAnswer) => onAnswerUpdate(i, newAnswer)}
         />

@@ -14,15 +14,31 @@
   const isOwner = data.isOwner;
   const initialProfileItems = data.profileItems;
 
-  let profileItems = $state<ProfileItem[]>(Array.isArray(initialProfileItems) ? initialProfileItems : []);
+  let profileItems = $state<ProfileItem[]>(
+    Array.isArray(initialProfileItems) 
+      ? [...initialProfileItems].sort((a, b) => a.displayOrder - b.displayOrder)
+      : []
+  );
 
-  function handleItemSave(index: number, field: 'label' | 'value', newValue: string) {
-    // Replace API call
-    console.log(`Saving item ${index}, field ${field} to ${newValue}`);
+  async function handleItemSave(index: number, field: 'label' | 'value', newValue: string) {
+    const item = profileItems[index];
+    if (!item) return;
 
-    const newItems = [...profileItems];
-    newItems[index] = { ...newItems[index], [field]: newValue };
-    profileItems = newItems;
+    try {
+      const { updateProfileItem } = await import('$lib/api/client');
+      const updatedItem = await updateProfileItem(
+        data.profile.userId,
+        item.profileItemId,
+        { [field]: newValue }
+      );
+
+      const newItems = [...profileItems];
+      newItems[index] = updatedItem;
+      profileItems = newItems;
+    } catch (error) {
+      console.error('プロフィール項目の更新に失敗しました:', error);
+      // エラーの場合は元の値に戻す
+    }
   }
 </script>
 
@@ -36,7 +52,7 @@
         isOwner={isOwner}
         value={item.label}
         onSave={(newLabel) => handleItemSave(index, 'label', newLabel)}
-        input_type="input"
+        inputType="input"
       >
         <div class="relative {isOwner ? 'cursor-pointer hover:bg-orange-50 hover:rounded-md hover:px-2 hover:py-1 hover:-mx-2 hover:-my-1 transition-all duration-200' : ''}">
           <p class="text-sm text-orange-600 font-medium mb-1 tracking-wide">{item.label}</p>
@@ -55,7 +71,7 @@
         isOwner={isOwner}
         value={item.value}
         onSave={(newValue) => handleItemSave(index, 'value', newValue)}
-        input_type="input"
+        inputType="input"
       >
         <div class="relative {isOwner ? 'cursor-pointer hover:bg-gray-50 hover:rounded-md hover:px-2 hover:py-1 hover:-mx-2 hover:-my-1 transition-all duration-200' : ''}">
           <p class="text-lg font-semibold text-gray-700 break-words">

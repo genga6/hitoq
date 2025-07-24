@@ -209,11 +209,21 @@ def read_user_by_username_endpoint(user_name: str, db: Session = Depends(get_db)
 def resolve_user_by_username(
     user_name: str = Query(..., min_length=1), db: Session = Depends(get_db)
 ):
-    print(f"Received user_name: {user_name}")
     user = user_service.get_user_by_username(db, user_name=user_name)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     return user
+
+
+@global_router.get("/search/users", response_model=list[UserRead])
+def search_users_by_display_name(
+    q: str = Query(..., min_length=1, description="Search query for display name"),
+    limit: int = Query(10, ge=1, le=50, description="Maximum number of results"),
+    db: Session = Depends(get_db),
+):
+    """Search users by display name with partial matching."""
+    users = user_service.search_users_by_display_name(db, display_name=q, limit=limit)
+    return users
 
 
 @global_router.get("/questions", response_model=list[QuestionRead])

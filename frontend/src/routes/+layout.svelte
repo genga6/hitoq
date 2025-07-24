@@ -3,7 +3,7 @@
   import { browser } from '$app/environment';
   import { invalidateAll } from '$app/navigation';
   import { useClickOutside } from '$lib/utils/useClickOutside';
-  import { resolveUsersById } from '$lib/api/client';
+  import { resolveUsersById, searchUsersByDisplayName } from '$lib/api/client';
   import { redirectToTwitterLogin, logout as authLogout, refreshAccessToken, getCurrentUser } from '$lib/api/client';
   import type { Snippet } from 'svelte';
 
@@ -46,8 +46,9 @@
     showCandidates = true;
   }
 
-  function selectCandidate(user_id: string) {
-    goto(`/${user_id}`);
+  function selectCandidate(userName: string) {
+    goto(`/${userName}`);
+    searchQuery = '';
     showCandidates = false;
   }
 
@@ -114,6 +115,10 @@
     debounceTimer = setTimeout(() => {
       if (searchQuery.trim() !== '') {
         performSearch();
+      } else {
+        candidates = [];
+        showCandidates = false;
+        noResults = false;
       }
     }, 300);
   };
@@ -124,10 +129,15 @@
     const query = searchQuery.trim().replace(/^@/, '');
 
     try {
-      const candidatesData = await resolveUsersById(query);
-      if (candidatesData.length === 1) {
-        goto(`/${candidatesData[0].userId}`);
-      } else if (candidatesData.length > 0) {
+      // Try searching by display name first
+      let candidatesData = await searchUsersByDisplayName(query);
+      
+      // If no results found by display name, try username search
+      if (candidatesData.length === 0) {
+        candidatesData = await resolveUsersById(query);
+      }
+      
+      if (candidatesData.length > 0) {
         showCandidateList(candidatesData);
       } else {
         noResults = true;
@@ -182,15 +192,15 @@
           {#if showCandidates}
             {#each candidates as user}
               <button
-                class="flex items-center px-4 py-2 hover:bg-orange-100 cursor-pointer gap-3"
-                onclick={() => selectCandidate(user.userId)}
+                class="flex items-center px-4 py-2 hover:bg-orange-100 cursor-pointer gap-3 w-full text-left"
+                onclick={() => selectCandidate(user.userName)}
               >
                 {#if user.iconUrl}
                   <img src={user.iconUrl} alt="icon" class="w-6 h-6 rounded-full" />
                 {/if}
                 <div class="flex flex-col">
-                  <span class="font-medium text-sm">{user.userName}</span>
-                  <span class="text-xs text-gray-500">{user.createdAt.slice(0, 10)}</span>
+                  <span class="font-medium text-sm">{user.displayName}</span>
+                  <span class="text-xs text-gray-500">@{user.userName}</span>
                 </div>
               </button>
             {/each}

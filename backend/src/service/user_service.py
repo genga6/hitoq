@@ -46,6 +46,18 @@ def get_users(db: Session, skip: int = 0, limit: int = 100) -> list[User]:
     return db.query(User).offset(skip).limit(limit).all()
 
 
+def search_users_by_display_name(
+    db: Session, display_name: str, limit: int = 10
+) -> list[User]:
+    """Search users by display_name with partial matching."""
+    return (
+        db.query(User)
+        .filter(User.display_name.ilike(f"%{display_name}%"))
+        .limit(limit)
+        .all()
+    )
+
+
 def create_default_profile_items(db: Session, user_id: str) -> None:
     """Create 8 default profile items for a new user."""
     default_labels = [
@@ -80,13 +92,11 @@ def upsert_user(db: Session, user_in: UserCreate) -> User:
     is_new_user = db_user is None
 
     if db_user:
-        print(f"Updating existing user: {user_in.user_name}")
         update_data = user_in.model_dump(exclude_unset=True)
 
         for key, value in update_data.items():
             setattr(db_user, key, value)
     else:
-        print(f"Creating new user: {user_in.user_name}")
         db_user = User(**user_in.model_dump())
 
     db.add(db_user)
