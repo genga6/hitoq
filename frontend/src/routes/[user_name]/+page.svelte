@@ -52,7 +52,7 @@
         isOwner={isOwner}
         value={item.label}
         onSave={(newLabel) => handleItemSave(index, 'label', newLabel)}
-        input_type="input"
+        inputType="input"
       >
         <div class="relative {isOwner ? 'cursor-pointer hover:bg-orange-50 hover:rounded-md hover:px-2 hover:py-1 hover:-mx-2 hover:-my-1 transition-all duration-200' : ''}">
           <p class="text-sm text-orange-600 font-medium mb-1 tracking-wide">{item.label}</p>
@@ -71,7 +71,7 @@
         isOwner={isOwner}
         value={item.value}
         onSave={(newValue) => handleItemSave(index, 'value', newValue)}
-        input_type="input"
+        inputType="input"
       >
         <div class="relative {isOwner ? 'cursor-pointer hover:bg-gray-50 hover:rounded-md hover:px-2 hover:py-1 hover:-mx-2 hover:-my-1 transition-all duration-200' : ''}">
           <p class="text-lg font-semibold text-gray-700 break-words">

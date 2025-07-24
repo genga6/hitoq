@@ -22,7 +22,7 @@
     as: Element = 'div',
     inputType = 'textarea',
     startInEditMode = false
-  } = $props<Props>();
+  }: Props = $props();
 
   let isEditing = $state(startInEditMode);
   let tempValue = $state(value);

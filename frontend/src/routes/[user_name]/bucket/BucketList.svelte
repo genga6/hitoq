@@ -6,6 +6,7 @@
     id: number;
     content: string;
     checked: boolean;
+    displayOrder?: number;
     isNew?: boolean;
   };
 
@@ -60,15 +61,30 @@
     try {
       if (item.isNew) {
         const { createBucketListItem } = await import('$lib/api/client');
-        await createBucketListItem(userId, { content: newContent });
+        const maxDisplayOrder = Math.max(0, ...buckets.filter(b => !b.isNew).map(b => b.displayOrder || 0));
+        const createdItem = await createBucketListItem(userId, { 
+          content: newContent,
+          displayOrder: maxDisplayOrder + 1
+        });
+        
+        // 作成されたアイテムの実際のIDで更新
+        buckets = buckets.map((b: Bucket) =>
+          b.id === id ? { 
+            ...b, 
+            id: createdItem.bucketListItemId,
+            content: newContent,
+            displayOrder: createdItem.displayOrder,
+            isNew: false 
+          } : b
+        );
       } else {
         const { updateBucketListItem } = await import('$lib/api/client');
         await updateBucketListItem(userId, id, { content: newContent });
+        
+        buckets = buckets.map((b: Bucket) =>
+          b.id === id ? { ...b, content: newContent } : b
+        );
       }
-
-      buckets = buckets.map((b: Bucket) =>
-        b.id === id ? { ...b, content: newContent, isNew: false } : b
-      );
     } catch (error) {
       console.error('バケットリスト項目の保存に失敗しました:', error);
     }

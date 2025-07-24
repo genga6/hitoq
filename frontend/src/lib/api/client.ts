@@ -4,7 +4,7 @@ import type { BucketListItem } from "$lib/types/bucket";
 import type {
   Question,
   Answer,
-  UserAnswerGroup,
+  UserAnswerGroupBackend,
   QATemplate,
 } from "$lib/types/qna";
 
@@ -114,12 +114,12 @@ export const getQnAPageData = async (
   userName: string,
 ): Promise<{
   profile: Profile;
-  userAnswerGroups: UserAnswerGroup[];
+  userAnswerGroups: UserAnswerGroupBackend[];
   availableTemplates: QATemplate[];
 }> => {
   const data = await fetchApi<{
     profile: Profile;
-    userAnswerGroups: UserAnswerGroup[];
+    userAnswerGroups: UserAnswerGroupBackend[];
     availableTemplates: QATemplate[];
   }>(`/users/by-username/${userName}/qna`);
   return {

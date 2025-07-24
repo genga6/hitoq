@@ -40,7 +40,7 @@
       {isOwner} 
       value={bucket.content} 
       {onSave} 
-      input_type="input"
+      inputType="input"
       startInEditMode={bucket.isNew ?? false}  
     >
       <span class={`font-semibold transition-colors ${bucket.checked ? 'line-through text-gray-400' : 'text-gray-800'}`}>
