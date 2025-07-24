@@ -1,36 +1,105 @@
 <script lang="ts">
-  import type { QATemplate, UserAnswerGroup } from '$lib/types/qna';
+  import type { QATemplate, UserAnswerGroup, UserAnswerGroupBackend, Question } from '$lib/types/qna';
   import QAGroup from './QAGroup.svelte';
   import { slide } from 'svelte/transition';
   import { fade } from 'svelte/transition';
-  import { getCurrentUser } from '$lib/api/client';
+  import { getCurrentUser, getAllQuestions } from '$lib/api/client';
 
   const { initialAnswerGroups, availableTemplates, isOwner, userId } = $props<{
-    initialAnswerGroups: UserAnswerGroup[];
+    initialAnswerGroups: UserAnswerGroupBackend[];  // バックエンドから受信する型
     availableTemplates: QATemplate[];
     isOwner: boolean;
     userId: string;
   }>();
 
-  let answerGroups = $state(initialAnswerGroups || []);
   let showTemplateSelector = $state(false);
+  let allQuestions = $state<Question[]>([]);
+  let openGroupIndex = $state<number | null>(null); // 開いているグループのインデックス
+
+  // 初期データを直接変換（$effectを使わない）
+  let answerGroups = $state<UserAnswerGroup[]>(
+    initialAnswerGroups.map(group => ({
+      templateId: group.templateId,
+      templateTitle: group.templateTitle,
+      answers: group.answers.map(answer => ({
+        question: answer.question,
+        answerText: answer.answerText,
+        answerId: answer.answerId
+      }))
+    }))
+  );
+
+  // 質問データを遅延読み込み（実際に必要になった時のみ取得）
+  async function loadQuestionsIfNeeded() {
+    if (allQuestions.length === 0) {
+      try {
+        allQuestions = await getAllQuestions();
+      } catch (error) {
+        console.warn('質問データの取得に失敗しました。テンプレートから質問を生成します。');
+        allQuestions = [];
+      }
+    }
+  }
+
+  function getQuestionsByCategory(category: string): Question[] {
+    return allQuestions.filter(q => q.category === category);
+  }
+
+  function toggleGroup(index: number) {
+    openGroupIndex = openGroupIndex === index ? null : index;
+  }
+
+  function closeGroup() {
+    openGroupIndex = null;
+  }
 
   async function addQAGroup(template: QATemplate) {
     if (!isOwner) return;
 
-    const newAnswerGroup: UserAnswerGroup = {
-      templateId: template.id,
-      templateTitle: template.title,
-      answers: template.questions.map(q => ({ question: q, answer: '' })),
-    };
+    try {
+      // 質問データを必要時にのみ取得
+      await loadQuestionsIfNeeded();
+      
+      // 質問データが利用可能な場合は詳細な質問オブジェクトを使用
+      if (allQuestions.length > 0) {
+        const categoryQuestions = getQuestionsByCategory(template.id);
+        
+        if (categoryQuestions.length > 0) {
+          const newAnswerGroup: UserAnswerGroup = {
+            templateId: template.id,
+            templateTitle: template.title,
+            answers: categoryQuestions.map(question => ({ 
+              question, 
+              answerText: '' 
+            })),
+          };
 
-    // TODO: ここでサーバーに新しいグループを作成するAPIを叩く
-    // const createdGroup = await fetch('/api/qa', { method: 'POST', body: JSON.stringify(newAnswerGroup) });
-    // const result = await createdGroup.json();
+          answerGroups = [...answerGroups, newAnswerGroup];
+          showTemplateSelector = false;
+          return;
+        }
+      }
 
-    answerGroups.push(newAnswerGroup);
+      // 質問データが取得できない場合は、テンプレートの文字列から仮の質問オブジェクトを作成
+      const newAnswerGroup: UserAnswerGroup = {
+        templateId: template.id,
+        templateTitle: template.title,
+        answers: template.questions.map((questionText, index) => ({
+          question: {
+            questionId: -(index + 1), // 負の値で一意なIDを生成
+            text: questionText,
+            category: template.id as any,
+            displayOrder: index + 1
+          },
+          answerText: ''
+        })),
+      };
 
-    showTemplateSelector = false;
+      answerGroups = [...answerGroups, newAnswerGroup];
+      showTemplateSelector = false;
+    } catch (error) {
+      console.error('Q&Aグループの追加に失敗しました:', error);
+    }
   }
 
   async function handleAnswerUpdate(groupIndex: number, questionIndex: number, newAnswer: string) {
@@ -40,16 +109,20 @@
     if (!answer) return;
 
     try {
-      // TODO: 現在のデータ構造ではquestionIdが取得できないため、
-      // 実際のAPI呼び出しは一時的にコメントアウト
-      // const { createAnswer } = await import('$lib/api/client');
-      // await createAnswer(userId, questionId, newAnswer);
+      // questionIdが正の値の場合のみAPIを呼び出し
+      if (answer.question.questionId > 0) {
+        const { createAnswer } = await import('$lib/api/client');
+        await createAnswer(userId, answer.question.questionId, newAnswer);
+      } else {
+        console.warn('質問IDが無効なため、サーバーへの保存をスキップしました。質問データを再読込してください。');
+      }
 
+      // ローカル状態を更新（APIが成功した場合もスキップした場合も）
       const newAnswerGroups = [...answerGroups];
       const updatedGroup = { ...newAnswerGroups[groupIndex] }; 
       const updatedAnswers = [...updatedGroup.answers]; 
 
-      updatedAnswers[questionIndex] = { ...updatedAnswers[questionIndex], answer: newAnswer };
+      updatedAnswers[questionIndex] = { ...updatedAnswers[questionIndex], answerText: newAnswer };
       updatedGroup.answers = updatedAnswers;
       newAnswerGroups[groupIndex] = updatedGroup;
       answerGroups = newAnswerGroups;
@@ -61,16 +134,33 @@
 
 <div>
   {#if answerGroups && answerGroups.length > 0}
-    <div class="space-y-6">
+    <div class="space-y-6 relative">
       {#each answerGroups as group, groupIndex (group.templateId)}
         <QAGroup 
           answerGroup={group} 
-          {isOwner} 
+          {isOwner}
+          isOpen={openGroupIndex === groupIndex}
+          onToggle={() => toggleGroup(groupIndex)}
           onAnswerUpdate={(questionIndex: number, newAnswer: string) => 
             handleAnswerUpdate(groupIndex, questionIndex, newAnswer)
           }
         />
       {/each}
+      
+      <!-- 固定位置の閉じるボタン -->
+      {#if openGroupIndex !== null}
+        <div class="fixed top-4 right-4 z-50">
+          <button
+            onclick={closeGroup}
+            class="flex items-center gap-2 rounded-full bg-orange-500 px-4 py-2 text-white shadow-lg hover:bg-orange-600 transition-colors"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+            タブを閉じる
+          </button>
+        </div>
+      {/if}
     </div>
   {:else if isOwner}
     <div class="text-center py-12 px-6 bg-gray-50 rounded-3xl">

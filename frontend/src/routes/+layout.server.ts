@@ -4,60 +4,35 @@ import {
 } from "$lib/api/client";
 import type { LayoutServerLoad } from "./$types";
 
+const UNAUTHORIZED_RESULT = { isLoggedIn: false, user: null, userName: null };
+
 export const load: LayoutServerLoad = async ({ cookies }) => {
   try {
     const accessToken = cookies.get("access_token");
+    if (!accessToken) return UNAUTHORIZED_RESULT;
 
-    if (!accessToken) {
-      return {
-        isLoggedIn: false,
-        user: null,
-        userName: null,
-      };
-    }
-
-    // サーバーサイドでのユーザー情報取得
     const cookieHeader = `access_token=${accessToken}`;
     let user = await getCurrentUserServer(cookieHeader);
+    if (user) return { isLoggedIn: true, user: user, userName: user.userName };
 
     // アクセストークンが無効な場合、リフレッシュトークンで再試行
-    if (!user) {
-      const refreshToken = cookies.get("refresh_token");
-      if (refreshToken) {
-        const refreshCookieHeader = `refresh_token=${refreshToken}`;
-        const refreshSuccess =
-          await refreshAccessTokenServer(refreshCookieHeader);
+    const refreshToken = cookies.get("refresh_token");
+    if (!refreshToken) return UNAUTHORIZED_RESULT;
 
-        if (refreshSuccess) {
-          // 新しいアクセストークンでリトライ
-          const newAccessToken = cookies.get("access_token");
-          if (newAccessToken) {
-            const newCookieHeader = `access_token=${newAccessToken}`;
-            user = await getCurrentUserServer(newCookieHeader);
-          }
-        }
-      }
-    }
+    const refreshCookieHeader = `refresh_token=${refreshToken}`;
+    const refreshSuccess = await refreshAccessTokenServer(refreshCookieHeader);
+    if (!refreshSuccess) return UNAUTHORIZED_RESULT;
 
-    if (user) {
-      return {
-        isLoggedIn: true,
-        user: user,
-        userName: user.userName,
-      };
-    }
+    const newAccessToken = cookies.get("access_token");
+    if (!newAccessToken) return UNAUTHORIZED_RESULT;
 
-    return {
-      isLoggedIn: false,
-      user: null,
-      userName: null,
-    };
+    const newCookieHeader = `access_token=${newAccessToken}`;
+    user = await getCurrentUserServer(newCookieHeader);
+    if (!user) return UNAUTHORIZED_RESULT;
+
+    return { isLoggedIn: true, user: user, userName: user.userName };
   } catch (error) {
     console.error("認証状態の確認に失敗しました:", error);
-    return {
-      isLoggedIn: false,
-      user: null,
-      userName: null,
-    };
+    return UNAUTHORIZED_RESULT;
   }
 };
