@@ -259,6 +259,15 @@
 
 {@render children?.()}
 
-<footer class="w-full bg-gray-100 text-center text-sm text-gray-500 py-4">
-  © 2025 hitoQ
+<footer class="w-full bg-gray-100 text-center text-sm text-gray-500 py-6">
+  <div class="max-w-2xl mx-auto px-4">
+    <div class="flex flex-wrap justify-center items-center gap-6 mb-4">
+      <a href="/privacy-policy" class="hover:text-orange-500 transition-colors">プライバシーポリシー</a>
+      <a href="/terms-of-service" class="hover:text-orange-500 transition-colors">利用規約</a>
+      <a href="/contact" class="hover:text-orange-500 transition-colors">お問い合わせ</a>
+    </div>
+    <div class="text-gray-400">
+      © 2025 hitoQ
+    </div>
+  </div>
 </footer>
