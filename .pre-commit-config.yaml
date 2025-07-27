@@ -24,13 +24,8 @@ repos:
     rev: v9.30.1
     hooks:
       - id: eslint
-        args:
-          [
-            "--config=frontend/eslint.config.js",
-            "--ext",
-            ".ts,.svelte",
-            "--fix",
-          ]
+        args: ["--config=frontend/eslint.config.js", "--fix", "frontend/"]
+        files: "^frontend/.*\\.(ts|js|svelte)$"
         additional_dependencies:
           - "eslint@9.30.1"
           - "eslint-plugin-svelte@latest"
