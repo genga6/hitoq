@@ -16,7 +16,7 @@ export const load: PageServerLoad = async ({ params, request }) => {
     try {
       const currentUser = await getCurrentUserServer(cookieHeader);
       isOwner = currentUser && currentUser.userName === userName;
-    } catch (e) {
+    } catch {
       // User not authenticated - this is expected for logged out users
       isOwner = false;
     }
@@ -27,7 +27,7 @@ export const load: PageServerLoad = async ({ params, request }) => {
       availableTemplates,
       isOwner,
     };
-  } catch (e) {
+  } catch {
     console.error("Error loading Q&A data:", e);
     throw error(404, "Q&Aデータが見つかりませんでした");
   }
