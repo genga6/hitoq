@@ -90,7 +90,7 @@
                 <label class="relative cursor-pointer">
                   <input
                     type="radio"
-                    name="entry.CATEGORY_FIELD_ID"
+                    name={GOOGLE_FORM_IDS.CATEGORY}
                     value={category.value}
                     bind:group={selectedCategory}
                     class="sr-only"
@@ -124,7 +124,7 @@
             <input
               type="text"
               id="title"
-              name="entry.TITLE_FIELD_ID"
+              name={GOOGLE_FORM_IDS.TITLE}
               required
               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent"
               placeholder="例：ログインができません"
@@ -138,7 +138,7 @@
             </label>
             <textarea
               id="description"
-              name="entry.DESCRIPTION_FIELD_ID"
+              name={GOOGLE_FORM_IDS.DESCRIPTION} 
               rows="6"
               required
               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent"
@@ -154,7 +154,7 @@
               </label>
               <textarea
                 id="environment"
-                name="entry.ENVIRONMENT_FIELD_ID"
+                name={GOOGLE_FORM_IDS.ENVIRONMENT}
                 rows="3"
                 class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent"
                 placeholder="例：Chrome 120, Windows 11, iPhone Safari など"
@@ -173,7 +173,7 @@
             <input
               type="email"
               id="contact"
-              name="entry.CONTACT_FIELD_ID"
+              name={GOOGLE_FORM_IDS.CONTACT}
               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent"
               placeholder="返信が必要な場合はメールアドレスをご記載ください"
             />
