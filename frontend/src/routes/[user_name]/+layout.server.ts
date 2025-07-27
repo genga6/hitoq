@@ -20,7 +20,7 @@ export const load: LayoutServerLoad = async ({
   let currentUser = null;
   try {
     currentUser = await getCurrentUserServer(cookieHeader);
-  } catch (e) {
+  } catch {
     // 認証エラーは正常な状態
     currentUser = null;
   }

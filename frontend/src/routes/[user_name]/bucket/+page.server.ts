@@ -17,7 +17,7 @@ export const load: PageServerLoad = async ({ params, request }) => {
     try {
       const currentUser = await getCurrentUserServer(cookieHeader);
       isOwner = currentUser && currentUser.userName === userName;
-    } catch (e) {
+    } catch {
       // User not authenticated - this is expected for logged out users
       isOwner = false;
     }
@@ -27,7 +27,7 @@ export const load: PageServerLoad = async ({ params, request }) => {
       bucketListItems,
       isOwner,
     };
-  } catch (e) {
+  } catch {
     console.error("Error loading bucket list items:", e);
     throw error(404, "バケットリストが見つかりませんでした");
   }

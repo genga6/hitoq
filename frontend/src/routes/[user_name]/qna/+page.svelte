@@ -1,13 +1,13 @@
 <script lang="ts">
-	import QAPage from './QAPage.svelte';
-	import type { PageData } from './$types';
+  import QAPage from './QAPage.svelte';
+  import type { PageData } from './$types';
 
-	const { data }: { data: PageData } = $props();
+  const { data }: { data: PageData } = $props();
 </script>
 
 <QAPage
-	initialAnswerGroups={data.userAnswerGroups}
-	availableTemplates={data.availableTemplates}
-	isOwner={data.isOwner}
-	userId={data.profile.userId}
+  initialAnswerGroups={data.userAnswerGroups}
+  availableTemplates={data.availableTemplates}
+  isOwner={data.isOwner}
+  userId={data.profile.userId}
 />

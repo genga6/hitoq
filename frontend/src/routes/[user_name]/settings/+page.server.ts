@@ -22,7 +22,7 @@ export const load: PageServerLoad = async ({ params, request }) => {
     return {
       profile: currentUser,
     };
-  } catch (e) {
+  } catch {
     if (e instanceof Error && e.message.includes("redirect")) {
       throw e;
     }
