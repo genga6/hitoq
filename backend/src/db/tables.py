@@ -26,7 +26,9 @@ class User(Base):
         DateTime(timezone=True), server_default=func.now()
     )
 
-    answers: Mapped[list["Answer"]] = relationship(back_populates="user")
+    answers: Mapped[list["Answer"]] = relationship(
+        back_populates="user", cascade="all, delete-orphan"
+    )
     profile_items: Mapped[list["ProfileItem"]] = relationship(
         back_populates="user", cascade="all, delete-orphan"
     )

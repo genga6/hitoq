@@ -226,6 +226,14 @@ def search_users_by_display_name(
     return users
 
 
+@global_router.delete("/{user_id}", status_code=204)
+def delete_user_endpoint(user_id: str, db: Session = Depends(get_db)):
+    success = user_service.delete_user(db=db, user_id=user_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="User not found")
+    return None
+
+
 @global_router.get("/questions", response_model=list[QuestionRead])
 def read_all_questions(db: Session = Depends(get_db)):
     return qna_service.get_all_questions(db=db)
