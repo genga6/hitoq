@@ -44,7 +44,7 @@
   {#if profileItems && profileItems.length > 0}
     {#each profileItems as item, index (item.profileItemId)}
       <div
-        class="group relative rounded-3xl border border-orange-200 bg-white p-6 transition-all duration-300 {isOwner
+        class="group relative rounded-3xl border-b border-orange-400 bg-white p-6 transition-all duration-300 {isOwner
           ? 'hover:border-orange-300 hover:shadow-lg'
           : ''}"
       >
@@ -59,7 +59,7 @@
               ? 'cursor-pointer transition-all duration-200 hover:-mx-2 hover:-my-1 hover:rounded-md hover:bg-orange-50 hover:px-2 hover:py-1'
               : ''}"
           >
-            <p class="mb-1 text-sm font-medium tracking-wide text-orange-600">{item.label}</p>
+            <p class="mb-1 text-sm font-medium tracking-wide text-gray-700">{item.label}</p>
           </div>
         </Editable>
 

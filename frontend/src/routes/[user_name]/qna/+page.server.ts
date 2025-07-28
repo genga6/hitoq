@@ -9,7 +9,8 @@ export const load: PageServerLoad = async ({ params, request }) => {
 
   try {
     const rawData = await getQnAPageData(userName);
-    const { profile, userAnswerGroups, availableTemplates } = rawData;
+    const { profile, userAnswerGroups, availableTemplates, categories } =
+      rawData;
 
     // Check if the current user is the owner
     let isOwner = false;
@@ -25,9 +26,10 @@ export const load: PageServerLoad = async ({ params, request }) => {
       profile,
       userAnswerGroups,
       availableTemplates,
+      categories,
       isOwner,
     };
-  } catch {
+  } catch (e) {
     console.error("Error loading Q&A data:", e);
     throw error(404, "Q&Aデータが見つかりませんでした");
   }

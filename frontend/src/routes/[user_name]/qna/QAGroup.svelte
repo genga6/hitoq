@@ -1,15 +1,20 @@
 <script lang="ts">
   import QAItem from './QAItem.svelte';
-  import type { UserAnswerGroup } from '$lib/types/qna';
+  import type { UserAnswerGroup, CategoryInfo } from '$lib/types/qna';
   import { slide } from 'svelte/transition';
 
-  const { answerGroup, isOwner, onAnswerUpdate, isOpen, onToggle } = $props<{
+  const { answerGroup, isOwner, onAnswerUpdate, isOpen, onToggle, categoryInfo } = $props<{
     answerGroup: UserAnswerGroup;
     isOwner: boolean;
     onAnswerUpdate: (questionIndex: number, newAnswer: string) => void;
     isOpen: boolean;
     onToggle: () => void;
+    categoryInfo?: CategoryInfo | null;
   }>();
+
+  // 回答済み数を計算
+  const answeredCount = $derived(answerGroup.answers.filter((qa) => qa.answerText.trim() !== '').length);
+  const totalCount = $derived(answerGroup.answers.length);
 </script>
 
 <div
@@ -19,7 +24,29 @@
     onclick={onToggle}
     class="flex w-full items-center justify-between p-6 text-left aria-expanded={isOpen}"
   >
-    <h3 class="text-xl font-bold text-gray-800">{answerGroup.templateTitle}</h3>
+    <div class="flex flex-col items-start">
+      <div class="flex items-center gap-2 mb-1">
+        <h3 class="text-xl font-bold text-gray-800">{answerGroup.templateTitle}</h3>
+        {#if categoryInfo}
+          <span class="inline-flex rounded-full px-2 py-1 text-xs font-medium bg-gray-100 text-gray-700">
+            {categoryInfo.label}
+          </span>
+        {/if}
+      </div>
+      <div class="mt-1 flex items-center gap-2">
+        <span class="text-sm text-gray-600">
+          {answeredCount}/{totalCount}問回答済み
+        </span>
+        {#if answeredCount > 0}
+          <div class="h-2 w-16 bg-gray-200 rounded-full">
+            <div 
+              class="h-2 bg-orange-500 rounded-full transition-all duration-300"
+              style="width: {(answeredCount / totalCount) * 100}%"
+            ></div>
+          </div>
+        {/if}
+      </div>
+    </div>
     <svg
       xmlns="http://www.w3.org/2000/svg"
       class="h-6 w-6 text-gray-500 transition-transform duration-300"

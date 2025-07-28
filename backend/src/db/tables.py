@@ -91,6 +91,7 @@ class Question(Base):
     category: Mapped[QuestionCategoryEnum]
     text: Mapped[str]
     display_order: Mapped[int]
+    template_id: Mapped[str] = mapped_column(String, nullable=False)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )

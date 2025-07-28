@@ -23,10 +23,17 @@ export interface QandA {
   answer?: Answer;
 }
 
+export interface CategoryInfo {
+  id: string;
+  label: string;
+  description: string;
+}
+
 export interface QATemplate {
   id: string;
   title: string;
-  questions: string[];
+  questions: Question[]; // QuestionReadオブジェクトの配列に変更
+  category?: string; // フィルタリング用のカテゴリ情報（オプショナル）
 }
 
 // バックエンドから受信する実際の構造
