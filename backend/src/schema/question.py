@@ -8,6 +8,7 @@ class QuestionBase(OrmBaseModel):
     category: QuestionCategoryEnum
     text: str
     display_order: int
+    template_id: str
 
 
 class QuestionCreate(QuestionBase):

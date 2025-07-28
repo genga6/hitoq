@@ -3,12 +3,23 @@
   import TabNavigation from '$lib/components/TabNavigation.svelte';
   import type { Snippet } from 'svelte';
   import type { BasePageData } from '$lib/types/page';
+  import { recordVisit } from '$lib/api/client';
 
   type Props = {
     data: BasePageData;
     children?: Snippet;
   };
   let { data, children }: Props = $props();
+
+  // Record visit when page loads
+  $effect(() => {
+    if (data.profile) {
+      recordVisit(data.profile.userId).catch((error) => {
+        // Silently fail - visit recording is not critical
+        console.debug('Failed to record visit:', error);
+      });
+    }
+  });
 </script>
 
 <main class="flex min-h-screen justify-center bg-gray-100 p-4">
@@ -18,9 +29,13 @@
         displayName={data.profile.displayName}
         iconUrl={data.profile.iconUrl}
         bio={data.profile.bio}
+        userName={data.profile.userName}
+        isOwner={data.isOwner}
       />
       <TabNavigation userName={data.profile.userName} />
     {/if}
-    {@render children?.()}
+    {#if children}
+      {@render children()}
+    {/if}
   </div>
 </main>

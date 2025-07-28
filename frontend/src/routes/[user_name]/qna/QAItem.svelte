@@ -19,7 +19,7 @@
     ? 'hover:bg-orange-50/50'
     : ''}"
 >
-  <p class="text-medium mb-2 font-medium text-orange-600">
+  <p class="text-medium mb-2 font-medium text-gray-600">
     {typeof question === 'string' ? question : question.text}
   </p>
 

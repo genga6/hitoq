@@ -1,7 +1,8 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sqlalchemy.orm import Session
 
 from src.db.session import get_db
+from src.router.auth import _get_current_user
 from src.schema.answer import AnswerCreate, AnswerRead
 from src.schema.bucket_list_item import (
     BucketListItemCreate,
@@ -20,13 +21,14 @@ from src.schema.profile_item import (
 )
 from src.schema.question import QuestionRead
 from src.schema.user import UserCreate, UserRead
+from src.schema.visit import VisitorInfo, VisitRead, VisitsVisibilityUpdate
 from src.service import (
     bucket_list_item_service,
     profile_service,
     qna_service,
     user_service,
+    visit_service,
 )
-from src.service.question_templates import get_category_title
 
 resource_router = APIRouter(
     prefix="/users/{user_id}",
@@ -79,23 +81,52 @@ def read_qna_page_data(user_name: str, db: Session = Depends(get_db)):
     if not user_with_items:
         raise HTTPException(status_code=404, detail="User not found")
     user_answer_groups = qna_service.get_user_qna(db, user.user_id)
-    all_questions_grouped = qna_service.get_all_questions_grouped(db)
+
+    # テンプレート単位で利用可能なテンプレートを作成
+    from collections import defaultdict
+
+    from src.service.question_templates import (
+        get_all_category_info,
+        get_default_templates,
+    )
+
+    # データベースからテンプレート単位で質問を取得
+    all_questions = qna_service.get_all_questions(db)
+    questions_by_template = defaultdict(list)
+    for question in all_questions:
+        questions_by_template[question.template_id].append(question)
 
     available_templates = []
-    for category, questions in all_questions_grouped.items():
-        if not any(group.template_id == category.name for group in user_answer_groups):
-            available_templates.append(
-                {
-                    "id": category.name,
-                    "title": get_category_title(category),
-                    "questions": questions,
-                }
-            )
+    for template in get_default_templates():
+        template_id = (
+            template.title.replace(" ", "-")
+            .replace("の", "")
+            .replace("質問", "")
+            .lower()
+        )
+        template_questions = questions_by_template.get(template_id, [])
+
+        available_templates.append(
+            {
+                "id": template_id,
+                "title": template.title,
+                "questions": template_questions,  # QuestionReadオブジェクトのリスト
+                "category": template.category.value,  # カテゴリー情報を追加
+            }
+        )
+
+    # カテゴリー情報を取得してシリアライズ用に変換
+    categories_raw = get_all_category_info()
+    categories_info = {
+        key: {"id": info.id, "label": info.label, "description": info.description}
+        for key, info in categories_raw.items()
+    }
 
     return {
         "profile": user_with_items,
         "user_answer_groups": user_answer_groups,
         "available_templates": available_templates,
+        "categories": categories_info,
     }
 
 
@@ -237,3 +268,104 @@ def delete_user_endpoint(user_id: str, db: Session = Depends(get_db)):
 @global_router.get("/questions", response_model=list[QuestionRead])
 def read_all_questions(db: Session = Depends(get_db)):
     return qna_service.get_all_questions(db=db)
+
+
+# Visit related endpoints
+@resource_router.post("/visit", status_code=201)
+def record_visit_endpoint(
+    user_id: str, request: Request, db: Session = Depends(get_db)
+):
+    """Record a visit to a user's page."""
+    # Try to get current user (may be None for anonymous visitors)
+    visitor_user_id = None
+    try:
+        current_user = _get_current_user(request, db)
+        visitor_user_id = current_user.user_id
+    except HTTPException:
+        # Anonymous visitor
+        pass
+
+    visit = visit_service.record_visit(
+        db=db, visited_user_id=user_id, visitor_user_id=visitor_user_id
+    )
+
+    if not visit:
+        raise HTTPException(status_code=400, detail="Visit not recorded")
+
+    return {"message": "Visit recorded successfully"}
+
+
+@resource_router.get("/visits", response_model=list[VisitRead])
+def get_user_visits_endpoint(
+    user_id: str, limit: int = Query(50, ge=1, le=100), db: Session = Depends(get_db)
+):
+    """Get visits to a user's page (only if visits are visible)."""
+    visits = visit_service.get_user_visits(db=db, user_id=user_id, limit=limit)
+
+    # Convert to response format
+    visit_reads = []
+    for visit in visits:
+        visitor_info = None
+        if visit.visitor_user and not visit.is_anonymous:
+            visitor_info = VisitorInfo(
+                user_id=visit.visitor_user.user_id,
+                user_name=visit.visitor_user.user_name,
+                display_name=visit.visitor_user.display_name,
+                icon_url=visit.visitor_user.icon_url,
+                is_anonymous=False,
+            )
+        elif visit.is_anonymous:
+            visitor_info = VisitorInfo(is_anonymous=True)
+
+        visit_reads.append(
+            VisitRead(
+                visit_id=visit.visit_id,
+                visitor_user_id=visit.visitor_user_id,
+                visited_user_id=visit.visited_user_id,
+                is_anonymous=visit.is_anonymous,
+                visited_at=visit.visited_at,
+                visitor_info=visitor_info,
+            )
+        )
+
+    return visit_reads
+
+
+@resource_router.put("/visits-visibility", status_code=204)
+def update_visits_visibility_endpoint(
+    user_id: str,
+    visibility_update: VisitsVisibilityUpdate,
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    """Update visits visibility setting (requires authentication and ownership)."""
+    current_user = _get_current_user(request, db)
+
+    # Check if user is updating their own settings
+    if current_user.user_id != user_id:
+        raise HTTPException(status_code=403, detail="Access denied")
+
+    success = visit_service.update_visits_visibility(
+        db=db, user_id=user_id, visible=visibility_update.visible
+    )
+
+    if not success:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    return None
+
+
+@resource_router.get("/visits-visibility")
+def get_visits_visibility_endpoint(
+    user_id: str, request: Request, db: Session = Depends(get_db)
+):
+    """Get visits visibility setting (requires authentication and ownership)."""
+    current_user = _get_current_user(request, db)
+
+    # Check if user is accessing their own settings
+    if current_user.user_id != user_id:
+        raise HTTPException(status_code=403, detail="Access denied")
+
+    visible = visit_service.get_visits_visibility(db=db, user_id=user_id)
+
+    return {"visible": visible}
