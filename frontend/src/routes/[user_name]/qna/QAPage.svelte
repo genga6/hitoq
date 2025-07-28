@@ -48,6 +48,9 @@
   // カテゴリー情報（フォールバックを含む）
   const categories = Object.keys(categoriesFromProps).length > 0 ? categoriesFromProps : fallbackCategories;
 
+  // 使用可能なカテゴリIDのリスト
+  const availableCategories = Object.keys(categories);
+
   let openGroupIndex = $state<number | null>(null); // 開いているグループのインデックス
 
   // 一意のIDを生成する関数
