@@ -31,6 +31,12 @@ async function fetchApiWithAuth<T>(
     const errorData = await response.json();
     throw new Error(errorData.detail || "API request failed");
   }
+
+  // 204 No Content の場合はJSONパースしない
+  if (response.status === 204) {
+    return undefined as T;
+  }
+
   return response.json();
 }
 
@@ -275,6 +281,18 @@ export const checkAuthStatus = async (): Promise<boolean> => {
   return user !== null;
 };
 
+export const deleteUser = async (userId: string): Promise<void> => {
+  await fetchApiWithAuth<void>(`/users/${userId}`, {
+    method: "DELETE",
+  });
+
+  // アカウント削除後、クッキーをクリアしてセッションを無効化
+  document.cookie =
+    "access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT";
+  document.cookie =
+    "refresh_token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT";
+};
+
 // Server-side authentication APIs
 export const getCurrentUserServer = async (cookieHeader: string) => {
   try {
@@ -283,8 +301,12 @@ export const getCurrentUserServer = async (cookieHeader: string) => {
     });
     return user;
   } catch (error) {
-    // 認証エラーは正常な状態なので、詳細なログは出力しない
-    if (error instanceof Error && error.message.includes("Not authenticated")) {
+    // 認証エラーやユーザーが見つからない場合は正常な状態なので、詳細なログは出力しない
+    if (
+      error instanceof Error &&
+      (error.message.includes("Not authenticated") ||
+        error.message.includes("User not found"))
+    ) {
       return null;
     }
     // 予期しないエラーの場合のみログを出力
@@ -302,6 +324,10 @@ export const refreshAccessTokenServer = async (
     });
     return true;
   } catch (error) {
+    // ユーザーが見つからない場合は削除された可能性があるので、ログを出力しない
+    if (error instanceof Error && error.message.includes("User not found")) {
+      return false;
+    }
     console.error("サーバーサイドでのトークン更新に失敗しました:", error);
     return false;
   }

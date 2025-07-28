@@ -84,6 +84,17 @@ def create_default_profile_items(db: Session, user_id: str) -> None:
     db.commit()
 
 
+def delete_user(db: Session, user_id: str) -> bool:
+    """Delete a user and all associated data."""
+    db_user = get_user(db, user_id)
+    if not db_user:
+        return False
+
+    db.delete(db_user)
+    db.commit()
+    return True
+
+
 def upsert_user(db: Session, user_in: UserCreate) -> User:
     # Initialize default questions if they don't exist
     initialize_default_questions(db)
