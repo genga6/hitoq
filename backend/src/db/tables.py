@@ -2,7 +2,7 @@ import enum
 import uuid
 from datetime import datetime
 
-from sqlalchemy import DateTime, ForeignKey, String
+from sqlalchemy import Boolean, DateTime, ForeignKey, String
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
 
@@ -22,6 +22,7 @@ class User(Base):
     display_name: Mapped[str] = mapped_column(String(100), nullable=False)
     bio: Mapped[str | None] = mapped_column(String(300), nullable=True)
     icon_url: Mapped[str | None] = mapped_column(String(512), nullable=True)
+    visits_visible: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )
@@ -34,6 +35,18 @@ class User(Base):
     )
     bucket_list_items: Mapped[list["BucketListItem"]] = relationship(
         back_populates="user", cascade="all, delete-orphan"
+    )
+    visits_received: Mapped[list["Visit"]] = relationship(
+        "Visit",
+        foreign_keys="[Visit.visited_user_id]",
+        back_populates="visited_user",
+        cascade="all, delete-orphan",
+    )
+    visits_made: Mapped[list["Visit"]] = relationship(
+        "Visit",
+        foreign_keys="[Visit.visitor_user_id]",
+        back_populates="visitor_user",
+        cascade="all, delete-orphan",
     )
 
 
@@ -98,3 +111,26 @@ class Answer(Base):
 
     user: Mapped["User"] = relationship(back_populates="answers")
     question: Mapped["Question"] = relationship(back_populates="answers")
+
+
+class Visit(Base):
+    __tablename__ = "visits"
+
+    visit_id: Mapped[int] = mapped_column(primary_key=True)
+    visitor_user_id: Mapped[str | None] = mapped_column(
+        ForeignKey("users.user_id"), nullable=True
+    )
+    visited_user_id: Mapped[str] = mapped_column(
+        ForeignKey("users.user_id"), nullable=False
+    )
+    is_anonymous: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    visited_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+
+    visitor_user: Mapped["User"] = relationship(
+        "User", foreign_keys=[visitor_user_id], back_populates="visits_made"
+    )
+    visited_user: Mapped["User"] = relationship(
+        "User", foreign_keys=[visited_user_id], back_populates="visits_received"
+    )
