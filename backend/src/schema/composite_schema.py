@@ -26,13 +26,21 @@ class UserAnswerGroupRead(OrmBaseModel):
     answers: list[AnsweredQARead]
 
 
+class CategoryInfoRead(OrmBaseModel):
+    id: str
+    label: str
+    description: str
+
+
 class AvailableQATemplateRead(OrmBaseModel):
     id: str
     title: str
     questions: list[QuestionRead]
+    category: str
 
 
 class QnAPageData(OrmBaseModel):
     profile: UserRead
     user_answer_groups: list[UserAnswerGroupRead]
     available_templates: list[AvailableQATemplateRead]
+    categories: dict[str, CategoryInfoRead]

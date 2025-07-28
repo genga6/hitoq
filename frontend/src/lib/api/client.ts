@@ -6,6 +6,7 @@ import type {
   Answer,
   UserAnswerGroupBackend,
   QATemplate,
+  CategoryInfo,
 } from "$lib/types/qna";
 
 const API_BASE_URL = PUBLIC_API_BASE_URL;
@@ -122,16 +123,19 @@ export const getQnAPageData = async (
   profile: Profile;
   userAnswerGroups: UserAnswerGroupBackend[];
   availableTemplates: QATemplate[];
+  categories: Record<string, CategoryInfo>;
 }> => {
   const data = await fetchApi<{
     profile: Profile;
     userAnswerGroups: UserAnswerGroupBackend[];
     availableTemplates: QATemplate[];
+    categories: Record<string, CategoryInfo>;
   }>(`/users/by-username/${userName}/qna`);
   return {
     profile: data.profile,
     userAnswerGroups: data.userAnswerGroups,
     availableTemplates: data.availableTemplates,
+    categories: data.categories,
   };
 };
 

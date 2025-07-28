@@ -3,26 +3,66 @@
     QATemplate,
     UserAnswerGroup,
     UserAnswerGroupBackend,
-    Question
+    CategoryInfo
   } from '$lib/types/qna';
   import QAGroup from './QAGroup.svelte';
-  import { slide } from 'svelte/transition';
-  import { getAllQuestions } from '$lib/api/client';
 
-  const { initialAnswerGroups, availableTemplates, isOwner, userId } = $props<{
-    initialAnswerGroups: UserAnswerGroupBackend[]; // バックエンドから受信する型
-    availableTemplates: QATemplate[];
+  const { 
+    initialAnswerGroups = [], 
+    availableTemplates = [], 
+    categories: categoriesFromProps = {}, 
+    isOwner, 
+    userId 
+  } = $props<{
+    initialAnswerGroups?: UserAnswerGroupBackend[]; // バックエンドから受信する型
+    availableTemplates?: QATemplate[];
+    categories?: Record<string, CategoryInfo>;
     isOwner: boolean;
     userId: string;
   }>();
 
-  let showTemplateSelector = $state(false);
-  let allQuestions = $state<Question[]>([]);
+  // 一時的なフォールバック用カテゴリー情報
+  const fallbackCategories: Record<string, CategoryInfo> = {
+    'self-introduction': {
+      id: 'self-introduction',
+      label: '自己紹介',
+      description: '基本的な自己紹介に関する質問'
+    },
+    'values': {
+      id: 'values',
+      label: '価値観',
+      description: '価値観や考え方に関する質問'
+    },
+    'otaku': {
+      id: 'otaku',
+      label: '趣味・創作',
+      description: '趣味や創作活動に関する質問'
+    },
+    'misc': {
+      id: 'misc',
+      label: 'ライフスタイル',
+      description: '日常生活やライフスタイルに関する質問'
+    }
+  };
+
+  // カテゴリー情報（フォールバックを含む）
+  const categories = Object.keys(categoriesFromProps).length > 0 ? categoriesFromProps : fallbackCategories;
+
   let openGroupIndex = $state<number | null>(null); // 開いているグループのインデックス
 
-  // 初期データを直接変換（$effectを使わない）
-  let answerGroups = $state<UserAnswerGroup[]>(
-    initialAnswerGroups.map((group) => ({
+  // 一意のIDを生成する関数
+  function generateGroupId(): string {
+    return `group-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  }
+
+  // 回答済みのテンプレートIDを抽出
+  const answeredTemplateIds = new Set(initialAnswerGroups?.map(group => group.templateId) || []);
+  
+  // 初期データを直接変換し、回答済みのグループと未回答のテンプレートを統合
+  let answerGroups = $state<(UserAnswerGroup & { groupId: string })[]>([
+    // 既存の回答済みグループ
+    ...(initialAnswerGroups || []).map((group) => ({
+      groupId: generateGroupId(),
       templateId: group.templateId,
       templateTitle: group.templateTitle,
       answers: group.answers.map((answer) => ({
@@ -30,23 +70,50 @@
         answerText: answer.answerText,
         answerId: answer.answerId
       }))
-    }))
-  );
+    })),
+    // 未回答のテンプレートを空のグループとして追加（重複を避ける）
+    ...(availableTemplates || [])
+      .filter(template => !answeredTemplateIds.has(template.id))
+      .map((template) => ({
+        groupId: generateGroupId(),
+        templateId: template.id,
+        templateTitle: template.title,
+        answers: template.questions.map((question) => ({
+          question: {
+            questionId: question.questionId,
+            text: question.text,
+            category: question.category,
+            displayOrder: question.displayOrder
+          },
+          answerText: ''
+        }))
+      }))
+  ]);
 
-  // 質問データを遅延読み込み（実際に必要になった時のみ取得）
-  async function loadQuestionsIfNeeded() {
-    if (allQuestions.length === 0) {
-      try {
-        allQuestions = await getAllQuestions();
-      } catch {
-        console.warn('質問データの取得に失敗しました。テンプレートから質問を生成します。');
-        allQuestions = [];
-      }
+  // フィルター状態
+  let selectedCategories = $state<Set<string>>(new Set());
+  
+  // フィルターされたanswerGroups
+  const filteredAnswerGroups = $derived(answerGroups.filter(group => {
+    if (selectedCategories.size === 0) return true;
+    const template = availableTemplates.find(t => t.id === group.templateId);
+    return template && selectedCategories.has(template.category || '');
+  }));
+
+  // カテゴリーフィルターの切り替え
+  function toggleCategory(category: string) {
+    const newCategories = new Set(selectedCategories);
+    if (newCategories.has(category)) {
+      newCategories.delete(category);
+    } else {
+      newCategories.add(category);
     }
+    selectedCategories = newCategories;
   }
 
-  function getQuestionsByCategory(category: string): Question[] {
-    return allQuestions.filter((q) => q.category === category);
+  // すべてのフィルターをクリア
+  function clearFilters() {
+    selectedCategories = new Set();
   }
 
   function toggleGroup(index: number) {
@@ -55,55 +122,6 @@
 
   function closeGroup() {
     openGroupIndex = null;
-  }
-
-  async function addQAGroup(template: QATemplate) {
-    if (!isOwner) return;
-
-    try {
-      // 質問データを必要時にのみ取得
-      await loadQuestionsIfNeeded();
-
-      // 質問データが利用可能な場合は詳細な質問オブジェクトを使用
-      if (allQuestions.length > 0) {
-        const categoryQuestions = getQuestionsByCategory(template.id);
-
-        if (categoryQuestions.length > 0) {
-          const newAnswerGroup: UserAnswerGroup = {
-            templateId: template.id,
-            templateTitle: template.title,
-            answers: categoryQuestions.map((question) => ({
-              question,
-              answerText: ''
-            }))
-          };
-
-          answerGroups = [...answerGroups, newAnswerGroup];
-          showTemplateSelector = false;
-          return;
-        }
-      }
-
-      // 質問データが取得できない場合は、テンプレートの文字列から仮の質問オブジェクトを作成
-      const newAnswerGroup: UserAnswerGroup = {
-        templateId: template.id,
-        templateTitle: template.title,
-        answers: template.questions.map((questionText, index) => ({
-          question: {
-            questionId: -(index + 1), // 負の値で一意なIDを生成
-            text: questionText,
-            category: template.id as Question['category'],
-            displayOrder: index + 1
-          },
-          answerText: ''
-        }))
-      };
-
-      answerGroups = [...answerGroups, newAnswerGroup];
-      showTemplateSelector = false;
-    } catch (error) {
-      console.error('Q&Aグループの追加に失敗しました:', error);
-    }
   }
 
   async function handleAnswerUpdate(groupIndex: number, questionIndex: number, newAnswer: string) {
@@ -139,16 +157,72 @@
 </script>
 
 <div>
-  {#if answerGroups && answerGroups.length > 0}
+
+  <!-- カテゴリーフィルター -->
+  {#if categories && Object.keys(categories).length > 0}
+    <div class="mb-6 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
+      <div class="mb-3 flex items-center justify-between">
+        <h3 class="text-lg font-semibold text-gray-800">カテゴリーで絞り込み</h3>
+        {#if selectedCategories.size > 0}
+          <button
+            onclick={clearFilters}
+            class="text-sm text-gray-500 hover:text-gray-700"
+          >
+            すべてクリア
+          </button>
+        {/if}
+      </div>
+      <div class="flex flex-wrap gap-2">
+        {#each availableCategories as categoryId (categoryId)}
+          {@const category = categories[categoryId]}
+          {#if category}
+            <button
+              onclick={() => toggleCategory(categoryId)}
+              class="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium transition-all duration-200 {selectedCategories.has(categoryId)
+                ? 'bg-gray-200 text-gray-800 ring-2 ring-orange-300'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}"
+            >
+              <span>{category.label}</span>
+              {#if selectedCategories.has(categoryId)}
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                </svg>
+              {/if}
+            </button>
+          {/if}
+        {/each}
+      </div>
+      {#if selectedCategories.size > 0}
+        <div class="mt-2 text-xs text-gray-500">
+          {filteredAnswerGroups.length}件のグループが表示されています
+        </div>
+      {/if}
+    </div>
+  {/if}
+
+  {#if filteredAnswerGroups && filteredAnswerGroups.length > 0}
     <div class="relative space-y-6">
-      {#each answerGroups as group, groupIndex (group.templateId)}
+      {#each filteredAnswerGroups as group, groupIndex (group.groupId)}
+        {@const sameTemplateGroups = filteredAnswerGroups.filter(g => g.templateId === group.templateId)}
+        {@const groupNumber = sameTemplateGroups.length > 1 ? sameTemplateGroups.findIndex(g => g.groupId === group.groupId) + 1 : null}
+        {@const template = availableTemplates.find(t => t.id === group.templateId)}
+        {@const categoryInfo = template?.category ? categories[template.category] : null}
         <QAGroup
-          answerGroup={group}
+          answerGroup={{
+            ...group,
+            templateTitle: groupNumber ? `${group.templateTitle} #${groupNumber}` : group.templateTitle
+          }}
           {isOwner}
           isOpen={openGroupIndex === groupIndex}
           onToggle={() => toggleGroup(groupIndex)}
-          onAnswerUpdate={(questionIndex: number, newAnswer: string) =>
-            handleAnswerUpdate(groupIndex, questionIndex, newAnswer)}
+          onAnswerUpdate={(questionIndex: number, newAnswer: string) => {
+            // 元のanswerGroupsのインデックスを見つける
+            const originalIndex = answerGroups.findIndex(g => g.groupId === group.groupId);
+            if (originalIndex !== -1) {
+              handleAnswerUpdate(originalIndex, questionIndex, newAnswer);
+            }
+          }}
+          {categoryInfo}
         />
       {/each}
 
@@ -178,90 +252,22 @@
         </div>
       {/if}
     </div>
-  {:else if isOwner}
-    <div class="rounded-3xl bg-gray-50 px-6 py-12 text-center">
-      <p class="text-lg text-gray-600">まだ回答済みのQ&Aがありません。</p>
-      <p class="mt-2 text-gray-500">下のボタンから新しい質問セットを追加してみましょう！</p>
-    </div>
   {:else}
     <div class="rounded-3xl bg-gray-50 px-6 py-12 text-center">
-      <p class="text-lg text-gray-600">このユーザーはまだQ&Aに回答していません。</p>
-    </div>
-  {/if}
-
-  {#if isOwner}
-    <div class="mt-12 text-center">
-      {#if !showTemplateSelector}
+      {#if selectedCategories.size > 0}
+        <p class="text-lg text-gray-600">選択されたカテゴリーに該当するQ&Aがありません。</p>
         <button
-          onclick={() => (showTemplateSelector = true)}
-          class="inline-flex items-center gap-2 rounded-full bg-orange-500 px-6 py-3 text-lg font-semibold text-white shadow-md transition-transform hover:scale-105 hover:bg-orange-600 focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 focus:outline-none"
+          onclick={clearFilters}
+          class="mt-3 text-orange-600 hover:text-orange-700 font-medium"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-6 w-6"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-            />
-          </svg>
-          新しいQ&Aを追加する
+          フィルターをクリアして全て表示
         </button>
-      {/if}
-
-      {#if showTemplateSelector}
-        <div
-          transition:slide={{ duration: 300 }}
-          class="mt-8 rounded-2xl border border-gray-200 bg-white p-6 shadow-lg"
-        >
-          <div class="mb-4 flex items-center justify-between">
-            <h3 class="text-xl font-bold text-gray-800">挑戦するQ&Aを選ぶ</h3>
-            <!-- svelte-ignore a11y_consider_explicit_label -->
-            <button
-              onclick={() => (showTemplateSelector = false)}
-              class="text-gray-400 hover:text-gray-600"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="h-6 w-6"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
-            </button>
-          </div>
-
-          <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {#each availableTemplates as template (template.id)}
-              <button
-                onclick={() => addQAGroup(template)}
-                class="group flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-300 p-6 text-center transition-all duration-300 hover:border-orange-400 hover:bg-orange-50 hover:shadow-sm"
-              >
-                <span class="text-lg font-semibold text-gray-700 group-hover:text-orange-600"
-                  >{template.title}</span
-                >
-                <span class="mt-1 text-sm text-gray-500">{template.questions.length}問</span>
-              </button>
-            {:else}
-              <p class="text-gray-500 md:col-span-2 lg:col-span-3 text-center py-4">
-                すべてのQ&Aに回答済みです！素晴らしい！
-              </p>
-            {/each}
-          </div>
-        </div>
+      {:else if !isOwner}
+        <p class="text-lg text-gray-600">このユーザーはまだQ&Aに回答していません。</p>
+      {:else}
+        <p class="text-lg text-gray-600">Q&Aがありません。</p>
       {/if}
     </div>
   {/if}
+
 </div>

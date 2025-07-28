@@ -10,6 +10,9 @@
   let visits: Visit[] = $state([]);
   let loading = $state(true);
   let error = $state('');
+  
+  // フィルタリング機能の状態
+  let showOnlyLoggedIn = $state(false);
 
   // TODO: Remove this mock data after testing
   const mockVisits: Visit[] = [
@@ -126,15 +129,48 @@
       return date.toLocaleDateString('ja-JP');
     }
   };
+
+  // フィルタリングされた訪問者リスト
+  let filteredVisits = $state<Visit[]>([]);
+  
+  $effect(() => {
+    if (!showOnlyLoggedIn) {
+      filteredVisits = visits;
+    } else {
+      filteredVisits = visits.filter(visit => 
+        visit.visitor_info && 
+        !visit.visitor_info.is_anonymous && 
+        visit.visitor_info.user_name
+      );
+    }
+  });
 </script>
 
 <div class="space-y-4">
   <!-- ヘッダー部分 -->
-  <div class="flex items-center space-x-2 mb-2">
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" class="h-4 w-4 text-gray-500">
-      <path d="M298.5 156.9C312.8 199.8 298.2 243.1 265.9 253.7C233.6 264.3 195.8 238.1 181.5 195.2C167.2 152.3 181.8 109 214.1 98.4C246.4 87.8 284.2 114 298.5 156.9zM164.4 262.6C183.3 295 178.7 332.7 154.2 346.7C129.7 360.7 94.5 345.8 75.7 313.4C56.9 281 61.4 243.3 85.9 229.3C110.4 215.3 145.6 230.2 164.4 262.6zM133.2 465.2C185.6 323.9 278.7 288 320 288C361.3 288 454.4 323.9 506.8 465.2C510.4 474.9 512 485.3 512 495.7L512 497.3C512 523.1 491.1 544 465.3 544C453.8 544 442.4 542.6 431.3 539.8L343.3 517.8C328 514 312 514 296.7 517.8L208.7 539.8C197.6 542.6 186.2 544 174.7 544C148.9 544 128 523.1 128 497.3L128 495.7C128 485.3 129.6 474.9 133.2 465.2zM485.8 346.7C461.3 332.7 456.7 295 475.6 262.6C494.5 230.2 529.6 215.3 554.1 229.3C578.6 243.3 583.2 281 564.3 313.4C545.4 345.8 510.3 360.7 485.8 346.7zM374.1 253.7C341.8 243.1 327.2 199.8 341.5 156.9C355.8 114 393.6 87.8 425.9 98.4C458.2 109 472.8 152.3 458.5 195.2C444.2 238.1 406.4 264.3 374.1 253.7z"/>
-    </svg>
-    <h2 class="text-lg font-medium text-gray-600">最近の訪問者</h2>
+  <div class="flex items-center justify-between mb-4">
+    <div class="flex items-center space-x-2">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" class="h-4 w-4 text-gray-500">
+        <path d="M298.5 156.9C312.8 199.8 298.2 243.1 265.9 253.7C233.6 264.3 195.8 238.1 181.5 195.2C167.2 152.3 181.8 109 214.1 98.4C246.4 87.8 284.2 114 298.5 156.9zM164.4 262.6C183.3 295 178.7 332.7 154.2 346.7C129.7 360.7 94.5 345.8 75.7 313.4C56.9 281 61.4 243.3 85.9 229.3C110.4 215.3 145.6 230.2 164.4 262.6zM133.2 465.2C185.6 323.9 278.7 288 320 288C361.3 288 454.4 323.9 506.8 465.2C510.4 474.9 512 485.3 512 495.7L512 497.3C512 523.1 491.1 544 465.3 544C453.8 544 442.4 542.6 431.3 539.8L343.3 517.8C328 514 312 514 296.7 517.8L208.7 539.8C197.6 542.6 186.2 544 174.7 544C148.9 544 128 523.1 128 497.3L128 495.7C128 485.3 129.6 474.9 133.2 465.2zM485.8 346.7C461.3 332.7 456.7 295 475.6 262.6C494.5 230.2 529.6 215.3 554.1 229.3C578.6 243.3 583.2 281 564.3 313.4C545.4 345.8 510.3 360.7 485.8 346.7zM374.1 253.7C341.8 243.1 327.2 199.8 341.5 156.9C355.8 114 393.6 87.8 425.9 98.4C458.2 109 472.8 152.3 458.5 195.2C444.2 238.1 406.4 264.3 374.1 253.7z"/>
+      </svg>
+      <h2 class="text-lg font-medium text-gray-600">最近の訪問者</h2>
+    </div>
+    
+    <!-- フィルタリングボタン -->
+    <div class="flex items-center space-x-1 bg-gray-100 rounded-lg p-1">
+      <button 
+        class="px-3 py-1.5 text-sm font-medium rounded-md transition-all duration-200 {!showOnlyLoggedIn ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900'}"
+        onclick={() => showOnlyLoggedIn = false}
+      >
+        すべて
+      </button>
+      <button 
+        class="px-3 py-1.5 text-sm font-medium rounded-md transition-all duration-200 {showOnlyLoggedIn ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900'}"
+        onclick={() => showOnlyLoggedIn = true}
+      >
+        ログインユーザーのみ
+      </button>
+    </div>
   </div>
   
   {#if loading}
@@ -154,56 +190,52 @@
       </div>
       <p class="text-gray-600 font-medium">{error}</p>
     </div>
-  {:else if visits.length === 0}
+  {:else if filteredVisits.length === 0}
     <div class="text-center py-12">
       <div class="inline-flex items-center justify-center w-20 h-20 bg-gray-100 rounded-full mb-6">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" class="h-10 w-10 text-gray-400">
           <path d="M298.5 156.9C312.8 199.8 298.2 243.1 265.9 253.7C233.6 264.3 195.8 238.1 181.5 195.2C167.2 152.3 181.8 109 214.1 98.4C246.4 87.8 284.2 114 298.5 156.9zM164.4 262.6C183.3 295 178.7 332.7 154.2 346.7C129.7 360.7 94.5 345.8 75.7 313.4C56.9 281 61.4 243.3 85.9 229.3C110.4 215.3 145.6 230.2 164.4 262.6zM133.2 465.2C185.6 323.9 278.7 288 320 288C361.3 288 454.4 323.9 506.8 465.2C510.4 474.9 512 485.3 512 495.7L512 497.3C512 523.1 491.1 544 465.3 544C453.8 544 442.4 542.6 431.3 539.8L343.3 517.8C328 514 312 514 296.7 517.8L208.7 539.8C197.6 542.6 186.2 544 174.7 544C148.9 544 128 523.1 128 497.3L128 495.7C128 485.3 129.6 474.9 133.2 465.2zM485.8 346.7C461.3 332.7 456.7 295 475.6 262.6C494.5 230.2 529.6 215.3 554.1 229.3C578.6 243.3 583.2 281 564.3 313.4C545.4 345.8 510.3 360.7 485.8 346.7zM374.1 253.7C341.8 243.1 327.2 199.8 341.5 156.9C355.8 114 393.6 87.8 425.9 98.4C458.2 109 472.8 152.3 458.5 195.2C444.2 238.1 406.4 264.3 374.1 253.7z"/>
         </svg>
       </div>
-      <h3 class="text-lg font-semibold text-gray-700 mb-2">まだ訪問者はいません</h3>
-      <p class="text-gray-500">あなたのページを誰かが訪問すると、ここに表示されます</p>
+      <h3 class="text-lg font-semibold text-gray-700 mb-2">{showOnlyLoggedIn ? 'ログインユーザーの訪問者はいません' : 'まだ訪問者はいません'}</h3>
+      <p class="text-gray-500">{showOnlyLoggedIn ? 'ログインユーザーがあなたのページを訪問すると、ここに表示されます' : 'あなたのページを誰かが訪問すると、ここに表示されます'}</p>
     </div>
   {:else}
     <div class="space-y-4">
-      {#each visits as visit (visit.visit_id)}
+      {#each filteredVisits as visit (visit.visit_id)}
         {#if visit.visitor_info && !visit.visitor_info.is_anonymous && visit.visitor_info.user_name}
           <!-- クリック可能なログインユーザー -->
           <a href="/{visit.visitor_info.user_name}" class="group block relative overflow-hidden rounded-2xl bg-white border border-gray-200 hover:border-orange-200 transition-all duration-200 hover:shadow-lg cursor-pointer">
             <div class="absolute inset-0 bg-gradient-to-r from-orange-50/0 via-orange-50/0 to-orange-50/0 group-hover:from-orange-50/20 group-hover:via-orange-50/5 group-hover:to-amber-50/20 transition-all duration-300"></div>
-            <div class="relative flex items-center space-x-4 p-5">
+            <div class="relative flex items-center space-x-3 sm:space-x-4 p-3 sm:p-5">
               <div class="flex-shrink-0">
                 <div class="relative">
                   <img
                     src={visit.visitor_info.icon_url || '/default-avatar.png'}
                     alt={visit.visitor_info.display_name}
-                    class="w-14 h-14 rounded-2xl object-cover border-2 border-white shadow-sm"
+                    class="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl object-cover border-2 border-white shadow-sm"
                   />
-                  <div class="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 rounded-full border-2 border-white flex items-center justify-center">
+                  <!-- <div class="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 rounded-full border-2 border-white flex items-center justify-center">
                     <svg class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
                       <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
                     </svg>
-                  </div>
+                  </div> -->
                 </div>
               </div>
-              <div class="flex-1 min-w-0">
-                <div class="flex items-center space-x-3">
-                  <h3 class="font-semibold text-gray-900 truncate group-hover:text-orange-700 transition-colors">{visit.visitor_info.display_name}</h3>
-                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-700 group-hover:bg-orange-200">
-                    ユーザー
-                  </span>
+              <div class="flex-1 min-w-0 pr-16 sm:pr-20">
+                <div>
+                  <h3 class="font-semibold text-gray-900 truncate group-hover:text-orange-700 transition-colors text-sm sm:text-base">{visit.visitor_info.display_name}</h3>
                 </div>
-                <div class="flex items-center justify-between mt-1">
-                  <div class="flex items-center space-x-1 min-w-0 flex-1">
-                    <span class="text-sm text-gray-500 group-hover:text-orange-600 transition-colors truncate">@{visit.visitor_info.user_name}</span>
-                  </div>
-                  <div class="flex items-center space-x-2 flex-shrink-0">
-                    <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                    <p class="text-sm text-gray-500 whitespace-nowrap">{formatDate(visit.visited_at)}</p>
-                  </div>
+                <div class="mt-1">
+                  <span class="text-xs sm:text-sm text-gray-500 group-hover:text-orange-600 transition-colors truncate block">@{visit.visitor_info.user_name}</span>
                 </div>
+              </div>
+              <!-- 時間表示（絶対位置） -->
+              <div class="absolute top-3 right-3 sm:top-5 sm:right-5 flex items-center space-x-1 sm:space-x-2">
+                <svg class="w-3 h-3 sm:w-4 sm:h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <p class="text-xs sm:text-sm text-gray-500 whitespace-nowrap">{formatDate(visit.visited_at)}</p>
               </div>
               <!-- クリック可能であることを示すアイコン -->
               <div class="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
@@ -216,50 +248,52 @@
         {:else}
           <!-- クリック不可能な訪問者（匿名または削除済み） -->
           <div class="group relative overflow-hidden rounded-2xl bg-white border border-gray-200 transition-all duration-200">
-            <div class="relative flex items-center space-x-4 p-5">
+            <div class="relative flex items-center space-x-3 sm:space-x-4 p-3 sm:p-5">
               {#if visit.visitor_info?.is_anonymous}
                 <div class="flex-shrink-0">
-                  <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center shadow-sm">
-                    <svg class="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center shadow-sm">
+                    <svg class="w-5 h-5 sm:w-6 sm:h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
                     </svg>
                   </div>
                 </div>
-                <div class="flex-1 min-w-0">
-                  <div class="flex items-center space-x-3">
-                    <h3 class="font-semibold text-gray-700">非ログインユーザー</h3>
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
-                      匿名
-                    </span>
+                <div class="flex-1 min-w-0 pr-16 sm:pr-20">
+                  <div>
+                    <h3 class="font-semibold text-gray-700 text-sm sm:text-base">非ログインユーザー</h3>
                   </div>
-                  <div class="flex items-center space-x-2 mt-1">
-                    <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                    <p class="text-sm text-gray-500 whitespace-nowrap">{formatDate(visit.visited_at)}</p>
+                  <div class="mt-1">
+                    <span class="text-xs sm:text-sm text-gray-500 block">--</span>
                   </div>
+                </div>
+                <!-- 時間表示（絶対位置） -->
+                <div class="absolute top-3 right-3 sm:top-5 sm:right-5 flex items-center space-x-1 sm:space-x-2">
+                  <svg class="w-3 h-3 sm:w-4 sm:h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                  </svg>
+                  <p class="text-xs sm:text-sm text-gray-500 whitespace-nowrap">{formatDate(visit.visited_at)}</p>
                 </div>
               {:else}
                 <div class="flex-shrink-0">
-                  <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-red-100 to-red-200 flex items-center justify-center shadow-sm">
-                    <svg class="w-6 h-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-br from-red-100 to-red-200 flex items-center justify-center shadow-sm">
+                    <svg class="w-5 h-5 sm:w-6 sm:h-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L5.232 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
                     </svg>
                   </div>
                 </div>
-                <div class="flex-1 min-w-0">
-                  <div class="flex items-center space-x-3">
-                    <h3 class="font-semibold text-gray-600">削除されたユーザー</h3>
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-600">
-                      削除済み
-                    </span>
+                <div class="flex-1 min-w-0 pr-16 sm:pr-20">
+                  <div>
+                    <h3 class="font-semibold text-gray-600 text-sm sm:text-base">削除されたユーザー</h3>
                   </div>
-                  <div class="flex items-center space-x-2 mt-1">
-                    <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                    <p class="text-sm text-gray-500 whitespace-nowrap">{formatDate(visit.visited_at)}</p>
+                  <div class="mt-1">
+                    <span class="text-xs sm:text-sm text-gray-500 block">--</span>
                   </div>
+                </div>
+                <!-- 時間表示（絶対位置） -->
+                <div class="absolute top-3 right-3 sm:top-5 sm:right-5 flex items-center space-x-1 sm:space-x-2">
+                  <svg class="w-3 h-3 sm:w-4 sm:h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                  </svg>
+                  <p class="text-xs sm:text-sm text-gray-500 whitespace-nowrap">{formatDate(visit.visited_at)}</p>
                 </div>
               {/if}
             </div>
@@ -268,7 +302,7 @@
       {/each}
     </div>
     
-    {#if visits.length >= 50}
+    {#if filteredVisits.length >= 50}
       <div class="text-center mt-8">
         <div class="inline-flex items-center px-4 py-2 bg-gray-100 rounded-full">
           <svg class="w-4 h-4 text-gray-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
