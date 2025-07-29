@@ -10,7 +10,7 @@
   let showDeleteDialog = $state(false);
   let isDeleting = $state(false);
   let error = $state('');
-  
+
   // Visits visibility settings
   let visitsVisible = $state(false);
   let loadingVisibility = $state(true);
@@ -46,7 +46,7 @@
   const handleDeleteAccount = async () => {
     isDeleting = true;
     error = '';
-    
+
     try {
       await deleteUser(data.profile.userId);
       // 強制的にページ全体をリロードしてサーバーサイドから最新状態を取得
@@ -58,40 +58,46 @@
   };
 </script>
 
-<div class="space-y-6">
-  <h1 class="text-2xl font-bold text-gray-800">設定</h1>
+<div class="space-y-4 md:space-y-6">
+  <h1 class="text-responsive-xl font-bold text-gray-800">設定</h1>
 
-  <div class="rounded-lg bg-gray-50 p-4">
-    <p class="mb-2 text-sm text-gray-600">ログイン中のユーザー:</p>
-    <p class="font-semibold">{data.profile.displayName} (@{data.profile.userName})</p>
+  <div class="card-body rounded-lg bg-gray-50">
+    <p class="mb-2 text-xs text-gray-600 md:text-sm">ログイン中のユーザー:</p>
+    <p class="text-sm font-semibold break-words md:text-base">
+      {data.profile.displayName} (@{data.profile.userName})
+    </p>
   </div>
 
-  <div class="space-y-8">
+  <div class="space-y-6 md:space-y-8">
     <!-- プライバシー設定セクション -->
-    <div class="rounded-lg border border-gray-200 bg-white p-6">
-      <h2 class="text-lg font-semibold text-gray-800 mb-4">プライバシー設定</h2>
-      
+    <div class="card p-4 md:p-6">
+      <h2 class="text-responsive-lg mb-4 font-semibold text-gray-800">プライバシー設定</h2>
+
       <div class="space-y-4">
-        <div class="flex items-center justify-between">
-          <div>
-            <h3 class="font-medium text-gray-700">足跡の公開</h3>
-            <p class="text-sm text-gray-500 mt-1">
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div class="flex-1">
+            <h3 class="text-sm font-medium text-gray-700 md:text-base">足跡の公開</h3>
+            <p class="mt-1 text-xs text-gray-500 md:text-sm">
               オンにすると、あなたのページを訪問したユーザーの一覧を他のユーザーが見ることができます。
             </p>
           </div>
           <div class="flex items-center">
             {#if loadingVisibility}
-              <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-gray-400"></div>
+              <div class="h-5 w-5 animate-spin rounded-full border-b-2 border-gray-400"></div>
             {:else}
-              <label class="relative inline-flex items-center cursor-pointer">
+              <label class="relative inline-flex cursor-pointer items-center">
                 <input
                   type="checkbox"
                   bind:checked={visitsVisible}
                   onchange={handleVisibilityChange}
                   disabled={savingVisibility}
-                  class="sr-only peer"
+                  class="peer sr-only"
                 />
-                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600 {savingVisibility ? 'opacity-50' : ''}"></div>
+                <div
+                  class="peer h-6 w-11 rounded-full bg-gray-200 peer-checked:bg-blue-600 peer-focus:ring-4 peer-focus:ring-blue-300 peer-focus:outline-none after:absolute after:top-[2px] after:left-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:after:translate-x-full peer-checked:after:border-white {savingVisibility
+                    ? 'opacity-50'
+                    : ''}"
+                ></div>
               </label>
             {/if}
           </div>
@@ -99,23 +105,23 @@
       </div>
     </div>
 
-    <div class="py-8 text-center">
-      <p class="text-lg text-gray-600">その他の設定は現在開発中です</p>
-      <p class="mt-2 text-sm text-gray-500">近日中に機能を追加予定です</p>
+    <div class="py-6 text-center md:py-8">
+      <p class="text-responsive text-gray-600">その他の設定は現在開発中です</p>
+      <p class="mt-2 text-xs text-gray-500 md:text-sm">近日中に機能を追加予定です</p>
     </div>
 
     <!-- アカウント削除セクション -->
-    <div class="rounded-lg border border-red-200 bg-red-50 p-6">
+    <div class="card border-red-200 bg-red-50 p-4 md:p-6">
       <div class="space-y-4">
         <div>
-          <h3 class="font-medium text-red-700">アカウント削除</h3>
-          <p class="text-sm text-red-600 mt-1">
+          <h3 class="text-sm font-medium text-red-700 md:text-base">アカウント削除</h3>
+          <p class="mt-1 text-xs text-red-600 md:text-sm">
             アカウントを削除すると、すべてのデータ（プロフィール、バケットリスト、Q&A）が完全に削除され、復元できません。
           </p>
         </div>
         <button
-          onclick={() => showDeleteDialog = true}
-          class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors"
+          onclick={() => (showDeleteDialog = true)}
+          class="btn-primary border-red-600 bg-red-600 text-sm hover:bg-red-700 focus:ring-red-500 md:text-base"
         >
           アカウントを削除
         </button>
@@ -125,32 +131,35 @@
 
   <!-- 削除確認ダイアログ -->
   {#if showDeleteDialog}
-    <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div class="bg-white rounded-lg p-6 max-w-md w-full">
-        <h3 class="text-lg font-semibold text-gray-900 mb-4">アカウント削除の確認</h3>
-        <p class="text-gray-600 mb-6">
+    <div class="bg-opacity-50 fixed inset-0 z-50 flex items-center justify-center bg-black p-4">
+      <div class="card max-h-screen w-full max-w-md overflow-y-auto p-4 md:p-6">
+        <h3 class="text-responsive-lg mb-4 font-semibold text-gray-900">アカウント削除の確認</h3>
+        <p class="mb-6 text-sm text-gray-600 md:text-base">
           本当にアカウントを削除しますか？この操作は取り消すことができません。
           すべてのデータが完全に削除されます。
         </p>
-        
+
         {#if error}
-          <div class="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+          <div class="mb-4 rounded border border-red-400 bg-red-100 p-3 text-red-700">
             {error}
           </div>
         {/if}
-        
-        <div class="flex space-x-3">
+
+        <div class="flex flex-col gap-3 sm:flex-row">
           <button
-            onclick={() => { showDeleteDialog = false; error = ''; }}
+            onclick={() => {
+              showDeleteDialog = false;
+              error = '';
+            }}
             disabled={isDeleting}
-            class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors disabled:opacity-50"
+            class="btn-secondary flex-1 text-sm md:text-base"
           >
             キャンセル
           </button>
           <button
             onclick={handleDeleteAccount}
             disabled={isDeleting}
-            class="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors disabled:opacity-50"
+            class="btn-primary flex-1 border-red-600 bg-red-600 text-sm hover:bg-red-700 focus:ring-red-500 md:text-base"
           >
             {isDeleting ? '削除中...' : '削除する'}
           </button>

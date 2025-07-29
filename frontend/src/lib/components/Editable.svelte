@@ -2,6 +2,9 @@
   import { useClickOutside } from '$lib/utils/useClickOutside';
   import { fade } from 'svelte/transition';
   import { tick } from 'svelte';
+  import ValidatedInput from './ValidatedInput.svelte';
+  import { ValidationRules } from '$lib/utils/validation';
+  import type { ValidationRule } from '$lib/utils/validation';
   import type { Snippet } from 'svelte';
 
   type Props = {
@@ -13,6 +16,7 @@
     as?: 'div' | 'span';
     inputType?: 'input' | 'textarea';
     startInEditMode?: boolean;
+    validationType?: 'profileLabel' | 'profileValue' | 'qaAnswer' | 'bucketItem' | 'displayName' | 'bio';
   };
 
   const {
@@ -23,14 +27,19 @@
     children,
     as: Element = 'div',
     inputType = 'textarea',
-    startInEditMode = false
+    startInEditMode = false,
+    validationType = 'profileValue'
   }: Props = $props();
 
   let isEditing = $state(startInEditMode);
   let tempValue = $state(value);
+  let isValid = $state(true);
 
   let containerElement: HTMLElement | null = $state(null);
   let inputElement: HTMLInputElement | HTMLTextAreaElement | null = $state(null);
+
+  // バリデーションルールを取得
+  const validationRule: ValidationRule = ValidationRules[validationType];
 
   async function startEdit() {
     if (!isOwner || isEditing) return;
@@ -48,12 +57,17 @@
   }
 
   function confirmEdit() {
-    if (!isEditing) return;
+    if (!isEditing || !isValid) return;
 
     const result = onSave(tempValue);
     if (result !== false) {
       isEditing = false;
     }
+  }
+
+  function handleValidationChange(value: string, valid: boolean) {
+    tempValue = value;
+    isValid = valid;
   }
 
   function cancelEdit() {
@@ -97,61 +111,28 @@
     class="flex flex-col gap-2"
     transition:fade={{ duration: 150 }}
   >
-    {#if inputType === 'textarea'}
-      <!-- svelte-ignore a11y_autofocus -->
-      <textarea
-        bind:this={inputElement}
-        bind:value={tempValue}
-        class="w-full resize-none border-0 border-b-2 border-gray-200 bg-transparent px-1 py-1
-            text-lg font-semibold text-gray-700 transition-colors focus:border-orange-500 focus:ring-0 focus:outline-none"
-        oninput={(e) => adjustTextareaHeight(e.currentTarget)}
-        onkeydown={(e) => {
-          if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
-            e.preventDefault();
-            confirmEdit();
-          }
-          if (e.key === 'Escape') {
-            e.preventDefault();
-            cancelEdit();
-          }
-        }}
-        autofocus
-      ></textarea>
-    {:else}
-      <!-- svelte-ignore a11y_autofocus -->
-      <input
-        bind:this={inputElement}
-        bind:value={tempValue}
-        class="w-full border-0 border-b-2 border-gray-200 bg-transparent px-1 py-1
-            text-lg font-semibold text-gray-700 transition-colors focus:border-orange-500 focus:ring-0 focus:outline-none"
-        onkeydown={(e) => {
-          if (e.key === 'Enter') {
-            e.preventDefault();
-            confirmEdit();
-          }
-          if (e.key === 'Escape') {
-            e.preventDefault();
-            cancelEdit();
-          }
-        }}
-        autofocus
-      />
-    {/if}
+    <ValidatedInput
+      value={tempValue}
+      rules={validationRule}
+      type={inputType}
+      onInput={handleValidationChange}
+      class="w-full border-0 border-b-2 border-gray-200 bg-transparent px-1 py-1 text-base font-semibold text-gray-700 transition-colors focus:border-orange-500 focus:ring-0 focus:outline-none sm:text-lg"
+    />
 
     <!-- アクションボタン -->
-    <div class="mt-2 flex justify-end gap-2">
+    <div class="mt-2 flex justify-end gap-1 sm:gap-2">
       <button
         onclick={(e) => {
           e.stopPropagation();
           cancelEdit();
         }}
-        class="rounded-full p-2 text-gray-500 transition-colors hover:bg-gray-100"
+        class="touch-manipulation rounded-full p-1.5 text-gray-500 transition-colors hover:bg-gray-100 sm:p-2"
         aria-label="Cancel"
       >
         <!-- Cancel Icon (X) -->
         <svg
           xmlns="http://www.w3.org/2000/svg"
-          class="h-5 w-5"
+          class="h-4 w-4 sm:h-5 sm:w-5"
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
@@ -164,13 +145,14 @@
           e.stopPropagation();
           confirmEdit();
         }}
-        class="rounded-full p-2 text-green-500 transition-colors hover:bg-green-50"
+        disabled={!isValid}
+        class="touch-manipulation rounded-full p-1.5 transition-colors sm:p-2 {isValid ? 'text-green-500 hover:bg-green-50' : 'text-gray-300 cursor-not-allowed'}"
         aria-label="Confirm"
       >
         <!-- Confirm Icon (Check) -->
         <svg
           xmlns="http://www.w3.org/2000/svg"
-          class="h-5 w-5"
+          class="h-4 w-4 sm:h-5 sm:w-5"
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
@@ -186,7 +168,7 @@
     role={isOwner ? 'button' : 'region'}
     tabindex={isOwner ? 0 : -1}
     onclick={startEdit}
-    onkeydown={(e) => {
+    onkeydown={(e: KeyboardEvent) => {
       if (isOwner && (e.key === 'Enter' || e.key === ' ')) {
         e.preventDefault();
         startEdit();

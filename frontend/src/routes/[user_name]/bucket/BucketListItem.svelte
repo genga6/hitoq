@@ -12,11 +12,11 @@
 </script>
 
 <div
-  class="group flex items-center justify-between gap-4 border-b border-gray-200 p-4 transition-colors duration-200 {isOwner
+  class="group flex items-center justify-between gap-2 border-b border-gray-200 p-3 transition-colors duration-200 sm:gap-4 sm:p-4 {isOwner
     ? 'hover:bg-orange-50/50'
     : ''}"
 >
-  <div class="flex flex-1 items-center gap-3">
+  <div class="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
     <!-- チェックボタン -->
     <button
       type="button"
@@ -24,7 +24,7 @@
       onclick={() => {
         if (isOwner) onToggle();
       }}
-      class={`flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full border-2 transition-all duration-200
+      class={`flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full border-2 transition-all duration-200 sm:h-6 sm:w-6
         ${
           bucket.checked
             ? 'border-orange-500 bg-orange-500 text-white'
@@ -61,7 +61,7 @@
       startInEditMode={bucket.isNew ?? false}
     >
       <span
-        class={`font-semibold transition-colors ${bucket.checked ? 'text-gray-400 line-through' : 'text-gray-800'}`}
+        class={`text-sm font-semibold break-words transition-colors sm:text-base ${bucket.checked ? 'text-gray-400 line-through' : 'text-gray-800'}`}
       >
         {bucket.content}
       </span>
@@ -70,8 +70,14 @@
 
   <!-- ホバーで表示されるアクションボタン -->
   {#if isOwner}
-    <div class="flex items-center gap-2 opacity-0 transition-opacity group-hover:opacity-100">
-      <button onclick={onDelete} class="p-1 text-gray-400 hover:text-red-500" aria-label="Delete">
+    <div
+      class="flex items-center gap-1 opacity-70 transition-opacity group-hover:opacity-100 sm:gap-2 sm:opacity-0"
+    >
+      <button
+        onclick={onDelete}
+        class="touch-manipulation p-1 text-gray-400 hover:text-red-500"
+        aria-label="Delete"
+      >
         <svg
           xmlns="http://www.w3.org/2000/svg"
           class="h-5 w-5"

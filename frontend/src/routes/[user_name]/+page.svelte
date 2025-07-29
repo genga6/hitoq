@@ -20,9 +20,9 @@
       : []
   );
 
-  async function handleItemSave(index: number, field: 'label' | 'value', newValue: string) {
+  async function handleItemSave(index: number, field: 'label' | 'value', newValue: string): Promise<boolean> {
     const item = profileItems[index];
-    if (!item) return;
+    if (!item) return false;
 
     try {
       const { updateProfileItem } = await import('$lib/api/client');
@@ -33,9 +33,11 @@
       const newItems = [...profileItems];
       newItems[index] = updatedItem;
       profileItems = newItems;
+      return true;
     } catch (error) {
       console.error('プロフィール項目の更新に失敗しました:', error);
       // エラーの場合は元の値に戻す
+      return false;
     }
   }
 </script>
@@ -53,6 +55,7 @@
           value={item.label}
           onSave={(newLabel) => handleItemSave(index, 'label', newLabel)}
           inputType="input"
+          validationType="profileLabel"
         >
           <div
             class="relative {isOwner
@@ -68,6 +71,7 @@
           value={item.value}
           onSave={(newValue) => handleItemSave(index, 'value', newValue)}
           inputType="input"
+          validationType="profileValue"
         >
           <div
             class="relative {isOwner

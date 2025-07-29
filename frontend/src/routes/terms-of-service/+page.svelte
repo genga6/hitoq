@@ -7,19 +7,21 @@
   <meta name="description" content="hitoQの利用規約です。" />
 </svelte:head>
 
-<main class="min-h-screen bg-gray-50 py-12">
-  <div class="mx-auto max-w-4xl px-4">
-    <div class="rounded-lg bg-white p-8 shadow-sm">
-      <h1 class="mb-8 text-3xl font-bold text-gray-800">利用規約</h1>
+<main class="min-h-screen bg-gray-50 py-6 md:py-12">
+  <div class="container-responsive max-w-4xl">
+    <div class="card p-4 md:p-8">
+      <h1 class="mb-6 text-2xl font-bold text-gray-800 md:mb-8 md:text-3xl">利用規約</h1>
 
-      <div class="prose prose-lg max-w-none">
-        <p class="mb-6 text-gray-600">
+      <div class="prose prose-sm md:prose-lg max-w-none">
+        <p class="mb-6 text-sm text-gray-600 md:text-base">
           この利用規約（以下「本規約」）は、hitoQ（以下「当サービス」）の利用条件を定めるものです。ユーザーの皆様には本規約に同意の上、当サービスをご利用いただきます。
         </p>
 
-        <section class="mb-8">
-          <h2 class="mb-4 text-2xl font-semibold text-gray-800">第1条（適用）</h2>
-          <ol class="list-decimal space-y-2 pl-6 text-gray-600">
+        <section class="mb-6 md:mb-8">
+          <h2 class="mb-3 text-lg font-semibold text-gray-800 md:mb-4 md:text-2xl">
+            第1条（適用）
+          </h2>
+          <ol class="list-decimal space-y-2 pl-4 text-sm text-gray-600 md:pl-6 md:text-base">
             <li>
               本規約は、ユーザーと当サービス運営者との間の当サービスの利用に関わる一切の関係に適用されるものとします。
             </li>
@@ -29,9 +31,11 @@
           </ol>
         </section>
 
-        <section class="mb-8">
-          <h2 class="mb-4 text-2xl font-semibold text-gray-800">第2条（利用登録）</h2>
-          <ol class="list-decimal space-y-2 pl-6 text-gray-600">
+        <section class="mb-6 md:mb-8">
+          <h2 class="mb-3 text-lg font-semibold text-gray-800 md:mb-4 md:text-2xl">
+            第2条（利用登録）
+          </h2>
+          <ol class="list-decimal space-y-2 pl-4 text-sm text-gray-600 md:pl-6 md:text-base">
             <li>
               当サービスの利用を希望する者は、Xアカウントによる認証を通じて利用登録を行うものとします。
             </li>
@@ -46,12 +50,14 @@
           </ol>
         </section>
 
-        <section class="mb-8">
-          <h2 class="mb-4 text-2xl font-semibold text-gray-800">第3条（禁止事項）</h2>
-          <p class="mb-4 text-gray-600">
+        <section class="mb-6 md:mb-8">
+          <h2 class="mb-3 text-lg font-semibold text-gray-800 md:mb-4 md:text-2xl">
+            第3条（禁止事項）
+          </h2>
+          <p class="mb-4 text-sm text-gray-600 md:text-base">
             ユーザーは、当サービスの利用にあたり、以下の行為をしてはなりません：
           </p>
-          <ol class="list-decimal space-y-2 pl-6 text-gray-600">
+          <ol class="list-decimal space-y-2 pl-4 text-sm text-gray-600 md:pl-6 md:text-base">
             <li>法令または公序良俗に違反する行為</li>
             <li>犯罪行為に関連する行為</li>
             <li>他のユーザー、第三者または当サービス運営者の知的財産権を侵害する行為</li>
@@ -69,9 +75,11 @@
           </ol>
         </section>
 
-        <section class="mb-8">
-          <h2 class="mb-4 text-2xl font-semibold text-gray-800">第4条（投稿コンテンツ）</h2>
-          <ol class="list-decimal space-y-2 pl-6 text-gray-600">
+        <section class="mb-6 md:mb-8">
+          <h2 class="mb-3 text-lg font-semibold text-gray-800 md:mb-4 md:text-2xl">
+            第4条（投稿コンテンツ）
+          </h2>
+          <ol class="list-decimal space-y-2 pl-4 text-sm text-gray-600 md:pl-6 md:text-base">
             <li>ユーザーは、自己の責任において、当サービスにコンテンツを投稿するものとします。</li>
             <li>
               ユーザーは、投稿したコンテンツについて、他のユーザーが閲覧可能であることを承諾するものとします。
@@ -85,9 +93,11 @@
           </ol>
         </section>
 
-        <section class="mb-8">
-          <h2 class="mb-4 text-2xl font-semibold text-gray-800">第5条（利用制限および登録抹消）</h2>
-          <ol class="list-decimal space-y-2 pl-6 text-gray-600">
+        <section class="mb-6 md:mb-8">
+          <h2 class="mb-3 text-lg font-semibold text-gray-800 md:mb-4 md:text-2xl">
+            第5条（利用制限および登録抹消）
+          </h2>
+          <ol class="list-decimal space-y-2 pl-4 text-sm text-gray-600 md:pl-6 md:text-base">
             <li>
               当サービス運営者は、ユーザーが以下のいずれかに該当する場合、事前の通知なく利用制限または登録抹消を行うことができるものとします：
               <ul class="mt-2 list-disc space-y-1 pl-6">
@@ -102,11 +112,11 @@
           </ol>
         </section>
 
-        <section class="mb-8">
-          <h2 class="mb-4 text-2xl font-semibold text-gray-800">
+        <section class="mb-6 md:mb-8">
+          <h2 class="mb-3 text-lg font-semibold text-gray-800 md:mb-4 md:text-2xl">
             第6条（保証の否認および免責事項）
           </h2>
-          <ol class="list-decimal space-y-2 pl-6 text-gray-600">
+          <ol class="list-decimal space-y-2 pl-4 text-sm text-gray-600 md:pl-6 md:text-base">
             <li>
               当サービス運営者は、当サービスに事実上または法律上の瑕疵がないことを明示的にも黙示的にも保証しておりません。
             </li>
@@ -116,23 +126,29 @@
           </ol>
         </section>
 
-        <section class="mb-8">
-          <h2 class="mb-4 text-2xl font-semibold text-gray-800">第7条（サービス内容の変更等）</h2>
-          <p class="mb-4 text-gray-600">
+        <section class="mb-6 md:mb-8">
+          <h2 class="mb-3 text-lg font-semibold text-gray-800 md:mb-4 md:text-2xl">
+            第7条（サービス内容の変更等）
+          </h2>
+          <p class="mb-4 text-sm text-gray-600 md:text-base">
             当サービス運営者は、ユーザーに通知することなく、当サービスの内容を変更し、または当サービスの提供を中止することができるものとします。これによってユーザーに生じた損害について、当サービス運営者は一切の責任を負いません。
           </p>
         </section>
 
-        <section class="mb-8">
-          <h2 class="mb-4 text-2xl font-semibold text-gray-800">第8条（利用規約の変更）</h2>
-          <p class="mb-4 text-gray-600">
+        <section class="mb-6 md:mb-8">
+          <h2 class="mb-3 text-lg font-semibold text-gray-800 md:mb-4 md:text-2xl">
+            第8条（利用規約の変更）
+          </h2>
+          <p class="mb-4 text-sm text-gray-600 md:text-base">
             当サービス運営者は、必要と判断した場合、ユーザーに通知することなくいつでも本規約を変更することができるものとします。変更後の利用規約は、当サイトに掲載された時点から効力を生じるものとします。
           </p>
         </section>
 
-        <section class="mb-8">
-          <h2 class="mb-4 text-2xl font-semibold text-gray-800">第9条（準拠法・裁判管轄）</h2>
-          <ol class="list-decimal space-y-2 pl-6 text-gray-600">
+        <section class="mb-6 md:mb-8">
+          <h2 class="mb-3 text-lg font-semibold text-gray-800 md:mb-4 md:text-2xl">
+            第9条（準拠法・裁判管轄）
+          </h2>
+          <ol class="list-decimal space-y-2 pl-4 text-sm text-gray-600 md:pl-6 md:text-base">
             <li>本規約の解釈にあたっては、日本法を準拠法とします。</li>
             <li>
               当サービスに関して紛争が生じた場合、当サービス運営者の所在地を管轄する裁判所を専属的合意管轄とします。
@@ -140,9 +156,11 @@
           </ol>
         </section>
 
-        <section class="mb-8">
-          <h2 class="mb-4 text-2xl font-semibold text-gray-800">第10条（お問い合わせ）</h2>
-          <p class="mb-4 text-gray-600">
+        <section class="mb-6 md:mb-8">
+          <h2 class="mb-3 text-lg font-semibold text-gray-800 md:mb-4 md:text-2xl">
+            第10条（お問い合わせ）
+          </h2>
+          <p class="mb-4 text-sm text-gray-600 md:text-base">
             本規約に関するお問い合わせは、<a
               href="/contact"
               class="text-orange-500 hover:text-orange-600">お問い合わせフォーム</a
@@ -150,7 +168,7 @@
           </p>
         </section>
 
-        <p class="mt-8 text-sm text-gray-500">
+        <p class="mt-6 text-xs text-gray-500 md:mt-8 md:text-sm">
           制定日：2025年7月25日<br />
           最終更新日：2025年7月25日
         </p>

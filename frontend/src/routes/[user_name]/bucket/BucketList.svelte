@@ -151,9 +151,9 @@
     <div class="mt-4 flex justify-center">
       <button
         onclick={addItem}
-        class="mt-4 w-1/2 rounded-xl bg-orange-100 px-4 py-2 font-semibold text-orange-500 transition duration-200 hover:bg-orange-200 active:bg-orange-300"
+        class="btn-secondary w-full max-w-xs rounded-xl border-orange-200 bg-orange-100 text-orange-500 hover:border-orange-300 hover:bg-orange-200 active:bg-orange-300"
       >
-        ＋ 新しいバケットを追加
+        <span class="text-sm md:text-base">＋ 新しいバケットを追加</span>
       </button>
     </div>
   {/if}
