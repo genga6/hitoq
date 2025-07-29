@@ -8,12 +8,18 @@ import httpx
 import jwt
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import JSONResponse, RedirectResponse
+from slowapi import Limiter
+from slowapi.util import get_remote_address
 from sqlalchemy.orm import Session
 
 from src.config import SECRET_KEY, TWITTER_CLIENT_ID, TWITTER_CLIENT_SECRET
 from src.db.session import get_db
+from src.logging_config import get_logger
 from src.schema.user import UserCreate, UserRead
 from src.service import user_service
+
+logger = get_logger(__name__)
+limiter = Limiter(key_func=get_remote_address)
 
 auth_router = APIRouter()
 
@@ -89,6 +95,7 @@ def _get_current_user(request: Request, db: Session = Depends(get_db)):
 
 # https://docs.x.com/resources/fundamentals/authentication/oauth-2-0/user-access-token
 @auth_router.get("/login/twitter")
+@limiter.limit("10/minute")  # Prevent auth spam
 async def login_twitter(request: Request):
     state = secrets.token_urlsafe(16)
     code_verifier = secrets.token_urlsafe(32)
@@ -109,11 +116,15 @@ async def login_twitter(request: Request):
         "code_challenge_method": "S256",
     }
     auth_url = httpx.URL(TWITTER_AUTH_URL, params=params)
+    logger.info(
+        "Twitter auth initiated", client_ip=get_remote_address(request), state=state
+    )
     return RedirectResponse(url=str(auth_url))
 
 
 # This func requests an access token from Twitter's API using code passed from Twitter and redirects to the frontend
 @auth_router.get("/callback/twitter")
+@limiter.limit("20/minute")  # Higher limit for callback (legitimate flow)
 async def auth_twitter_callback(
     request: Request, code: str, state: str, db: Session = Depends(get_db)
 ):
@@ -178,6 +189,13 @@ async def auth_twitter_callback(
         )
         user = user_service.upsert_user(db, user_in=user_in)
 
+        logger.info(
+            "User authenticated successfully",
+            user_id=user.user_id,
+            username=user.user_name,
+            client_ip=get_remote_address(request),
+        )
+
         access_token = _create_access_token(user.user_id)
         refresh_token = _create_refresh_token(user.user_id)
 
@@ -207,6 +225,7 @@ async def auth_twitter_callback(
 
 
 @auth_router.post("/refresh")
+@limiter.limit("100/hour")  # Allow frequent refresh but prevent abuse
 async def refresh_token(request: Request, db: Session = Depends(get_db)):
     refresh_token = request.cookies.get("refresh_token")
     if not refresh_token:
@@ -243,11 +262,13 @@ async def get_current_user_info(current_user=Depends(_get_current_user)):
 
 
 @auth_router.post("/logout")
+@limiter.limit("30/minute")  # Reasonable limit for logout
 async def logout(request: Request):
     refresh_token = request.cookies.get("refresh_token")
 
     if refresh_token:
         blacklisted_tokens.add(refresh_token)
+        logger.info("User logged out", client_ip=get_remote_address(request))
 
     response = JSONResponse(content={"message": "Logged out successfully"})
     response.delete_cookie(key="access_token", path="/")
