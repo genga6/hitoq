@@ -1,0 +1,53 @@
+# Git
+.git
+.gitignore
+
+# Development containers
+.devcontainer
+docker-compose.yml
+
+# Documentation
+README.md
+docs/
+*.md
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Environment files (should be set via environment variables)
+.env
+.env.*
+
+# Testing
+coverage/
+.pytest_cache/
+.coverage
+
+# Node modules (for root directory)
+node_modules/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+
+# Database
+*.db
+*.sqlite3
+
+# Temporary files
+tmp/
+temp/
+.tmp/
