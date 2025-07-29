@@ -22,8 +22,8 @@
   });
 </script>
 
-<main class="flex min-h-screen justify-center bg-gray-100 p-4">
-  <div class="w-full max-w-3xl space-y-6 rounded-2xl bg-white p-6 shadow-lg">
+<main class="flex min-h-screen justify-center bg-gray-100 p-4 md:p-6">
+  <div class="card w-full max-w-4xl space-y-4 p-4 md:space-y-6 md:p-6">
     {#if data.profile}
       <ProfileHeader
         displayName={data.profile.displayName}

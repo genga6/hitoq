@@ -15,22 +15,22 @@
 </script>
 
 <div
-  class="group relative rounded-xl p-4 transition-colors duration-300 {isOwner
+  class="group relative rounded-xl p-3 transition-colors duration-300 sm:p-4 {isOwner
     ? 'hover:bg-orange-50/50'
     : ''}"
 >
-  <p class="text-medium mb-2 font-medium text-gray-600">
+  <p class="mb-2 text-sm font-medium break-words text-gray-600 sm:text-base">
     {typeof question === 'string' ? question : question.text}
   </p>
 
   <Editable {isOwner} value={answer} onSave={handleSave} inputType="textarea">
     {#if answer}
-      <p class="text-lg font-semibold break-words whitespace-pre-wrap text-gray-700">
+      <p class="text-base font-semibold break-words whitespace-pre-wrap text-gray-700 sm:text-lg">
         {answer}
       </p>
     {:else}
-      <p class="text-lg font-semibold">
-        <span class="text-base text-gray-400 italic">ー</span>
+      <p class="text-base font-semibold sm:text-lg">
+        <span class="text-sm text-gray-400 italic sm:text-base">ー</span>
       </p>
     {/if}
   </Editable>

@@ -13,7 +13,9 @@
   }>();
 
   // 回答済み数を計算
-  const answeredCount = $derived(answerGroup.answers.filter((qa) => qa.answerText.trim() !== '').length);
+  const answeredCount = $derived(
+    answerGroup.answers.filter((qa) => qa.answerText.trim() !== '').length
+  );
   const totalCount = $derived(answerGroup.answers.length);
 </script>
 
@@ -25,10 +27,12 @@
     class="flex w-full items-center justify-between p-6 text-left aria-expanded={isOpen}"
   >
     <div class="flex flex-col items-start">
-      <div class="flex items-center gap-2 mb-1">
+      <div class="mb-1 flex items-center gap-2">
         <h3 class="text-xl font-bold text-gray-800">{answerGroup.templateTitle}</h3>
         {#if categoryInfo}
-          <span class="inline-flex rounded-full px-2 py-1 text-xs font-medium bg-gray-100 text-gray-700">
+          <span
+            class="inline-flex rounded-full bg-gray-100 px-2 py-1 text-xs font-medium text-gray-700"
+          >
             {categoryInfo.label}
           </span>
         {/if}
@@ -38,9 +42,9 @@
           {answeredCount}/{totalCount}問回答済み
         </span>
         {#if answeredCount > 0}
-          <div class="h-2 w-16 bg-gray-200 rounded-full">
-            <div 
-              class="h-2 bg-orange-500 rounded-full transition-all duration-300"
+          <div class="h-2 w-16 rounded-full bg-gray-200">
+            <div
+              class="h-2 rounded-full bg-orange-500 transition-all duration-300"
               style="width: {(answeredCount / totalCount) * 100}%"
             ></div>
           </div>

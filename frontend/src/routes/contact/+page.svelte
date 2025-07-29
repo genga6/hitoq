@@ -1,7 +1,21 @@
 <script lang="ts">
+  import ValidatedInput from '$lib/components/ValidatedInput.svelte';
+  import { ValidationRules, sanitizeInput } from '$lib/utils/validation';
+
   let selectedCategory = $state('bug');
   let isSubmitting = $state(false);
   let showSuccess = $state(false);
+  let titleValue = $state('');
+  let descriptionValue = $state('');
+  let environmentValue = $state('');
+  let contactValue = $state('');
+  
+  let titleValid = $state(false);
+  let descriptionValid = $state(false);
+  let environmentValid = $state(true); // Optional field
+  let contactValid = $state(true); // Optional field
+  
+  const formValid = $derived(titleValid && descriptionValid && environmentValid && contactValid);
 
   const GOOGLE_FORM_IDS = {
     FORM_ID: '1FAIpQLSdlW6SxDm9gCWqdgadFXEt46fKkTWg2raYPqgXSVpMUku903Q',
@@ -23,10 +37,16 @@
 
   function handleSubmit(event: Event) {
     event.preventDefault();
+    if (!formValid) return;
+    
     isSubmitting = true;
 
-    const form = event.target as HTMLFormElement;
-    const formData = new FormData(form);
+    const formData = new FormData();
+    formData.append(GOOGLE_FORM_IDS.CATEGORY, selectedCategory);
+    formData.append(GOOGLE_FORM_IDS.TITLE, sanitizeInput(titleValue));
+    formData.append(GOOGLE_FORM_IDS.DESCRIPTION, sanitizeInput(descriptionValue));
+    formData.append(GOOGLE_FORM_IDS.ENVIRONMENT, sanitizeInput(environmentValue));
+    formData.append(GOOGLE_FORM_IDS.CONTACT, sanitizeInput(contactValue));
 
     // Google Formsに送信
     fetch(GOOGLE_FORMS_URL, {
@@ -36,7 +56,11 @@
     })
       .then(() => {
         showSuccess = true;
-        form.reset();
+        // Reset form values
+        titleValue = '';
+        descriptionValue = '';
+        environmentValue = '';
+        contactValue = '';
         selectedCategory = 'bug';
       })
       .catch((error) => {
@@ -57,11 +81,11 @@
   />
 </svelte:head>
 
-<main class="min-h-screen bg-gray-50 py-12">
-  <div class="mx-auto max-w-2xl px-4">
-    <div class="rounded-lg bg-white p-8 shadow-sm">
-      <h1 class="mb-4 text-3xl font-bold text-gray-800">お問い合わせ</h1>
-      <p class="mb-8 text-gray-600">
+<main class="min-h-screen bg-gray-50 py-6 md:py-12">
+  <div class="container-responsive max-w-2xl">
+    <div class="card p-4 md:p-8">
+      <h1 class="text-responsive-xl mb-4 font-bold text-gray-800">お問い合わせ</h1>
+      <p class="mb-6 text-sm text-gray-600 md:mb-8 md:text-base">
         hitoQに関するバグ報告、機能要望、フィードバックなど、お気軽にお寄せください。
         いただいたご意見は、サービス改善の参考にさせていただきます。
       </p>
@@ -101,7 +125,7 @@
             <label class="mb-3 block text-sm font-medium text-gray-700">
               お問い合わせ種別 <span class="text-red-500">*</span>
             </label>
-            <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
+            <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
               {#each categories as category (category.value)}
                 <label class="relative cursor-pointer">
                   <input
@@ -142,48 +166,44 @@
           </div>
 
           <!-- タイトル -->
-          <div>
-            <label for="title" class="mb-2 block text-sm font-medium text-gray-700">
-              タイトル <span class="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              id="title"
-              name={GOOGLE_FORM_IDS.TITLE}
-              required
-              class="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-transparent focus:ring-2 focus:ring-orange-400 focus:outline-none"
-              placeholder="例：ログインができません"
-            />
-          </div>
+          <ValidatedInput
+            value={titleValue}
+            rules={ValidationRules.contactTitle}
+            label="タイトル"
+            placeholder="例：ログインができません"
+            onInput={(value, isValid) => {
+              titleValue = value;
+              titleValid = isValid;
+            }}
+          />
 
           <!-- 詳細内容 -->
-          <div>
-            <label for="description" class="mb-2 block text-sm font-medium text-gray-700">
-              詳細内容 <span class="text-red-500">*</span>
-            </label>
-            <textarea
-              id="description"
-              name={GOOGLE_FORM_IDS.DESCRIPTION}
-              rows="6"
-              required
-              class="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-transparent focus:ring-2 focus:ring-orange-400 focus:outline-none"
-              placeholder="具体的な状況や手順、エラーメッセージなどを詳しく記載してください"
-            ></textarea>
-          </div>
+          <ValidatedInput
+            value={descriptionValue}
+            rules={ValidationRules.contactDescription}
+            label="詳細内容"
+            type="textarea"
+            placeholder="具体的な状況や手順、エラーメッセージなどを詳しく記載してください"
+            onInput={(value, isValid) => {
+              descriptionValue = value;
+              descriptionValid = isValid;
+            }}
+          />
 
           <!-- 環境情報（バグ報告の場合のみ表示） -->
           {#if selectedCategory === 'bug'}
             <div>
-              <label for="environment" class="mb-2 block text-sm font-medium text-gray-700">
-                環境情報
-              </label>
-              <textarea
-                id="environment"
-                name={GOOGLE_FORM_IDS.ENVIRONMENT}
-                rows="3"
-                class="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-transparent focus:ring-2 focus:ring-orange-400 focus:outline-none"
+              <ValidatedInput
+                value={environmentValue}
+                rules={{ required: false, maxLength: 500 }}
+                label="環境情報"
+                type="textarea"
                 placeholder="例：Chrome 120, Windows 11, iPhone Safari など"
-              ></textarea>
+                onInput={(value, isValid) => {
+                  environmentValue = value;
+                  environmentValid = isValid;
+                }}
+              />
               <p class="mt-1 text-sm text-gray-500">
                 ブラウザ、OS、デバイス情報などをご記載いただけると問題解決に役立ちます。
               </p>
@@ -192,15 +212,15 @@
 
           <!-- 連絡先（任意） -->
           <div>
-            <label for="contact" class="mb-2 block text-sm font-medium text-gray-700">
-              連絡先（任意）
-            </label>
-            <input
-              type="email"
-              id="contact"
-              name={GOOGLE_FORM_IDS.CONTACT}
-              class="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-transparent focus:ring-2 focus:ring-orange-400 focus:outline-none"
+            <ValidatedInput
+              value={contactValue}
+              rules={ValidationRules.contactEmail}
+              label="連絡先（任意）"
               placeholder="返信が必要な場合はメールアドレスをご記載ください"
+              onInput={(value, isValid) => {
+                contactValue = value;
+                contactValid = isValid;
+              }}
             />
             <p class="mt-1 text-sm text-gray-500">
               回答が必要な場合のみご記載ください。お答えできない場合もございます。
@@ -208,12 +228,8 @@
           </div>
 
           <!-- 送信ボタン -->
-          <div class="pt-4">
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              class="w-full rounded-md bg-orange-400 px-4 py-3 font-semibold text-white transition duration-200 hover:bg-orange-500 active:bg-orange-600 disabled:cursor-not-allowed disabled:bg-gray-300"
-            >
+          <div class="flex justify-center pt-4">
+            <button type="submit" disabled={isSubmitting || !formValid} class="btn-primary px-8 py-3 {!formValid ? 'opacity-50 cursor-not-allowed' : ''}" >
               {#if isSubmitting}
                 <span class="flex items-center justify-center">
                   <svg
