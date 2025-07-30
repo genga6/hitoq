@@ -1,5 +1,5 @@
 import type { PageServerLoad } from "./$types";
-import { getCurrentUserServer } from "$lib/api/client";
+import { getCurrentUserServer } from "$lib/api-client/auth";
 import { error, redirect } from "@sveltejs/kit";
 
 export const load: PageServerLoad = async ({ params, request }) => {

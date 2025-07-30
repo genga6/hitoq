@@ -1,5 +1,6 @@
 import type { LayoutServerLoad } from "./$types";
-import { getUserByUserName, getCurrentUserServer } from "$lib/api/client";
+import { getUserByUserName } from "$lib/api-client/users";
+import { getCurrentUserServer } from "$lib/api-client/auth";
 import { error } from "@sveltejs/kit";
 
 export const load: LayoutServerLoad = async ({

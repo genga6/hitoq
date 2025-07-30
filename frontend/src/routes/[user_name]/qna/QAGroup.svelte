@@ -28,7 +28,7 @@
   >
     <div class="flex flex-col items-start">
       <div class="mb-1 flex items-center gap-2">
-        <h3 class="text-xl font-bold text-gray-800">{answerGroup.templateTitle}</h3>
+        <h3 class="text-lg sm:text-xl font-bold text-gray-800">{answerGroup.templateTitle}</h3>
         {#if categoryInfo}
           <span
             class="inline-flex rounded-full bg-gray-100 px-2 py-1 text-xs font-medium text-gray-700"

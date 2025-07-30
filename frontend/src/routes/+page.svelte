@@ -1,11 +1,11 @@
 <script lang="ts">
-  import { redirectToTwitterLogin } from '$lib/api/client';
+  import { redirectToTwitterLogin } from '$lib/api-client/auth';
   import { goto } from '$app/navigation';
 
   let { data } = $props();
 
   $effect(() => {
-    // ログイン済みの場合はプロフィールページにリダイレクト
+    // If the user is logged in, redirect to the profile page
     if (data?.isLoggedIn && data?.userName) {
       goto(`/${data.userName}`);
     }

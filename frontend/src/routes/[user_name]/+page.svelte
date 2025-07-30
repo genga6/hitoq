@@ -25,7 +25,7 @@
     if (!item) return false;
 
     try {
-      const { updateProfileItem } = await import('$lib/api/client');
+      const { updateProfileItem } = await import('$lib/api-client/profile');
       const updatedItem = await updateProfileItem(data.profile.userId, item.profileItemId, {
         [field]: newValue
       });

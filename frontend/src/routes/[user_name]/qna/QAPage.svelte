@@ -137,7 +137,7 @@
     try {
       // questionIdが正の値の場合のみAPIを呼び出し
       if (answer.question.questionId > 0) {
-        const { createAnswer } = await import('$lib/api/client');
+        const { createAnswer } = await import('$lib/api-client/qna');
         await createAnswer(userId, answer.question.questionId, newAnswer);
       } else {
         console.warn(

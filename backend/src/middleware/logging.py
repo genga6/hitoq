@@ -10,12 +10,9 @@ logger = get_logger(__name__)
 
 
 class LoggingMiddleware(BaseHTTPMiddleware):
-    """Middleware to log all HTTP requests and responses with timing."""
-
     async def dispatch(self, request: Request, call_next: Callable) -> Response:
         start_time = time.time()
 
-        # Log request
         logger.info(
             "Request started",
             method=request.method,
@@ -24,12 +21,10 @@ class LoggingMiddleware(BaseHTTPMiddleware):
             user_agent=request.headers.get("user-agent"),
         )
 
-        # Process request
         try:
             response = await call_next(request)
             process_time = time.time() - start_time
 
-            # Log response
             logger.info(
                 "Request completed",
                 method=request.method,
@@ -39,14 +34,12 @@ class LoggingMiddleware(BaseHTTPMiddleware):
                 client_ip=request.client.host if request.client else None,
             )
 
-            # Add timing header
             response.headers["X-Process-Time"] = str(process_time)
             return response
 
         except Exception as e:
             process_time = time.time() - start_time
 
-            # Log error
             logger.error(
                 "Request failed",
                 method=request.method,
