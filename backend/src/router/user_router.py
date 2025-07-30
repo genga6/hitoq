@@ -1,0 +1,68 @@
+from fastapi import APIRouter, Depends, HTTPException, Query
+from sqlalchemy.orm import Session
+
+from src.db.session import get_db
+from src.schema.user import UserCreate, UserRead
+from src.service import user_service
+
+user_router = APIRouter(
+    prefix="/users",
+    tags=["Global User Resources"],
+)
+
+
+@user_router.post("", response_model=UserRead, status_code=201)
+def upsert_user_endpoint(user_in: UserCreate, db: Session = Depends(get_db)):
+    return user_service.upsert_user(db=db, user_in=user_in)
+
+
+@user_router.get("", response_model=list[UserRead])
+def read_all_users_endpoint(
+    skip: int = 0, limit: int = 100, db: Session = Depends(get_db)
+):
+    return user_service.get_users(db, skip=skip, limit=limit)
+
+
+@user_router.get("/{user_id}", response_model=UserRead)
+def read_user_by_id_endpoint(user_id: str, db: Session = Depends(get_db)):
+    user = user_service.get_user(db, user_id=user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return user
+
+
+@user_router.get("/by-username/{user_name}", response_model=UserRead)
+def read_user_by_username_endpoint(user_name: str, db: Session = Depends(get_db)):
+    user = user_service.get_user_by_username(db, user_name=user_name)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return user
+
+
+@user_router.get("/resolve-users-id", response_model=UserRead)
+def resolve_user_by_username(
+    user_name: str = Query(..., min_length=1), db: Session = Depends(get_db)
+):
+    user = user_service.get_user_by_username(db, user_name=user_name)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return user
+
+
+@user_router.get("/search/users", response_model=list[UserRead])
+def search_users_by_display_name(
+    q: str = Query(..., min_length=1, description="Search query for display name"),
+    limit: int = Query(10, ge=1, le=50, description="Maximum number of results"),
+    db: Session = Depends(get_db),
+):
+    """Search users by display name with partial matching."""
+    users = user_service.search_users_by_display_name(db, display_name=q, limit=limit)
+    return users
+
+
+@user_router.delete("/{user_id}", status_code=204)
+def delete_user_endpoint(user_id: str, db: Session = Depends(get_db)):
+    success = user_service.delete_user(db=db, user_id=user_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="User not found")
+    return None
