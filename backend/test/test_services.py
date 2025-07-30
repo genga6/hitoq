@@ -167,16 +167,17 @@ class TestProfileService:
             test_db_session, user_id=user.user_id, item_in=item_data
         )
 
-        # アイテム更新
-        update_data = ProfileItemUpdate(label="Updated Label", value="Updated Value")
+        # アイテム更新（valueのみ更新可能）
+        original_label = item.label
+        update_data = ProfileItemUpdate(value="Updated Value")
         updated_item = profile_service.update_profile_item(
             test_db_session,
             user_id=user.user_id,
-            item_id=item.profile_item_id,
+            item_id=str(item.profile_item_id),
             item_in=update_data,
         )
 
-        assert updated_item.label == "Updated Label"
+        assert updated_item.label == original_label  # ラベルは変更されない
         assert updated_item.value == "Updated Value"
         assert updated_item.profile_item_id == item.profile_item_id
 
@@ -194,7 +195,7 @@ class TestProfileService:
 
         # アイテム削除
         profile_service.delete_profile_item(
-            test_db_session, user_id=user.user_id, item_id=item.profile_item_id
+            test_db_session, user_id=user.user_id, item_id=str(item.profile_item_id)
         )
 
         # 削除確認のため、エラーなく完了することを確認

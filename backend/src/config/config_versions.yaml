@@ -1,0 +1,23 @@
+# Configuration versions tracking
+versions:
+  profile_labels: "v1.0" # Current profile labels version
+  question_templates: "v1.0" # Current question templates version
+
+# Migration history
+migrations:
+  profile_labels:
+    - version: "v1.0"
+      date: "2025-01-30"
+      description: "Initial profile labels configuration"
+      labels:
+        [
+          "趣味・今ハマっていること",
+          "好きなコンテンツ",
+          "好きな食べ物",
+          "得意なこと・特技",
+          "実は〇〇なんです",
+          "子供の頃の夢",
+          "座右の銘",
+          "もし１つだけ願いが叶うなら？",
+        ]
+      mappings: {}

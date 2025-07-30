@@ -10,7 +10,7 @@ from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
 from starlette.middleware.sessions import SessionMiddleware
 
-from src.logging_config import configure_logging, get_logger
+from src.config.logging_config import configure_logging, get_logger
 from src.middleware.logging import LoggingMiddleware
 from src.router import auth
 from src.router.bucket_list_router import bucket_list_router

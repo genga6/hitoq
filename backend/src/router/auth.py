@@ -12,9 +12,9 @@ from slowapi import Limiter
 from slowapi.util import get_remote_address
 from sqlalchemy.orm import Session
 
-from src.config import SECRET_KEY, TWITTER_CLIENT_ID, TWITTER_CLIENT_SECRET
+from src.config.env_config import SECRET_KEY, TWITTER_CLIENT_ID, TWITTER_CLIENT_SECRET
+from src.config.logging_config import get_logger
 from src.db.session import get_db
-from src.logging_config import get_logger
 from src.schema.user import UserCreate, UserRead
 from src.service import user_service
 

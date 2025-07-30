@@ -20,7 +20,7 @@
       : []
   );
 
-  async function handleItemSave(index: number, field: 'label' | 'value', newValue: string): Promise<boolean> {
+  async function handleItemSave(index: number, field: 'value', newValue: string): Promise<boolean> {
     const item = profileItems[index];
     if (!item) return false;
 
@@ -50,21 +50,9 @@
           ? 'hover:border-orange-300 hover:shadow-lg'
           : ''}"
       >
-        <Editable
-          {isOwner}
-          value={item.label}
-          onSave={(newLabel) => handleItemSave(index, 'label', newLabel)}
-          inputType="input"
-          validationType="profileLabel"
-        >
-          <div
-            class="relative {isOwner
-              ? 'cursor-pointer transition-all duration-200 hover:-mx-2 hover:-my-1 hover:rounded-md hover:bg-orange-50 hover:px-2 hover:py-1'
-              : ''}"
-          >
-            <p class="mb-1 text-sm font-medium tracking-wide text-gray-700">{item.label}</p>
-          </div>
-        </Editable>
+        <div class="relative">
+          <p class="mb-1 text-sm font-medium tracking-wide text-gray-700">{item.label}</p>
+        </div>
 
         <Editable
           {isOwner}
@@ -75,7 +63,7 @@
         >
           <div
             class="relative {isOwner
-              ? 'cursor-pointer transition-all duration-200 hover:-mx-2 hover:-my-1 hover:rounded-md hover:bg-gray-50 hover:px-2 hover:py-1'
+              ? 'cursor-pointer transition-all duration-200 hover:-mx-2 hover:-my-1 hover:rounded-md hover:bg-orange-50 hover:px-2 hover:py-1'
               : ''}"
           >
             <p class="text-lg font-semibold break-words text-gray-700">
