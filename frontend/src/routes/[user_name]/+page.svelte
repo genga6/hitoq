@@ -46,8 +46,8 @@
   {#if profileItems && profileItems.length > 0}
     {#each profileItems as item, index (item.profileItemId)}
       <div
-        class="group relative rounded-3xl border-b border-orange-400 bg-white p-6 transition-all duration-300 {isOwner
-          ? 'hover:border-orange-300 hover:shadow-lg'
+        class="group relative rounded-3xl border-l-3 border-l-orange-400 bg-white p-6 shadow-sm transition-all duration-300 {isOwner
+          ? 'hover:border-l-orange-500 hover:shadow-md'
           : ''}"
       >
         <div class="relative">
