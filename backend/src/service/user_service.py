@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session, joinedload
 from src.db.tables import Answer, ProfileItem, User
 from src.schema.user import UserCreate
 from src.service.qna_service import initialize_default_questions
+from src.service.yaml_loader import load_default_labels
 
 
 def get_user(db: Session, user_id: str) -> User | None:
@@ -49,7 +50,6 @@ def get_users(db: Session, skip: int = 0, limit: int = 100) -> list[User]:
 def search_users_by_display_name(
     db: Session, display_name: str, limit: int = 10
 ) -> list[User]:
-    """Search users by display_name with partial matching."""
     return (
         db.query(User)
         .filter(User.display_name.ilike(f"%{display_name}%"))
@@ -59,17 +59,7 @@ def search_users_by_display_name(
 
 
 def create_default_profile_items(db: Session, user_id: str) -> None:
-    """Create 8 default profile items for a new user."""
-    default_labels = [
-        "趣味",
-        "好きな食べ物",
-        "好きな音楽",
-        "休日の過ごし方",
-        "一番行きたい場所",
-        "チャームポイント",
-        "マイブーム",
-        "今やってみたいこと",
-    ]
+    default_labels = load_default_labels()
 
     for i, label in enumerate(default_labels, 1):
         profile_item = ProfileItem(
@@ -85,7 +75,6 @@ def create_default_profile_items(db: Session, user_id: str) -> None:
 
 
 def delete_user(db: Session, user_id: str) -> bool:
-    """Delete a user and all associated data."""
     db_user = get_user(db, user_id)
     if not db_user:
         return False
@@ -114,7 +103,6 @@ def upsert_user(db: Session, user_in: UserCreate) -> User:
     db.commit()
     db.refresh(db_user)
 
-    # Create default profile items for new users
     if is_new_user:
         create_default_profile_items(db, db_user.user_id)
 

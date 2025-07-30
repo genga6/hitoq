@@ -27,7 +27,7 @@ export const createProfileItem = async (
 
 export const updateProfileItem = async (
   userId: string,
-  itemId: number,
+  itemId: string,
   item: Partial<ProfileItem>,
 ): Promise<ProfileItem> => {
   return fetchApiWithAuth<ProfileItem>(
@@ -42,7 +42,7 @@ export const updateProfileItem = async (
 
 export const deleteProfileItem = async (
   userId: string,
-  itemId: number,
+  itemId: string,
 ): Promise<void> => {
   await fetchApiWithAuth<void>(`/users/${userId}/profile-items/${itemId}`, {
     method: "DELETE",

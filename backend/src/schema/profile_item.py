@@ -14,7 +14,6 @@ class ProfileItemCreate(ProfileItemBase):
 
 
 class ProfileItemUpdate(OrmBaseModel):
-    label: str | None = None
     value: str | None = None
     display_order: int | None = None
 
