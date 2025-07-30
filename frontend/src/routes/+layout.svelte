@@ -3,13 +3,13 @@
   import { browser } from '$app/environment';
   import { invalidateAll } from '$app/navigation';
   import { useClickOutside } from '$lib/utils/useClickOutside';
-  import { resolveUsersById, searchUsersByDisplayName } from '$lib/api/client';
+  import { resolveUsersById, searchUsersByDisplayName } from '$lib/api-client/users';
   import {
     redirectToTwitterLogin,
     logout as authLogout,
     refreshAccessToken,
     getCurrentUser
-  } from '$lib/api/client';
+  } from '$lib/api-client/auth';
   import type { Snippet } from 'svelte';
 
   import type { UserCandidate, Profile } from '$lib/types/profile';

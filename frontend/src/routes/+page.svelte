@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { redirectToTwitterLogin } from '$lib/api/client';
+  import { redirectToTwitterLogin } from '$lib/api-client/auth';
   import { goto } from '$app/navigation';
 
   let { data } = $props();

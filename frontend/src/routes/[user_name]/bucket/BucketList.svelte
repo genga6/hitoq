@@ -41,7 +41,7 @@
     if (!item || item.isNew) return;
 
     try {
-      const { updateBucketListItem } = await import('$lib/api/client');
+      const { updateBucketListItem } = await import('$lib/api-client/bucket');
       await updateBucketListItem(userId, id, { isCompleted: !item.checked });
 
       buckets = buckets.map((b: Bucket) => (b.id === id ? { ...b, checked: !b.checked } : b));
@@ -56,7 +56,7 @@
 
     try {
       if (item.isNew) {
-        const { createBucketListItem } = await import('$lib/api/client');
+        const { createBucketListItem } = await import('$lib/api-client/bucket');
         const maxDisplayOrder = Math.max(
           0,
           ...buckets.filter((b) => !b.isNew).map((b) => b.displayOrder || 0)
@@ -79,7 +79,7 @@
             : b
         );
       } else {
-        const { updateBucketListItem } = await import('$lib/api/client');
+        const { updateBucketListItem } = await import('$lib/api-client/bucket');
         await updateBucketListItem(userId, id, { content: newContent });
 
         buckets = buckets.map((b: Bucket) => (b.id === id ? { ...b, content: newContent } : b));
@@ -96,7 +96,7 @@
     if (force || confirm(`「${item.content || '新しいバケット'}」を削除してもよろしいですか？`)) {
       try {
         if (!item.isNew) {
-          const { deleteBucketListItem } = await import('$lib/api/client');
+          const { deleteBucketListItem } = await import('$lib/api-client/bucket');
           await deleteBucketListItem(userId, id);
         }
 

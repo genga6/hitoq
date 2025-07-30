@@ -1,6 +1,6 @@
 <script lang="ts">
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  import { getUserVisits, type Visit } from '$lib/api/client';
+  import { getUserVisits, type Visit } from '$lib/api-client/visits';
 
   interface Props {
     userId: string;
@@ -160,7 +160,7 @@
     <!-- フィルタリングボタン -->
     <div class="flex items-center space-x-1 rounded-lg bg-gray-100 p-1">
       <button
-        class="rounded-md px-3 py-1.5 text-sm font-medium transition-all duration-200 {!showOnlyLoggedIn
+        class="rounded-md px-2 sm:px-3 py-1.5 text-xs sm:text-sm font-medium transition-all duration-200 {!showOnlyLoggedIn
           ? 'bg-white text-gray-900 shadow-sm'
           : 'text-gray-600 hover:text-gray-900'}"
         onclick={() => (showOnlyLoggedIn = false)}
@@ -168,12 +168,13 @@
         すべて
       </button>
       <button
-        class="rounded-md px-3 py-1.5 text-sm font-medium transition-all duration-200 {showOnlyLoggedIn
+        class="rounded-md px-2 sm:px-3 py-1.5 text-xs sm:text-sm font-medium transition-all duration-200 {showOnlyLoggedIn
           ? 'bg-white text-gray-900 shadow-sm'
           : 'text-gray-600 hover:text-gray-900'}"
         onclick={() => (showOnlyLoggedIn = true)}
       >
-        ログインユーザーのみ
+        <span class="hidden sm:inline">ログインユーザーのみ</span>
+        <span class="sm:hidden">ログイン済み</span>
       </button>
     </div>
   </div>

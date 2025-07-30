@@ -1,7 +1,7 @@
 import {
   getCurrentUserServer,
   refreshAccessTokenServer,
-} from "$lib/api/client";
+} from "$lib/api-client/auth";
 import type { LayoutServerLoad } from "./$types";
 
 const UNAUTHORIZED_RESULT = { isLoggedIn: false, user: null, userName: null };

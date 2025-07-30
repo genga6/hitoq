@@ -3,7 +3,7 @@
   import TabNavigation from '$lib/components/TabNavigation.svelte';
   import type { Snippet } from 'svelte';
   import type { BasePageData } from '$lib/types/page';
-  import { recordVisit } from '$lib/api/client';
+  import { recordVisit } from '$lib/api-client/visits';
 
   type Props = {
     data: BasePageData;

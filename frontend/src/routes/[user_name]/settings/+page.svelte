@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { PageData } from './$types';
-  import { deleteUser, getVisitsVisibility, updateVisitsVisibility } from '$lib/api/client';
+  import { deleteUser } from '$lib/api-client/auth';
+  import { getVisitsVisibility, updateVisitsVisibility } from '$lib/api-client/visits';
 
   type Props = {
     data: PageData;

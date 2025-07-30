@@ -1,6 +1,6 @@
 import type { PageServerLoad } from "./$types";
-import { getProfilePageData } from "$lib/api/client";
-import { getCurrentUserServer } from "$lib/api/client";
+import { getProfilePageData } from "$lib/api-client/profile";
+import { getCurrentUserServer } from "$lib/api-client/auth";
 import { error } from "@sveltejs/kit";
 
 export const load: PageServerLoad = async ({ params, request }) => {
