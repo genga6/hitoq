@@ -20,14 +20,14 @@ export async function fetchApiWithAuth<T>(
 ): Promise<T> {
   const response = await fetch(`${API_BASE_URL}${path}`, {
     ...options,
-    credentials: "include", // Cookieを自動的に送信
+    credentials: "include", // Automatically set cookies
   });
   if (!response.ok) {
     const errorData = await response.json();
     throw new Error(errorData.detail || "API request failed");
   }
 
-  // 204 No Content の場合はJSONパースしない
+  // No need to parse JSON if the response is empty (204 No Content (e.g. user deletion))
   if (response.status === 204) {
     return undefined as T;
   }
