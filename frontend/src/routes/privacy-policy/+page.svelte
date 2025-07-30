@@ -96,8 +96,8 @@
         </section>
 
         <p class="mt-6 text-xs text-gray-500 md:mt-8 md:text-sm">
-          制定日：2025年7月25日<br />
-          最終更新日：2025年7月25日
+          制定日：2025年8月1日<br />
+          最終更新日：2025年8月1日
         </p>
       </div>
     </div>
