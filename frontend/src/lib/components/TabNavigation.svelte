@@ -10,7 +10,7 @@
   const tabs = [
     { path: `/${userName}`, label: 'プロフィール' },
     { path: `/${userName}/qna`, label: 'パーソナルQ&A' },
-    { path: `/${userName}/bucket`, label: 'バケットリスト' }
+    { path: `/${userName}/reactions`, label: 'リアクション' }
   ];
 </script>
 

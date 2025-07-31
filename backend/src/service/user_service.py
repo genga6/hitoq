@@ -21,15 +21,6 @@ def get_user_with_profile_items(db: Session, user_id: str) -> User | None:
     )
 
 
-def get_user_with_bucket_list_items(db: Session, user_id: str) -> User | None:
-    return (
-        db.query(User)
-        .options(joinedload(User.bucket_list_items))
-        .filter(User.user_id == user_id)
-        .first()
-    )
-
-
 def get_user_with_qna_items(db: Session, user_id: str) -> User | None:
     return (
         db.query(User)

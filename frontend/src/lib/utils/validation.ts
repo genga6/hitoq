@@ -81,13 +81,6 @@ export const ValidationRules = {
     minLength: 1,
   },
 
-  // バケットリスト
-  bucketItem: {
-    required: true,
-    maxLength: 100,
-    minLength: 1,
-  },
-
   // プロフィール基本情報
   displayName: {
     required: true,
