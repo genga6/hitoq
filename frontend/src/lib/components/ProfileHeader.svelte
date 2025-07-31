@@ -18,7 +18,26 @@
     class="h-16 w-16 flex-shrink-0 rounded-full border border-gray-300 sm:h-20 sm:w-20 md:h-24 md:w-24"
   />
   <div class="min-w-0 flex-1 {isOwner ? 'pr-0 sm:pr-12 md:pr-16 lg:pr-20' : ''}">
-    <h2 class="text-xl font-bold break-words text-gray-700 sm:text-2xl">{displayName}</h2>
+    <div class="flex items-center space-x-3">
+      <h2 class="text-xl font-bold break-words text-gray-700 sm:text-2xl">{displayName}</h2>
+      <a
+        href="https://x.com/{userName}"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="inline-flex items-center rounded-full bg-black px-3 py-1 text-white transition-colors hover:bg-gray-800"
+        title="Xページを見る"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          class="h-4 w-4"
+          fill="currentColor"
+        >
+          <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+        </svg>
+        <span class="ml-1 text-sm">X</span>
+      </a>
+    </div>
 
     {#if bio}
       <p class="mt-2 text-sm break-words whitespace-pre-line text-gray-700 md:text-base">{bio}</p>
