@@ -48,11 +48,32 @@ export async function fetchApiWithCookies<T>(
       Cookie: cookieHeader,
     },
   });
+
   if (!response.ok) {
-    const errorData = await response.json();
+    let errorData;
+    try {
+      errorData = await response.json();
+    } catch {
+      // JSON parse error, likely HTML error page
+      const errorText = await response.text();
+      throw new Error(
+        `API request failed with status ${response.status}: ${errorText}`,
+      );
+    }
     throw new Error(errorData.detail || "API request failed");
   }
-  return response.json();
+
+  // No need to parse JSON if the response is empty (204 No Content)
+  if (response.status === 204) {
+    return undefined as T;
+  }
+
+  try {
+    return await response.json();
+  } catch {
+    const responseText = await response.text();
+    throw new Error(`Failed to parse JSON response: ${responseText}`);
+  }
 }
 
 export { API_BASE_URL };

@@ -12,14 +12,18 @@ export const load: PageServerLoad = async ({ params, request }) => {
     const { profile, userAnswerGroups, availableTemplates, categories } =
       rawData;
 
-    // Check if the current user is the owner
+    // Check if the current user is the owner and get authentication status
     let isOwner = false;
+    let currentUser = null;
+    let isLoggedIn = false;
     try {
-      const currentUser = await getCurrentUserServer(cookieHeader);
+      currentUser = await getCurrentUserServer(cookieHeader);
       isOwner = currentUser && currentUser.userName === userName;
+      isLoggedIn = !!currentUser;
     } catch {
       // User not authenticated - this is expected for logged out users
       isOwner = false;
+      isLoggedIn = false;
     }
 
     return {
@@ -28,6 +32,8 @@ export const load: PageServerLoad = async ({ params, request }) => {
       availableTemplates,
       categories,
       isOwner,
+      currentUser,
+      isLoggedIn,
     };
   } catch (e) {
     console.error("Error loading Q&A data:", e);

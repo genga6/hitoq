@@ -45,6 +45,18 @@ class User(Base):
         back_populates="visitor_user",
         cascade="all, delete-orphan",
     )
+    messages_sent: Mapped[list["Message"]] = relationship(
+        "Message",
+        foreign_keys="[Message.from_user_id]",
+        back_populates="from_user",
+        cascade="all, delete-orphan",
+    )
+    messages_received: Mapped[list["Message"]] = relationship(
+        "Message",
+        foreign_keys="[Message.to_user_id]",
+        back_populates="to_user",
+        cascade="all, delete-orphan",
+    )
 
 
 class ProfileItem(Base):
@@ -64,6 +76,19 @@ class QuestionCategoryEnum(enum.Enum):
     values = "values"
     otaku = "otaku"
     misc = "misc"
+
+
+class MessageTypeEnum(enum.Enum):
+    question = "question"
+    comment = "comment"
+    request = "request"
+    reaction = "reaction"
+
+
+class MessageStatusEnum(enum.Enum):
+    unread = "unread"
+    read = "read"
+    replied = "replied"
 
 
 class Question(Base):
@@ -116,4 +141,31 @@ class Visit(Base):
     )
     visited_user: Mapped["User"] = relationship(
         "User", foreign_keys=[visited_user_id], back_populates="visits_received"
+    )
+
+
+class Message(Base):
+    __tablename__ = "messages"
+
+    message_id: Mapped[str] = mapped_column(String, primary_key=True)
+    from_user_id: Mapped[str] = mapped_column(ForeignKey("users.user_id"))
+    to_user_id: Mapped[str] = mapped_column(ForeignKey("users.user_id"))
+    message_type: Mapped[MessageTypeEnum]
+    content: Mapped[str] = mapped_column(String(500))
+    reference_answer_id: Mapped[int | None] = mapped_column(
+        ForeignKey("answers.answer_id"), nullable=True
+    )
+    status: Mapped[MessageStatusEnum] = mapped_column(default=MessageStatusEnum.unread)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+
+    from_user: Mapped["User"] = relationship(
+        "User", foreign_keys=[from_user_id], back_populates="messages_sent"
+    )
+    to_user: Mapped["User"] = relationship(
+        "User", foreign_keys=[to_user_id], back_populates="messages_received"
+    )
+    reference_answer: Mapped["Answer"] = relationship(
+        "Answer", foreign_keys=[reference_answer_id]
     )

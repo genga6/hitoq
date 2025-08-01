@@ -145,22 +145,22 @@
   });
 </script>
 
-<div class="space-y-4">
+<div class="space-y-3">
   <!-- ヘッダー部分 -->
-  <div class="mb-4 flex items-center justify-between">
+  <div class="mb-3 flex items-center justify-between">
     <div class="flex items-center space-x-2">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" class="h-4 w-4 text-gray-500">
         <path
           d="M298.5 156.9C312.8 199.8 298.2 243.1 265.9 253.7C233.6 264.3 195.8 238.1 181.5 195.2C167.2 152.3 181.8 109 214.1 98.4C246.4 87.8 284.2 114 298.5 156.9zM164.4 262.6C183.3 295 178.7 332.7 154.2 346.7C129.7 360.7 94.5 345.8 75.7 313.4C56.9 281 61.4 243.3 85.9 229.3C110.4 215.3 145.6 230.2 164.4 262.6zM133.2 465.2C185.6 323.9 278.7 288 320 288C361.3 288 454.4 323.9 506.8 465.2C510.4 474.9 512 485.3 512 495.7L512 497.3C512 523.1 491.1 544 465.3 544C453.8 544 442.4 542.6 431.3 539.8L343.3 517.8C328 514 312 514 296.7 517.8L208.7 539.8C197.6 542.6 186.2 544 174.7 544C148.9 544 128 523.1 128 497.3L128 495.7C128 485.3 129.6 474.9 133.2 465.2zM485.8 346.7C461.3 332.7 456.7 295 475.6 262.6C494.5 230.2 529.6 215.3 554.1 229.3C578.6 243.3 583.2 281 564.3 313.4C545.4 345.8 510.3 360.7 485.8 346.7zM374.1 253.7C341.8 243.1 327.2 199.8 341.5 156.9C355.8 114 393.6 87.8 425.9 98.4C458.2 109 472.8 152.3 458.5 195.2C444.2 238.1 406.4 264.3 374.1 253.7z"
         />
       </svg>
-      <h2 class="text-lg font-medium text-gray-600">最近の訪問者</h2>
+      <h2 class="text-md font-medium text-gray-600">最近の訪問者</h2>
     </div>
 
     <!-- フィルタリングボタン -->
     <div class="flex items-center space-x-1 rounded-lg bg-gray-100 p-1">
       <button
-        class="rounded-md px-2 sm:px-3 py-1.5 text-xs sm:text-sm font-medium transition-all duration-200 {!showOnlyLoggedIn
+        class="rounded-md px-2 py-1.5 text-xs font-medium transition-all duration-200 sm:px-3 sm:text-sm {!showOnlyLoggedIn
           ? 'bg-white text-gray-900 shadow-sm'
           : 'text-gray-600 hover:text-gray-900'}"
         onclick={() => (showOnlyLoggedIn = false)}
@@ -168,7 +168,7 @@
         すべて
       </button>
       <button
-        class="rounded-md px-2 sm:px-3 py-1.5 text-xs sm:text-sm font-medium transition-all duration-200 {showOnlyLoggedIn
+        class="rounded-md px-2 py-1.5 text-xs font-medium transition-all duration-200 sm:px-3 sm:text-sm {showOnlyLoggedIn
           ? 'bg-white text-gray-900 shadow-sm'
           : 'text-gray-600 hover:text-gray-900'}"
         onclick={() => (showOnlyLoggedIn = true)}
@@ -226,24 +226,24 @@
       </p>
     </div>
   {:else}
-    <div class="space-y-4">
+    <div class="space-y-2">
       {#each filteredVisits as visit (visit.visit_id)}
         {#if visit.visitor_info && !visit.visitor_info.is_anonymous && visit.visitor_info.user_name}
           <!-- クリック可能なログインユーザー -->
           <a
             href="/{visit.visitor_info.user_name}"
-            class="group relative block cursor-pointer overflow-hidden rounded-2xl border border-gray-200 bg-white transition-all duration-200 hover:border-orange-200 hover:shadow-lg"
+            class="group relative block cursor-pointer overflow-hidden rounded-lg border border-gray-200 bg-white transition-all duration-200 hover:border-orange-200 hover:shadow-md"
           >
             <div
               class="absolute inset-0 bg-gradient-to-r from-orange-50/0 via-orange-50/0 to-orange-50/0 transition-all duration-300 group-hover:from-orange-50/20 group-hover:via-orange-50/5 group-hover:to-amber-50/20"
             ></div>
-            <div class="relative flex items-center space-x-3 p-3 sm:space-x-4 sm:p-5">
+            <div class="relative flex items-center space-x-2 p-2 sm:space-x-3 sm:p-3">
               <div class="flex-shrink-0">
                 <div class="relative">
                   <img
                     src={visit.visitor_info.icon_url || '/default-avatar.png'}
                     alt={visit.visitor_info.display_name}
-                    class="h-12 w-12 rounded-2xl border-2 border-white object-cover shadow-sm sm:h-14 sm:w-14"
+                    class="h-8 w-8 rounded-lg border border-white object-cover shadow-sm sm:h-10 sm:w-10"
                   />
                   <!-- <div class="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 rounded-full border-2 border-white flex items-center justify-center">
                     <svg class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
@@ -252,27 +252,25 @@
                   </div> -->
                 </div>
               </div>
-              <div class="min-w-0 flex-1 pr-16 sm:pr-20">
+              <div class="min-w-0 flex-1 pr-12 sm:pr-16">
                 <div>
                   <h3
-                    class="truncate text-sm font-semibold text-gray-900 transition-colors group-hover:text-orange-700 sm:text-base"
+                    class="truncate text-xs font-semibold text-gray-900 transition-colors group-hover:text-orange-700 sm:text-sm"
                   >
                     {visit.visitor_info.display_name}
                   </h3>
                 </div>
-                <div class="mt-1">
+                <div class="mt-0.5">
                   <span
-                    class="block truncate text-xs text-gray-500 transition-colors group-hover:text-orange-600 sm:text-sm"
+                    class="block truncate text-xs text-gray-500 transition-colors group-hover:text-orange-600"
                     >@{visit.visitor_info.user_name}</span
                   >
                 </div>
               </div>
               <!-- 時間表示（絶対位置） -->
-              <div
-                class="absolute top-3 right-3 flex items-center space-x-1 sm:top-5 sm:right-5 sm:space-x-2"
-              >
+              <div class="absolute top-2 right-2 flex items-center space-x-1 sm:top-3 sm:right-3">
                 <svg
-                  class="h-3 w-3 text-gray-400 sm:h-4 sm:w-4"
+                  class="h-3 w-3 text-gray-400"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -284,7 +282,7 @@
                     d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
                   ></path>
                 </svg>
-                <p class="text-xs whitespace-nowrap text-gray-500 sm:text-sm">
+                <p class="text-xs whitespace-nowrap text-gray-500">
                   {formatDate(visit.visited_at)}
                 </p>
               </div>
@@ -311,16 +309,16 @@
         {:else}
           <!-- クリック不可能な訪問者（匿名または削除済み） -->
           <div
-            class="group relative overflow-hidden rounded-2xl border border-gray-200 bg-white transition-all duration-200"
+            class="group relative overflow-hidden rounded-lg border border-gray-200 bg-white transition-all duration-200"
           >
-            <div class="relative flex items-center space-x-3 p-3 sm:space-x-4 sm:p-5">
+            <div class="relative flex items-center space-x-2 p-2 sm:space-x-3 sm:p-3">
               {#if visit.visitor_info?.is_anonymous}
                 <div class="flex-shrink-0">
                   <div
-                    class="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-gray-200 to-gray-300 shadow-sm sm:h-14 sm:w-14"
+                    class="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-gray-200 to-gray-300 shadow-sm sm:h-10 sm:w-10"
                   >
                     <svg
-                      class="h-5 w-5 text-gray-500 sm:h-6 sm:w-6"
+                      class="h-4 w-4 text-gray-500 sm:h-5 sm:w-5"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -334,22 +332,20 @@
                     </svg>
                   </div>
                 </div>
-                <div class="min-w-0 flex-1 pr-16 sm:pr-20">
+                <div class="min-w-0 flex-1 pr-12 sm:pr-16">
                   <div>
-                    <h3 class="text-sm font-semibold text-gray-700 sm:text-base">
+                    <h3 class="text-xs font-semibold text-gray-700 sm:text-sm">
                       非ログインユーザー
                     </h3>
                   </div>
-                  <div class="mt-1">
-                    <span class="block text-xs text-gray-500 sm:text-sm">--</span>
+                  <div class="mt-0.5">
+                    <span class="block text-xs text-gray-500">--</span>
                   </div>
                 </div>
                 <!-- 時間表示（絶対位置） -->
-                <div
-                  class="absolute top-3 right-3 flex items-center space-x-1 sm:top-5 sm:right-5 sm:space-x-2"
-                >
+                <div class="absolute top-2 right-2 flex items-center space-x-1 sm:top-3 sm:right-3">
                   <svg
-                    class="h-3 w-3 text-gray-400 sm:h-4 sm:w-4"
+                    class="h-3 w-3 text-gray-400"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -361,17 +357,17 @@
                       d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
                     ></path>
                   </svg>
-                  <p class="text-xs whitespace-nowrap text-gray-500 sm:text-sm">
+                  <p class="text-xs whitespace-nowrap text-gray-500">
                     {formatDate(visit.visited_at)}
                   </p>
                 </div>
               {:else}
                 <div class="flex-shrink-0">
                   <div
-                    class="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-red-100 to-red-200 shadow-sm sm:h-14 sm:w-14"
+                    class="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-red-100 to-red-200 shadow-sm sm:h-10 sm:w-10"
                   >
                     <svg
-                      class="h-5 w-5 text-red-500 sm:h-6 sm:w-6"
+                      class="h-4 w-4 text-red-500 sm:h-5 sm:w-5"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -385,22 +381,20 @@
                     </svg>
                   </div>
                 </div>
-                <div class="min-w-0 flex-1 pr-16 sm:pr-20">
+                <div class="min-w-0 flex-1 pr-12 sm:pr-16">
                   <div>
-                    <h3 class="text-sm font-semibold text-gray-600 sm:text-base">
+                    <h3 class="text-xs font-semibold text-gray-600 sm:text-sm">
                       削除されたユーザー
                     </h3>
                   </div>
-                  <div class="mt-1">
-                    <span class="block text-xs text-gray-500 sm:text-sm">--</span>
+                  <div class="mt-0.5">
+                    <span class="block text-xs text-gray-500">--</span>
                   </div>
                 </div>
                 <!-- 時間表示（絶対位置） -->
-                <div
-                  class="absolute top-3 right-3 flex items-center space-x-1 sm:top-5 sm:right-5 sm:space-x-2"
-                >
+                <div class="absolute top-2 right-2 flex items-center space-x-1 sm:top-3 sm:right-3">
                   <svg
-                    class="h-3 w-3 text-gray-400 sm:h-4 sm:w-4"
+                    class="h-3 w-3 text-gray-400"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -412,7 +406,7 @@
                       d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
                     ></path>
                   </svg>
-                  <p class="text-xs whitespace-nowrap text-gray-500 sm:text-sm">
+                  <p class="text-xs whitespace-nowrap text-gray-500">
                     {formatDate(visit.visited_at)}
                   </p>
                 </div>

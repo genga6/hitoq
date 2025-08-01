@@ -18,25 +18,34 @@
     class="h-16 w-16 flex-shrink-0 rounded-full border border-gray-300 sm:h-20 sm:w-20 md:h-24 md:w-24"
   />
   <div class="min-w-0 flex-1 {isOwner ? 'pr-0 sm:pr-12 md:pr-16 lg:pr-20' : ''}">
-    <div class="flex items-center space-x-3">
-      <h2 class="text-xl font-bold break-words text-gray-700 sm:text-2xl">{displayName}</h2>
-      <a
-        href="https://x.com/{userName}"
-        target="_blank"
-        rel="noopener noreferrer"
-        class="inline-flex items-center rounded-full bg-black px-3 py-1 text-white transition-colors hover:bg-gray-800"
-        title="Xページを見る"
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          class="h-4 w-4"
-          fill="currentColor"
+    <div class="flex flex-col space-y-2 sm:flex-row sm:items-center sm:space-y-0 sm:space-x-3">
+      <div class="flex w-full items-center justify-between sm:w-auto sm:justify-start">
+        <h2
+          class="min-w-0 flex-1 text-xl font-bold break-words text-gray-700 sm:flex-none sm:text-2xl"
         >
-          <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
-        </svg>
-        <span class="ml-1 text-sm">X</span>
-      </a>
+          {displayName}
+        </h2>
+        <a
+          href="https://x.com/{userName}"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="ml-3 inline-flex h-7 w-14 flex-shrink-0 items-center justify-center rounded-full bg-black text-white transition-colors hover:bg-gray-800 sm:ml-0 sm:h-auto sm:w-auto sm:px-3 sm:py-1"
+          title="Xページを見る"
+          aria-label="Xページを見る"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            class="h-4 w-4"
+            fill="currentColor"
+          >
+            <path
+              d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"
+            />
+          </svg>
+          <span class="ml-1 text-sm">X</span>
+        </a>
+      </div>
     </div>
 
     {#if bio}
@@ -51,6 +60,7 @@
       class="group absolute top-0 right-0 z-10 flex rotate-3 transform flex-col items-center space-y-0.5 border-2 border-orange-300 bg-gradient-to-br from-orange-100 to-orange-200 px-2 py-1.5 text-orange-700 shadow-md transition-all duration-300 hover:rotate-0 hover:border-orange-400 hover:from-orange-200 hover:to-orange-300 hover:text-orange-800 hover:shadow-lg sm:-top-2 sm:-right-2 sm:space-y-1 sm:px-2 sm:py-1.5 lg:-top-3 lg:-right-3 lg:px-3 lg:py-2.5"
       style="clip-path: polygon(0% 0%, 100% 0%, 100% 85%, 50% 100%, 0% 85%)"
       title="足跡を見る"
+      aria-label="足跡を見る"
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"

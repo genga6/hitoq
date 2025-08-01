@@ -1,5 +1,6 @@
 from src.schema.answer import AnswerBase
 from src.schema.common import OrmBaseModel
+from src.schema.message import MessageRead
 from src.schema.profile_item import ProfileItemRead
 from src.schema.question import QuestionRead
 from src.schema.user import UserRead
@@ -38,3 +39,8 @@ class QnAPageData(OrmBaseModel):
     user_answer_groups: list[UserAnswerGroupRead]
     available_templates: list[AvailableQATemplateRead]
     categories: dict[str, CategoryInfoRead]
+
+
+class MessagesPageData(OrmBaseModel):
+    profile: UserRead
+    messages: list[MessageRead]

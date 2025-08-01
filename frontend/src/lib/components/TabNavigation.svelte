@@ -7,11 +7,12 @@
   };
   const { userName }: Props = $props();
 
-  const tabs = [
+  // すべてのタブを表示（履歴タブも非ログインユーザーに表示）
+  const tabs = $derived([
     { path: `/${userName}`, label: 'プロフィール' },
     { path: `/${userName}/qna`, label: 'パーソナルQ&A' },
-    { path: `/${userName}/reactions`, label: 'リアクション' }
-  ];
+    { path: `/${userName}/messages`, label: 'メッセージ' }
+  ]);
 </script>
 
 <nav class="flex justify-around border-b border-gray-300">

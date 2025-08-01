@@ -5,10 +5,11 @@ from sqlalchemy.orm import Session
 
 from src.db.session import get_db
 from src.schema.composite_schema import (
+    MessagesPageData,
     ProfilePageData,
     QnAPageData,
 )
-from src.service import qna_service, user_service
+from src.service import message_service, qna_service, user_service
 from src.service.question_templates import (
     get_all_category_info,
     get_default_templates,
@@ -77,4 +78,18 @@ def read_qna_page_data(user_name: str, db: Session = Depends(get_db)):
         "user_answer_groups": user_answer_groups,
         "available_templates": available_templates,
         "categories": categories_info,
+    }
+
+
+@username_router.get("/messages", response_model=MessagesPageData)
+def read_messages_page_data(user_name: str, db: Session = Depends(get_db)):
+    user = user_service.get_user_by_username(db, user_name=user_name)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    messages = message_service.get_messages_for_user(db, user.user_id)
+
+    return {
+        "profile": user,
+        "messages": messages,
     }

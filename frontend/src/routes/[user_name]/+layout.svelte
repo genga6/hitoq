@@ -23,7 +23,7 @@
 </script>
 
 <main class="flex min-h-screen justify-center bg-gray-100 p-4 md:p-6">
-  <div class="card w-full max-w-4xl space-y-4 p-4 md:space-y-6 md:p-6">
+  <div class="card w-full max-w-4xl space-y-3 p-3 sm:space-y-4 sm:p-4 md:space-y-6 md:p-6">
     {#if data.profile}
       <ProfileHeader
         displayName={data.profile.displayName}

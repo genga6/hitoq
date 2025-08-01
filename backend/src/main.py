@@ -13,6 +13,7 @@ from starlette.middleware.sessions import SessionMiddleware
 from src.config.logging_config import configure_logging, get_logger
 from src.middleware.logging import LoggingMiddleware
 from src.router import auth
+from src.router.message_router import message_router
 from src.router.profile_router import profile_router
 from src.router.qna_router import qna_router, questions_router
 from src.router.user_router import user_router
@@ -69,6 +70,7 @@ app.add_middleware(LoggingMiddleware)
 app.include_router(username_router)
 app.include_router(user_router)
 app.include_router(profile_router)
+app.include_router(message_router)
 app.include_router(qna_router)
 app.include_router(questions_router)
 app.include_router(visit_router)

@@ -86,6 +86,9 @@
     const handleKeydown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         cancelEdit();
+      } else if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+        e.preventDefault();
+        confirmEdit();
       }
     };
 
@@ -119,6 +122,9 @@
       class="w-full border-0 border-b-2 border-gray-200 bg-transparent px-1 py-1 text-base font-semibold text-gray-700 transition-colors focus:border-orange-500 focus:ring-0 focus:outline-none sm:text-lg"
     />
 
+    <!-- キーボードショートカットヒント -->
+    <div class="mt-1 text-xs text-gray-500">Ctrl+Enter で保存、Esc でキャンセル</div>
+
     <!-- アクションボタン -->
     <div class="mt-2 flex justify-end gap-1 sm:gap-2">
       <button
@@ -146,7 +152,9 @@
           confirmEdit();
         }}
         disabled={!isValid}
-        class="touch-manipulation rounded-full p-1.5 transition-colors sm:p-2 {isValid ? 'text-green-500 hover:bg-green-50' : 'text-gray-300 cursor-not-allowed'}"
+        class="touch-manipulation rounded-full p-1.5 transition-colors sm:p-2 {isValid
+          ? 'text-green-500 hover:bg-green-50'
+          : 'cursor-not-allowed text-gray-300'}"
         aria-label="Confirm"
       >
         <!-- Confirm Icon (Check) -->
