@@ -11,4 +11,7 @@
   categories={data.categories}
   isOwner={data.isOwner}
   userId={data.profile.userId}
+  profile={data.profile}
+  currentUser={data.currentUser}
+  isLoggedIn={data.isLoggedIn}
 />

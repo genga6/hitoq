@@ -27,7 +27,7 @@
   }: Props = $props();
 
   let touched = $state(false);
-  
+
   const inputId = Math.random().toString(36).substr(2, 9);
 
   // 入力値を管理する$derived（writable）
@@ -37,7 +37,7 @@
   function handleInput(event: Event) {
     const target = event.target as HTMLInputElement | HTMLTextAreaElement;
     inputValue = target.value;
-    
+
     if (touched) {
       const result = validateInput(inputValue, rules);
       onInput?.(inputValue, result.isValid);
@@ -79,7 +79,9 @@
       {disabled}
       oninput={handleInput}
       onblur={handleBlur}
-      class="input-primary {hasErrors ? 'border-red-300 focus:border-red-500 focus:ring-red-500' : ''} {isValid ? 'border-green-300 focus:border-green-500 focus:ring-green-500' : ''}"
+      class="input-primary {hasErrors
+        ? 'border-red-300 focus:border-red-500 focus:ring-red-500'
+        : ''} {isValid ? 'border-green-300 focus:border-green-500 focus:ring-green-500' : ''}"
       rows="3"
     ></textarea>
   {:else}
@@ -91,7 +93,9 @@
       {disabled}
       oninput={handleInput}
       onblur={handleBlur}
-      class="input-primary {hasErrors ? 'border-red-300 focus:border-red-500 focus:ring-red-500' : ''} {isValid ? 'border-green-300 focus:border-green-500 focus:ring-green-500' : ''}"
+      class="input-primary {hasErrors
+        ? 'border-red-300 focus:border-red-500 focus:ring-red-500'
+        : ''} {isValid ? 'border-green-300 focus:border-green-500 focus:ring-green-500' : ''}"
     />
   {/if}
 
@@ -112,11 +116,6 @@
         <p class="text-sm text-red-600">{error}</p>
       {/each}
     </div>
-  {/if}
-
-  <!-- 成功メッセージ -->
-  {#if isValid && rules.required}
-    <p class="text-sm text-green-600">✓ 入力完了</p>
   {/if}
 
   {#if children}

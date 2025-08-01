@@ -12,7 +12,7 @@ qna_router = APIRouter(
 )
 
 questions_router = APIRouter(
-    prefix="/users",
+    prefix="/questions",
     tags=["Questions"],
 )
 
@@ -29,6 +29,28 @@ def create_new_answer(
     )
 
 
-@questions_router.get("/questions", response_model=list[QuestionRead])
+@questions_router.get("/", response_model=list[QuestionRead])
 def read_all_questions(db: Session = Depends(get_db)):
     return qna_service.get_all_questions(db=db)
+
+
+@questions_router.get("/by-category/{category_id}", response_model=list[QuestionRead])
+def read_questions_by_category(category_id: str, db: Session = Depends(get_db)):
+    """指定されたカテゴリの質問を取得（ガチャ機能用）"""
+    return qna_service.get_questions_by_category(db=db, category_id=category_id)
+
+
+@questions_router.get("/categories", response_model=list[dict])
+def read_categories():
+    """利用可能なカテゴリ一覧を取得（ガチャ機能用）"""
+    from src.service.categories import get_all_categories
+
+    categories = get_all_categories()
+    return [
+        {
+            "id": category.id,
+            "name": category.name,
+            "description": category.description,
+        }
+        for category in categories
+    ]

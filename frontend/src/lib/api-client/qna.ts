@@ -48,5 +48,16 @@ export const createAnswer = async (
 };
 
 export const getAllQuestions = async (): Promise<Question[]> => {
-  return fetchApi<Question[]>(`/users/questions`);
+  return fetchApi<Question[]>(`/questions`);
+};
+
+// ガチャ機能用の新しいAPI
+export const getQuestionsByCategory = async (
+  categoryId: string,
+): Promise<Question[]> => {
+  return fetchApi<Question[]>(`/questions/by-category/${categoryId}`);
+};
+
+export const getCategories = async (): Promise<CategoryInfo[]> => {
+  return fetchApi<CategoryInfo[]>(`/questions/categories`);
 };

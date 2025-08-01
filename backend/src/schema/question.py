@@ -1,14 +1,12 @@
 from datetime import datetime
 
-from src.db.tables import QuestionCategoryEnum
 from src.schema.common import OrmBaseModel
 
 
 class QuestionBase(OrmBaseModel):
-    category: QuestionCategoryEnum
+    category_id: str
     text: str
     display_order: int
-    template_id: str
 
 
 class QuestionCreate(QuestionBase):
@@ -16,7 +14,7 @@ class QuestionCreate(QuestionBase):
 
 
 class QuestionUpdate(OrmBaseModel):
-    category: QuestionCategoryEnum | None = None
+    category_id: str | None = None
     text: str | None = None
     display_order: int | None = None
 

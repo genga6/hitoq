@@ -169,7 +169,7 @@
   let searchInputElement: HTMLInputElement | null = null;
 </script>
 
-<header class="w-full bg-white py-4 shadow-md md:py-6 lg:py-8">
+<header class="relative z-50 w-full bg-white py-4 shadow-md md:py-6 lg:py-8">
   <div class="container-responsive max-w-4xl">
     <!-- Desktop Layout -->
     <div class="relative hidden items-center justify-between sm:flex">
@@ -216,7 +216,7 @@
         {#if showCandidates || noResults}
           <div
             bind:this={candidatesElement}
-            class="absolute left-1/2 z-50 mt-2 w-full -translate-x-1/2 rounded-lg border border-gray-300 bg-white shadow"
+            class="absolute left-1/2 z-[9999] mt-2 w-full -translate-x-1/2 rounded-lg border border-gray-300 bg-white shadow"
           >
             {#if showCandidates}
               {#each candidates as user (user.userName)}
@@ -402,7 +402,7 @@
         {#if showCandidates || noResults}
           <div
             bind:this={candidatesElement}
-            class="absolute z-50 mt-2 w-full rounded-lg border border-gray-300 bg-white shadow"
+            class="absolute z-[9999] mt-2 w-full rounded-lg border border-gray-300 bg-white shadow"
           >
             {#if showCandidates}
               {#each candidates as user (user.userName)}

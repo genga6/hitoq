@@ -28,7 +28,7 @@ export const load: PageServerLoad = async ({ params, request }) => {
     };
 
     return returnData;
-  } catch {
+  } catch (e) {
     console.error("Error loading profile items for user:", userName, e);
     throw error(404, "ユーザーが見つかりませんでした");
   }

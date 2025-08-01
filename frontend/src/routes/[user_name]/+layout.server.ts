@@ -33,6 +33,8 @@ export const load: LayoutServerLoad = async ({
     return {
       isOwner,
       profile,
+      currentUser,
+      isLoggedIn: !!currentUser,
     };
   } catch (e) {
     console.error("Error loading profile data for user:", userName, e);

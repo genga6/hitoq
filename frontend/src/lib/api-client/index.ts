@@ -2,6 +2,7 @@
 // 将来的には各機能のファイルから直接インポートすることを推奨
 export * from "./auth";
 export * from "./base";
+export * from "./messages";
 export * from "./profile";
 export * from "./qna";
 export * from "./users";

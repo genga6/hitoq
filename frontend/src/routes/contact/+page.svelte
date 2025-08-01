@@ -9,12 +9,12 @@
   let descriptionValue = $state('');
   let environmentValue = $state('');
   let contactValue = $state('');
-  
+
   let titleValid = $state(false);
   let descriptionValid = $state(false);
   let environmentValid = $state(true); // Optional field
   let contactValid = $state(true); // Optional field
-  
+
   const formValid = $derived(titleValid && descriptionValid && environmentValid && contactValid);
 
   const GOOGLE_FORM_IDS = {
@@ -38,7 +38,7 @@
   function handleSubmit(event: Event) {
     event.preventDefault();
     if (!formValid) return;
-    
+
     isSubmitting = true;
 
     const formData = new FormData();
@@ -229,7 +229,11 @@
 
           <!-- 送信ボタン -->
           <div class="flex justify-center pt-4">
-            <button type="submit" disabled={isSubmitting || !formValid} class="btn-primary px-8 py-3 {!formValid ? 'opacity-50 cursor-not-allowed' : ''}" >
+            <button
+              type="submit"
+              disabled={isSubmitting || !formValid}
+              class="btn-primary px-8 py-3 {!formValid ? 'cursor-not-allowed opacity-50' : ''}"
+            >
               {#if isSubmitting}
                 <span class="flex items-center justify-center">
                   <svg

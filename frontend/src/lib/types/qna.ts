@@ -1,13 +1,21 @@
 export type QuestionCategory =
-  | "self-introduction"
   | "values"
-  | "otaku"
-  | "misc";
+  | "personality"
+  | "relationships"
+  | "romance"
+  | "childhood"
+  | "school"
+  | "career"
+  | "lifestyle"
+  | "activities"
+  | "entertainment"
+  | "goals"
+  | "hypothetical";
 
 export interface Question {
   questionId: number;
   text: string;
-  category: QuestionCategory;
+  categoryId: string;
   displayOrder: number;
 }
 
