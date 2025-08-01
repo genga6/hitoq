@@ -353,7 +353,7 @@
         {#each relatedMessages as message (message.messageId || message.id)}
           <div class="flex items-start space-x-2 rounded-md bg-gray-50 p-2 text-sm">
             <img
-              src={message.fromUser?.iconUrl || '/default-avatar.png'}
+              src={message.fromUser?.iconUrl || '/default-avatar.svg'}
               alt=""
               class="h-6 w-6 rounded-full"
             />

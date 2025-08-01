@@ -71,13 +71,6 @@ class ProfileItem(Base):
     user: Mapped["User"] = relationship(back_populates="profile_items")
 
 
-class QuestionCategoryEnum(enum.Enum):
-    self_introduction = "self-introduction"
-    values = "values"
-    otaku = "otaku"
-    misc = "misc"
-
-
 class MessageTypeEnum(enum.Enum):
     question = "question"
     comment = "comment"
@@ -95,10 +88,11 @@ class Question(Base):
     __tablename__ = "questions"
 
     question_id: Mapped[int] = mapped_column(primary_key=True)
-    category: Mapped[QuestionCategoryEnum]
+    category_id: Mapped[str] = mapped_column(
+        String, nullable=False
+    )  # categories.pyのCategoryInfo.id
     text: Mapped[str]
     display_order: Mapped[int]
-    template_id: Mapped[str] = mapped_column(String, nullable=False)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )

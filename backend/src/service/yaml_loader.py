@@ -3,15 +3,14 @@ from pathlib import Path
 
 import yaml
 
-from src.db.tables import QuestionCategoryEnum
+from src.service.categories import get_category_by_name
 
 
 @dataclass
 class QuestionTemplate:
-    category: QuestionCategoryEnum
-    title: str
+    category_id: str
+    category_name: str
     questions: list[str]
-    description: str = ""
 
 
 class YamlTemplateLoader:
@@ -32,33 +31,23 @@ class YamlTemplateLoader:
 
     def _parse_template(self, data: dict, filename: str) -> QuestionTemplate:
         try:
-            category_str = data.get("category")
-            if not category_str:
+            category_name = data.get("category")
+            if not category_name:
                 raise ValueError("Missing 'category' field")
 
-            # Try to find the enum member by name first, then by value
-            category = None
-            for enum_member in QuestionCategoryEnum:
-                if (
-                    enum_member.name == category_str
-                    or enum_member.value == category_str
-                ):
-                    category = enum_member
-                    break
+            # カテゴリ情報を統一管理から取得
+            category_info = get_category_by_name(category_name)
+            if not category_info:
+                raise ValueError(f"Unknown category: {category_name}")
 
-            if not category:
-                available_categories = [
-                    f"{e.name} ({e.value})" for e in QuestionCategoryEnum
-                ]
-                raise ValueError(
-                    f"Unknown category: {category_str}. Available categories: {', '.join(available_categories)}"
-                )
+            questions = data.get("questions", [])
+            if not questions:
+                raise ValueError("Missing 'questions' field")
 
             return QuestionTemplate(
-                category=category,
-                title=data.get("title", ""),
-                description=data.get("description", ""),
-                questions=data.get("questions", []),
+                category_id=category_info.id,
+                category_name=category_info.name,
+                questions=questions,
             )
         except Exception as e:
             raise RuntimeError(f"Failed to parse template from {filename}: {e}") from e
@@ -90,17 +79,15 @@ class YamlTemplateLoader:
         if self._templates_cache is None:
             templates = self.load_templates()
             self._templates_cache = {
-                f"{t.category.value}_{i}": t for i, t in enumerate(templates)
+                f"{t.category_id}_{i}": t for i, t in enumerate(templates)
             }
 
         return list(self._templates_cache.values())
 
-    def get_template_by_category(
-        self, category: QuestionCategoryEnum
-    ) -> QuestionTemplate | None:
+    def get_template_by_category_id(self, category_id: str) -> QuestionTemplate | None:
         templates = self.get_templates()
         for template in templates:
-            if template.category == category:
+            if template.category_id == category_id:
                 return template
         return None
 
@@ -125,12 +112,12 @@ def load_default_labels() -> list[str]:
             return data.get("profile_labels", [])
     except Exception:
         return [
-            "趣味"
+            "趣味・今ハマっていること"
+            "好きなコンテンツ"
             "好きな食べ物"
-            "好きな映画・ドラマ・アニメ・ゲーム"
-            "休日の過ごし方"
-            "一番行きたい場所"
             "得意なこと・特技"
             "実は〇〇なんです"
+            "子供の頃の夢"
+            "座右の銘"
             "もし１つだけ願いが叶うなら？"
         ]

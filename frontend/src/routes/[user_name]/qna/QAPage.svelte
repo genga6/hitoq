@@ -7,6 +7,7 @@
   } from '$lib/types/qna';
   import QAItem from './QAItem.svelte';
   import MessageForm from '../messages/MessageForm.svelte';
+  import { SvelteMap } from 'svelte/reactivity';
 
   const {
     initialAnswerGroups = [],
@@ -34,27 +35,67 @@
     isLoggedIn?: boolean;
   }>();
 
-  // 一時的なフォールバック用カテゴリー情報
+  // 新しい12カテゴリのフォールバック情報
   const fallbackCategories: Record<string, CategoryInfo> = {
-    'self-introduction': {
-      id: 'self-introduction',
-      label: '自己紹介',
-      description: '基本的な自己紹介に関する質問'
-    },
     values: {
       id: 'values',
       label: '価値観',
-      description: '価値観や考え方に関する質問'
+      description: '人生観、考え方、大切にしていること'
     },
-    otaku: {
-      id: 'otaku',
-      label: '趣味・創作',
-      description: '趣味や創作活動に関する質問'
+    personality: {
+      id: 'personality',
+      label: '性格・特徴',
+      description: '自分の性格、特徴、個性について'
     },
-    misc: {
-      id: 'misc',
+    relationships: {
+      id: 'relationships',
+      label: '人間関係',
+      description: '友人、家族、コミュニケーションについて'
+    },
+    romance: {
+      id: 'romance',
+      label: '恋愛',
+      description: '恋愛観、パートナーシップについて'
+    },
+    childhood: {
+      id: 'childhood',
+      label: '子供時代',
+      description: '幼少期の思い出、体験、遊び'
+    },
+    school: {
+      id: 'school',
+      label: '学生時代',
+      description: '学校生活、青春の思い出'
+    },
+    career: {
+      id: 'career',
+      label: 'キャリア',
+      description: '仕事、働き方、キャリアプラン'
+    },
+    lifestyle: {
+      id: 'lifestyle',
       label: 'ライフスタイル',
-      description: '日常生活やライフスタイルに関する質問'
+      description: '日常の過ごし方、健康、ファッション、インテリア'
+    },
+    activities: {
+      id: 'activities',
+      label: 'アクティビティ',
+      description: '旅行、グルメ、アウトドア活動'
+    },
+    entertainment: {
+      id: 'entertainment',
+      label: 'エンタメ',
+      description: '映画、音楽、ゲーム、読書、創作、趣味'
+    },
+    goals: {
+      id: 'goals',
+      label: '目標',
+      description: '学習、成長、将来の目標、夢'
+    },
+    hypothetical: {
+      id: 'hypothetical',
+      label: 'もしも',
+      description: '仮定の質問、想像の世界、「もし〜だったら」'
     }
   };
 
@@ -101,6 +142,9 @@
 
   // 新規質問フォーム表示状態
   let showNewQuestionForm = $state(false);
+  
+  // カテゴリーフィルター表示状態
+  let showCategoryFilter = $state(false);
 
   // 全ての表示対象グループ（回答済み + ガチャ結果）
   const allDisplayGroups = $derived([...answerGroups, ...gachaGroups]);
@@ -118,8 +162,8 @@
         answerText: qa.answerText,
         answerId: qa.answerId,
         categoryInfo: (() => {
-          const template = availableTemplates.find((t: QATemplate) => t.id === group.templateId);
-          return template?.category ? categories[template.category] : null;
+          // 新しいフラット構造では質問に直接categoryIdがある
+          return qa.question.categoryId ? categories[qa.question.categoryId] : null;
         })()
       }))
     )
@@ -167,67 +211,85 @@
     showNewQuestionForm = !showNewQuestionForm;
   }
 
-  // ガチャ機能: ランダムに質問を選択
-  function performGacha(categoryFilter?: string, count: number = 4) {
-    // 利用可能なテンプレートから既に選択済みのものを除外
-    const selectedTemplateIds = new Set([
-      ...answerGroups.map((g) => g.templateId),
-      ...gachaGroups.map((g) => g.templateId)
-    ]);
-
-    let availableForGacha = (availableTemplates || []).filter(
-      (template: QATemplate) => !selectedTemplateIds.has(template.id)
-    );
-
-    // カテゴリーフィルターがある場合は適用
-    if (categoryFilter) {
-      availableForGacha = availableForGacha.filter(
-        (template: QATemplate) => template.category === categoryFilter
-      );
+  // 新しいフラットカテゴリベースのガチャ機能
+  async function performGacha(categoryFilter?: string, count: number = 4) {
+    try {
+      let questions;
+      
+      if (categoryFilter) {
+        // 特定カテゴリの質問を取得
+        const { getQuestionsByCategory } = await import('$lib/api-client/qna');
+        questions = await getQuestionsByCategory(categoryFilter);
+      } else {
+        // 全質問を取得してランダム選択
+        const { getAllQuestions } = await import('$lib/api-client/qna');
+        const allQuestions = await getAllQuestions();
+        
+        // 既に表示されている質問を除外
+        const displayedQuestionIds = new Set([
+          ...answerGroups.flatMap(g => g.answers.map(a => a.question.questionId)),
+          ...gachaGroups.flatMap(g => g.answers.map(a => a.question.questionId))
+        ]);
+        
+        questions = allQuestions.filter(q => !displayedQuestionIds.has(q.questionId));
+      }
+      
+      if (questions.length === 0) {
+        return 0;
+      }
+      
+      // ランダムに質問を選択
+      const shuffled = [...questions].sort(() => Math.random() - 0.5);
+      const selectedQuestions = shuffled.slice(0, Math.min(count, shuffled.length));
+      
+      // カテゴリ別にグループ化
+      const questionsByCategory = new SvelteMap<string, typeof selectedQuestions>();
+      selectedQuestions.forEach(q => {
+        const categoryId = q.categoryId;
+        if (!questionsByCategory.has(categoryId)) {
+          questionsByCategory.set(categoryId, []);
+        }
+        questionsByCategory.get(categoryId)!.push(q);
+      });
+      
+      // 各カテゴリごとにグループを作成
+      const newGachaGroups = Array.from(questionsByCategory.entries()).map(([categoryId, questions]) => {
+        const categoryInfo = categories[categoryId];
+        return {
+          groupId: generateGroupId(),
+          templateId: categoryId,
+          templateTitle: `🎲 ${categoryInfo?.label || categoryId}`,
+          answers: questions.map(question => ({
+            question: {
+              questionId: question.questionId,
+              text: question.text,
+              categoryId: question.categoryId,
+              displayOrder: question.displayOrder
+            },
+            answerText: ''
+          }))
+        };
+      });
+      
+      // 既存のガチャ結果に追加
+      gachaGroups = [...gachaGroups, ...newGachaGroups];
+      
+      return selectedQuestions.length;
+    } catch (error) {
+      console.error('ガチャ実行中にエラーが発生しました:', error);
+      return 0;
     }
-
-    // ランダムに選択（最大count個まで）
-    const shuffled = [...availableForGacha].sort(() => Math.random() - 0.5);
-    const selectedTemplates = shuffled.slice(0, Math.min(count, shuffled.length));
-
-    // 選択されたテンプレートから質問グループを作成
-    const newGachaGroups = selectedTemplates.map((template) => ({
-      groupId: generateGroupId(),
-      templateId: template.id,
-      templateTitle: `🎲 ${template.title}`,
-      answers: template.questions.map(
-        (question: {
-          questionId: number;
-          text: string;
-          category: string;
-          displayOrder: number;
-        }) => ({
-          question: {
-            questionId: question.questionId,
-            text: question.text,
-            category: question.category,
-            displayOrder: question.displayOrder
-          },
-          answerText: ''
-        })
-      )
-    }));
-
-    // 既存のガチャ結果に追加
-    gachaGroups = [...gachaGroups, ...newGachaGroups];
-
-    return newGachaGroups.length;
   }
 
   // おまかせガチャ
-  function performRandomGacha() {
-    const count = performGacha();
+  async function performRandomGacha() {
+    const count = await performGacha();
     return count;
   }
 
   // カテゴリ別ガチャ
-  function performCategoryGacha(category: string) {
-    const count = performGacha(category);
+  async function performCategoryGacha(category: string) {
+    const count = await performGacha(category);
     return count;
   }
 
@@ -319,28 +381,31 @@
   {#if isOwner}
     <div class="mb-6">
       <div
-        class="rounded-2xl border border-orange-200 bg-gradient-to-r from-orange-50 to-yellow-50 p-6"
+        class="rounded-2xl border border-orange-200 bg-gradient-to-r from-orange-50 to-yellow-50 p-4 sm:p-6"
       >
-        <div class="flex flex-col space-y-4">
+        <div class="flex flex-col space-y-3 sm:space-y-4">
           <div class="text-center">
-            <h3 class="mb-2 text-lg font-bold text-gray-800">🎲 質問ガチャ</h3>
-            <p class="text-sm text-gray-600">
+            <h3 class="mb-1 text-base sm:text-lg font-bold text-gray-800">🎲 質問ガチャ</h3>
+            <p class="text-xs sm:text-sm text-gray-600 sm:block hidden">
               様々なテーマからランダムに選ばれた質問に答えて、新しい自分を発見しよう！
+            </p>
+            <p class="text-xs text-gray-600 sm:hidden">
+              ランダムな質問で新しい自分を発見！
             </p>
           </div>
 
-          <div class="flex flex-col justify-center gap-3 sm:flex-row">
+          <div class="flex flex-col justify-center gap-2 sm:flex-row sm:gap-3">
             <!-- おまかせガチャ -->
             <button
-              onclick={() => {
-                const count = performRandomGacha();
+              onclick={async () => {
+                const count = await performRandomGacha();
                 if (count === 0) {
                   alert('もう回答できる質問がありません！');
                 }
               }}
-              class="inline-flex flex-1 items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-orange-400 to-red-400 px-6 py-3 text-sm font-medium text-white shadow-md transition-all hover:from-orange-500 hover:to-red-500 hover:shadow-lg focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 focus:outline-none sm:flex-none"
+              class="inline-flex flex-1 items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-orange-400 to-red-400 px-4 py-2.5 sm:px-6 sm:py-3 text-sm font-medium text-white shadow-md transition-all hover:from-orange-500 hover:to-red-500 hover:shadow-lg focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 focus:outline-none sm:flex-none"
             >
-              <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg class="h-4 w-4 sm:h-5 sm:w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path
                   stroke-linecap="round"
                   stroke-linejoin="round"
@@ -348,31 +413,43 @@
                   d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4"
                 />
               </svg>
-              🎲 おまかせガチャ
+              <span class="sm:hidden">🎲 ガチャ</span>
+              <span class="hidden sm:inline">🎲 おまかせガチャ</span>
             </button>
           </div>
 
           <!-- カテゴリ別ガチャ -->
           {#if categories && Object.keys(categories).length > 0}
-            <div class="border-t border-orange-200 pt-4">
-              <p class="mb-3 text-center text-xs text-gray-600">または、カテゴリを選んでガチャ：</p>
-              <div class="flex flex-wrap justify-center gap-2">
-                {#each availableCategories as categoryId (categoryId)}
+            <div class="border-t border-orange-200 pt-3 sm:pt-4">
+              <p class="mb-2 sm:mb-3 text-center text-xs text-gray-600">
+                <span class="sm:hidden">カテゴリ選択:</span>
+                <span class="hidden sm:inline">または、カテゴリを選んでガチャ:</span>
+              </p>
+              <div class="flex flex-wrap justify-center gap-1.5 sm:gap-2">
+                {#each availableCategories.slice(0, 8) as categoryId (categoryId)}
                   {@const category = categories[categoryId]}
                   {#if category}
                     <button
-                      onclick={() => {
-                        const count = performCategoryGacha(categoryId);
+                      onclick={async () => {
+                        const count = await performCategoryGacha(categoryId);
                         if (count === 0) {
                           alert(`${category.label}カテゴリにはもう回答できる質問がありません！`);
                         }
                       }}
-                      class="inline-flex items-center gap-1 rounded-full border border-orange-300 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 transition-all hover:border-orange-400 hover:bg-orange-50 focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 focus:outline-none"
+                      class="inline-flex items-center gap-1 rounded-full border border-orange-300 bg-white px-2.5 py-1 sm:px-3 sm:py-1.5 text-xs font-medium text-gray-700 transition-all hover:border-orange-400 hover:bg-orange-50 focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 focus:outline-none"
                     >
                       🎯 {category.label}
                     </button>
                   {/if}
                 {/each}
+                {#if availableCategories.length > 8}
+                  <button
+                    onclick={() => showCategoryFilter = true}
+                    class="inline-flex items-center gap-1 rounded-full border border-gray-300 bg-gray-100 px-2.5 py-1 sm:px-3 sm:py-1.5 text-xs font-medium text-gray-600 transition-all hover:border-gray-400 hover:bg-gray-200"
+                  >
+                    +{availableCategories.length - 8}
+                  </button>
+                {/if}
               </div>
             </div>
           {/if}
@@ -383,46 +460,20 @@
 
   <!-- カテゴリーフィルター -->
   {#if categories && Object.keys(categories).length > 0}
-    <div class="mb-4">
-      <div
-        class="flex flex-col space-y-3 sm:flex-row sm:items-center sm:justify-between sm:space-y-0"
-      >
-        <h2 class="text-lg font-semibold text-gray-800">パーソナルQ&A</h2>
-
-        <div class="flex flex-wrap items-center gap-2 text-sm">
-          <span class="flex-shrink-0 font-medium text-gray-600">絞り込み:</span>
-          <div class="flex min-w-0 flex-wrap gap-1.5">
-            {#each availableCategories as categoryId (categoryId)}
-              {@const category = categories[categoryId]}
-              {#if category}
-                <button
-                  onclick={() => toggleCategory(categoryId)}
-                  class="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium transition-all duration-200 {selectedCategories.includes(
-                    categoryId
-                  )
-                    ? 'bg-orange-100 text-orange-700 ring-1 ring-orange-300'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}"
-                >
-                  <span>{category.label}</span>
-                  {#if selectedCategories.includes(categoryId)}
-                    <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M6 18L18 6M6 6l12 12"
-                      />
-                    </svg>
-                  {/if}
-                </button>
-              {/if}
-            {/each}
-            {#if selectedCategories.length > 0}
+    <div class="mb-6">
+      <div class="flex flex-col space-y-4">
+        <div class="flex items-center justify-between">
+          <h2 class="text-lg font-semibold text-gray-800">パーソナルQ&A</h2>
+          {#if selectedCategories.length > 0}
+            <div class="flex items-center gap-3">
+              <span class="text-sm text-gray-500">
+                {filteredQAPairs.length}件表示中
+              </span>
               <button
                 onclick={clearFilters}
-                class="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700"
+                class="inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100"
               >
-                <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path
                     stroke-linecap="round"
                     stroke-linejoin="round"
@@ -430,14 +481,70 @@
                     d="M6 18L18 6M6 6l12 12"
                   />
                 </svg>
-                クリア
+                フィルタをクリア
               </button>
-            {/if}
-            {#if selectedCategories.length > 0}
-              <span class="flex-shrink-0 text-xs text-gray-500">
-                ({filteredQAPairs.length}件)
-              </span>
-            {/if}
+            </div>
+          {/if}
+        </div>
+        
+        <div class="rounded-lg border border-gray-200 bg-white">
+          <button
+            onclick={() => showCategoryFilter = !showCategoryFilter}
+            class="flex w-full items-center justify-between p-4 text-left transition-colors hover:bg-gray-50"
+          >
+            <div class="flex items-center gap-2">
+              <svg class="h-4 w-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.707A1 1 0 013 7V4z" />
+              </svg>
+              <span class="text-sm font-medium text-gray-700">カテゴリで絞り込み</span>
+              {#if selectedCategories.length > 0}
+                <span class="rounded-full bg-orange-100 px-2 py-0.5 text-xs font-medium text-orange-700">
+                  {selectedCategories.length}個選択中
+                </span>
+              {/if}
+            </div>
+            <svg 
+              class="h-4 w-4 text-gray-400 transition-transform duration-200 {showCategoryFilter ? 'rotate-180' : ''}"
+              fill="none" 
+              viewBox="0 0 24 24" 
+              stroke="currentColor"
+            >
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+          
+          <div class="overflow-hidden transition-all duration-300 ease-in-out {showCategoryFilter ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}">
+            <div class="border-t border-gray-200 p-4">
+              <div class="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
+            {#each availableCategories as categoryId (categoryId)}
+              {@const category = categories[categoryId]}
+              {#if category}
+                <button
+                  onclick={() => toggleCategory(categoryId)}
+                  class="group relative overflow-hidden rounded-lg border border-gray-200 bg-white p-3 text-left transition-all duration-200 hover:border-orange-300 hover:shadow-sm {selectedCategories.includes(
+                    categoryId
+                  )
+                    ? 'border-orange-400 bg-orange-50 ring-2 ring-orange-200'
+                    : 'hover:bg-gray-50'}"
+                >
+                  <div class="flex items-center justify-between">
+                    <span class="text-sm font-medium {selectedCategories.includes(categoryId) ? 'text-orange-700' : 'text-gray-700 group-hover:text-gray-900'}">
+                      {category.label}
+                    </span>
+                    {#if selectedCategories.includes(categoryId)}
+                      <div class="rounded-full bg-orange-100 p-1">
+                        <svg class="h-3 w-3 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
+                        </svg>
+                      </div>
+                    {/if}
+                  </div>
+                  <p class="mt-1 text-xs text-gray-500 truncate" title="{category.description}">{category.description}</p>
+                </button>
+              {/if}
+              {/each}
+              </div>
+            </div>
           </div>
         </div>
       </div>

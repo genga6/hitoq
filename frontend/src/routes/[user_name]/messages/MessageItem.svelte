@@ -84,7 +84,7 @@
   <div class="flex min-w-0 items-start space-x-2">
     <!-- 送信者のアイコン -->
     <img
-      src={message.fromUser?.iconUrl || '/default-avatar.png'}
+      src={message.fromUser?.iconUrl || '/default-avatar.svg'}
       alt={message.fromUser?.displayName || 'Unknown User'}
       class="h-8 w-8 rounded-full border border-gray-300"
     />

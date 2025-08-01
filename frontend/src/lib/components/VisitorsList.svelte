@@ -241,7 +241,7 @@
               <div class="flex-shrink-0">
                 <div class="relative">
                   <img
-                    src={visit.visitor_info.icon_url || '/default-avatar.png'}
+                    src={visit.visitor_info.icon_url || '/default-avatar.svg'}
                     alt={visit.visitor_info.display_name}
                     class="h-8 w-8 rounded-lg border border-white object-cover shadow-sm sm:h-10 sm:w-10"
                   />
