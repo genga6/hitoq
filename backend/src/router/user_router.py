@@ -2,7 +2,9 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
 from src.db.session import get_db
-from src.schema.user import UserCreate, UserRead
+from src.db.tables import User
+from src.router.auth import _get_current_user
+from src.schema.user import UserCreate, UserRead, UserUpdate
 from src.service import user_service
 
 user_router = APIRouter(
@@ -58,6 +60,19 @@ def search_users_by_display_name(
     """Search users by display name with partial matching."""
     users = user_service.search_users_by_display_name(db, display_name=q, limit=limit)
     return users
+
+
+@user_router.patch("/me", response_model=UserRead)
+def update_current_user_endpoint(
+    user_update: UserUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(_get_current_user),
+):
+    """Update current user information including notification settings."""
+    updated_user = user_service.update_user(db, current_user.user_id, user_update)
+    if not updated_user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return updated_user
 
 
 @user_router.delete("/{user_id}", status_code=204)

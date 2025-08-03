@@ -12,6 +12,12 @@ class Base(DeclarativeBase):
     pass
 
 
+class NotificationLevelEnum(enum.Enum):
+    none = "none"
+    important = "important"
+    all = "all"
+
+
 class User(Base):
     __tablename__ = "users"
 
@@ -23,6 +29,9 @@ class User(Base):
     bio: Mapped[str | None] = mapped_column(String(300), nullable=True)
     icon_url: Mapped[str | None] = mapped_column(String(512), nullable=True)
     visits_visible: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    notification_level: Mapped[NotificationLevelEnum] = mapped_column(
+        default=NotificationLevelEnum.all, nullable=False
+    )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )
@@ -149,6 +158,9 @@ class Message(Base):
     reference_answer_id: Mapped[int | None] = mapped_column(
         ForeignKey("answers.answer_id"), nullable=True
     )
+    parent_message_id: Mapped[str | None] = mapped_column(
+        ForeignKey("messages.message_id"), nullable=True
+    )
     status: Mapped[MessageStatusEnum] = mapped_column(default=MessageStatusEnum.unread)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
@@ -162,4 +174,10 @@ class Message(Base):
     )
     reference_answer: Mapped["Answer"] = relationship(
         "Answer", foreign_keys=[reference_answer_id]
+    )
+    parent_message: Mapped["Message"] = relationship(
+        "Message", foreign_keys=[parent_message_id], remote_side=[message_id]
+    )
+    replies: Mapped[list["Message"]] = relationship(
+        "Message", back_populates="parent_message", cascade="all, delete-orphan"
     )

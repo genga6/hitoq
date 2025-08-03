@@ -9,6 +9,7 @@ class MessageBase(OrmBaseModel):
     message_type: MessageTypeEnum
     content: str
     reference_answer_id: int | None = None
+    parent_message_id: str | None = None
 
 
 class MessageCreate(MessageBase):
@@ -27,3 +28,5 @@ class MessageRead(MessageBase):
     created_at: datetime
     from_user: UserRead | None = None
     to_user: UserRead | None = None
+    replies: list["MessageRead"] = []
+    reply_count: int = 0

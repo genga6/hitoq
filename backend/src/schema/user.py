@@ -1,5 +1,6 @@
 from datetime import datetime
 
+from src.db.tables import NotificationLevelEnum
 from src.schema.common import OrmBaseModel
 
 
@@ -19,8 +20,10 @@ class UserUpdate(OrmBaseModel):
     display_name: str | None = None
     bio: str | None = None
     icon_url: str | None = None
+    notification_level: NotificationLevelEnum | None = None
 
 
 class UserRead(UserBase):
     user_id: str
+    notification_level: NotificationLevelEnum
     created_at: datetime
