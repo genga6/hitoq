@@ -84,16 +84,6 @@ class YamlTemplateLoader:
 
         return list(self._templates_cache.values())
 
-    def get_template_by_category_id(self, category_id: str) -> QuestionTemplate | None:
-        templates = self.get_templates()
-        for template in templates:
-            if template.category_id == category_id:
-                return template
-        return None
-
-    def reload_templates(self):
-        self._templates_cache = None
-
 
 _loader = YamlTemplateLoader()
 
