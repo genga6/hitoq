@@ -42,8 +42,25 @@ limiter = Limiter(key_func=get_remote_address)
 
 app = FastAPI(
     title="hitoQ API",
-    description="This is the API for the hitoQ application.",
+    description="Q&A-based profile viewer API with messaging functionality",
     version="0.1.0",
+    openapi_tags=[
+        {
+            "name": "Authentication",
+            "description": "User authentication and authorization operations",
+        },
+        {"name": "Users", "description": "User management operations"},
+        {"name": "Profile", "description": "User profile and Q&A management"},
+        {"name": "Messages", "description": "User messaging system"},
+        {"name": "Questions", "description": "Question template management"},
+        {"name": "Visits", "description": "User visit tracking"},
+        {"name": "Username", "description": "Username availability and validation"},
+    ],
+    contact={"name": "Gengaru", "email": "gengaru617science@gmail.com"},
+    license_info={
+        "name": "Apache 2.0",
+        "url": "https://www.apache.org/licenses/LICENSE-2.0.html",
+    },
 )
 
 app.state.limiter = limiter
@@ -67,23 +84,33 @@ app.add_middleware(
 app.add_middleware(SessionMiddleware, secret_key=os.getenv("SESSION_SECRET_KEY"))
 app.add_middleware(LoggingMiddleware)
 
-app.include_router(username_router)
-app.include_router(user_router)
-app.include_router(profile_router)
-app.include_router(message_router)
-app.include_router(qna_router)
-app.include_router(questions_router)
-app.include_router(visit_router)
+app.include_router(username_router, tags=["Username"])
+app.include_router(user_router, tags=["Users"])
+app.include_router(profile_router, tags=["Profile"])
+app.include_router(message_router, tags=["Messages"])
+app.include_router(qna_router, tags=["Profile"])
+app.include_router(questions_router, tags=["Questions"])
+app.include_router(visit_router, tags=["Visits"])
 app.include_router(auth.auth_router, prefix="/auth", tags=["Authentication"])
 
 
-@app.get("/")
+@app.get(
+    "/",
+    summary="Root endpoint",
+    description="Returns welcome message for the hitoQ API",
+    response_description="Welcome message",
+)
 @limiter.limit("30/minute")
 def root(request: Request):
     logger.info("Root endpoint accessed", client_ip=get_remote_address(request))
     return {"message": "Welcome to hitoQ API!"}
 
 
-@app.get("/health")
+@app.get(
+    "/health",
+    summary="Health check",
+    description="Returns the health status of the API service",
+    response_description="Service health status",
+)
 def health():
     return {"status": "healthy", "service": "hitoq-api", "version": "0.1.0"}
