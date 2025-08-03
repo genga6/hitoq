@@ -232,7 +232,7 @@
           <!-- クリック可能なログインユーザー -->
           <a
             href="/{visit.visitor_info.user_name}"
-            class="group relative block cursor-pointer overflow-hidden rounded-lg border border-gray-200 bg-white transition-all duration-200 hover:border-orange-200 hover:shadow-md"
+            class="group relative block cursor-pointer border-b border-gray-200 transition-all duration-200 hover:bg-gray-50"
           >
             <div
               class="absolute inset-0 bg-gradient-to-r from-orange-50/0 via-orange-50/0 to-orange-50/0 transition-all duration-300 group-hover:from-orange-50/20 group-hover:via-orange-50/5 group-hover:to-amber-50/20"
@@ -309,7 +309,7 @@
         {:else}
           <!-- クリック不可能な訪問者（匿名または削除済み） -->
           <div
-            class="group relative overflow-hidden rounded-lg border border-gray-200 bg-white transition-all duration-200"
+            class="group relative border-b border-gray-200 transition-all duration-200"
           >
             <div class="relative flex items-center space-x-2 p-2 sm:space-x-3 sm:p-3">
               {#if visit.visitor_info?.is_anonymous}
