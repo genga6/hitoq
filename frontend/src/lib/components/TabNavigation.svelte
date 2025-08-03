@@ -4,13 +4,15 @@
 
   type Props = {
     userName: Profile['userName'];
+    isOwner: boolean;
   };
-  const { userName }: Props = $props();
+  const { userName, isOwner }: Props = $props();
 
   // すべてのタブを表示（履歴タブも非ログインユーザーに表示）
   const tabs = $derived([
     { path: `/${userName}`, label: 'プロフィール' },
-    { path: `/${userName}/qna`, label: 'パーソナルQ&A' },
+    ...(isOwner ? [{ path: `/${userName}/answer-questions`, label: '質問に答える' }] : []),
+    { path: `/${userName}/qna`, label: 'Q&A' },
     { path: `/${userName}/messages`, label: 'メッセージ' }
   ]);
 </script>
