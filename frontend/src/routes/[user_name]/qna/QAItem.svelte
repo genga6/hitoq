@@ -1,11 +1,13 @@
 <script lang="ts">
   import Editable from '$lib/components/Editable.svelte';
-  import { sendMessage } from '$lib/api-client/messages';
+  import { sendMessage, getMessageThread } from '$lib/api-client/messages';
+  import type { Message } from '$lib/types/message';
   // import { browser } from '$app/environment'; // 将来使用予定
 
   const {
     question,
     answer,
+    categoryInfo,
     isOwner,
     onUpdate,
     profileUserId,
@@ -16,6 +18,7 @@
   } = $props<{
     question: string;
     answer: string;
+    categoryInfo?: { id: string; label: string; description: string };
     isOwner: boolean;
     onUpdate: (newAnswer: string) => void;
     profileUserId?: string;
@@ -28,24 +31,37 @@
   let showActionMenu = $state(false);
   let showMessageModal = $state(false);
   let showMessagesThread = $state(false);
-  let messageType = $state<'reaction' | 'comment' | 'question'>('reaction');
+  let messageType = $state<'comment'>('comment');
   let messageContent = $state('');
-  let selectedReaction = $state('');
   let isSubmitting = $state(false);
+  let threadMessages = $state<Message[]>([]);
 
   let actionBoxElement: HTMLDivElement | null = $state(null);
 
-  const reactionOptions = [
-    { emoji: '👍', label: 'いいね' },
-    { emoji: '❤️', label: 'わかる！' },
-    { emoji: '🎉', label: 'すごい！' }
-  ];
 
   function handleSave(newAnswer: string) {
     onUpdate(newAnswer);
   }
 
-  async function handleQuickMessage(type: 'question' | 'comment' | 'reaction', content?: string) {
+  function toggleMessagesThread() {
+    showMessagesThread = !showMessagesThread;
+    if (showMessagesThread && relatedMessages.length > 0) {
+      loadRelatedMessagesThread();
+    }
+  }
+
+  async function loadRelatedMessagesThread() {
+    try {
+      // Assuming the first related message has the thread we want to show
+      if (relatedMessages.length > 0 && relatedMessages[0].messageId) {
+        threadMessages = await getMessageThread(relatedMessages[0].messageId);
+      }
+    } catch (error) {
+      console.error('Failed to load related messages thread:', error);
+    }
+  }
+
+  async function handleQuickMessage(type: 'comment', content?: string) {
     if (!profileUserId) {
       console.error('profileUserId is missing');
       alert('ユーザー情報が不足しています');
@@ -57,13 +73,7 @@
       const messageData = {
         toUserId: profileUserId,
         messageType: type,
-        content:
-          content ||
-          (type === 'question'
-            ? `「${question}」について質問があります`
-            : type === 'comment'
-              ? `「${question}」についてコメントします`
-              : '👍'),
+        content: content || `「${question}」についてコメントします`,
         referenceAnswerId: undefined // Q&A連携は後で実装
       };
 
@@ -89,14 +99,12 @@
 
   async function handleCustomMessage() {
     if (!profileUserId) return;
-    if (messageType === 'reaction' && !selectedReaction) return;
-    if (messageType !== 'reaction' && !messageContent.trim()) return;
+    if (!messageContent.trim()) return;
 
-    const content = messageType === 'reaction' ? selectedReaction : messageContent.trim();
+    const content = messageContent.trim();
     await handleQuickMessage(messageType, content);
 
     messageContent = '';
-    selectedReaction = '';
   }
 </script>
 
@@ -110,9 +118,19 @@
   onmouseleave={() => !isOwner && !showMessageModal && (showActionMenu = false)}
   ontouchstart={() => !isOwner && !showMessageModal && (showActionMenu = true)}
 >
-  <p class="mb-2 text-sm font-medium break-words text-gray-600 sm:text-base">
-    {typeof question === 'string' ? question : question.text}
-  </p>
+  <div class="mb-2 flex flex-wrap items-center gap-2">
+    <p class="text-sm font-medium break-words text-gray-600 sm:text-base">
+      {typeof question === 'string' ? question : question.text}
+    </p>
+    {#if categoryInfo}
+      <span class="inline-flex items-center gap-1 rounded-full bg-orange-100 px-2.5 py-1 text-xs font-medium text-orange-700">
+        <svg class="h-3 w-3" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm0 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V8zm0 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1v-2z" clip-rule="evenodd" />
+        </svg>
+        {categoryInfo.label}
+      </span>
+    {/if}
+  </div>
 
   <Editable {isOwner} value={answer} onSave={handleSave} inputType="textarea">
     {#if answer}
@@ -137,31 +155,14 @@
       {#if !showMessageModal}
         <!-- 基本アクションバー -->
         <div class="flex items-center space-x-1">
-          <!-- クイックリアクション -->
+          <!-- コメントボタン -->
           <button
-            onclick={() => handleQuickMessage('reaction', '👍')}
-            class="rounded p-1.5 text-lg transition-colors hover:bg-gray-100"
-            title="いいね"
+            onclick={() => handleQuickMessage('comment', `「${question}」についてコメントします`)}
+            class="rounded p-1.5 text-gray-600 transition-colors hover:bg-gray-100"
+            title="コメント"
             disabled={isSubmitting}
           >
-            👍
-          </button>
-
-          <button
-            onclick={() => handleQuickMessage('reaction', '❤️')}
-            class="rounded p-1.5 text-lg transition-colors hover:bg-gray-100"
-            title="わかる！"
-            disabled={isSubmitting}
-          >
-            ❤️
-          </button>
-          <button
-            onclick={() => handleQuickMessage('reaction', '🎉')}
-            class="rounded p-1.5 text-lg transition-colors hover:bg-gray-100"
-            title="すごい！"
-            disabled={isSubmitting}
-          >
-            🎉
+            💬
           </button>
 
           <!-- その他のアクション -->
@@ -185,7 +186,7 @@
           <!-- 関連メッセージ表示 -->
           {#if relatedMessages.length > 0}
             <button
-              onclick={() => (showMessagesThread = !showMessagesThread)}
+              onclick={toggleMessagesThread}
               class="relative rounded p-1.5 text-gray-600 transition-colors hover:bg-gray-100"
               title="関連メッセージ"
             >
@@ -229,90 +230,19 @@
             「{typeof question === 'string' ? question : question.text}」について
           </p>
 
-          <!-- メッセージタイプ選択（コンパクト版） -->
-          <div class="grid grid-cols-3 gap-1">
-            <label class="relative cursor-pointer">
-              <input
-                type="radio"
-                name="expandedMessageType"
-                value="reaction"
-                bind:group={messageType}
-                class="sr-only"
-              />
-              <div
-                class="rounded-md border p-2 text-center text-xs transition-all {messageType ===
-                'reaction'
-                  ? 'border-orange-400 bg-orange-50 text-orange-700'
-                  : 'border-gray-200 text-gray-600'}"
-              >
-                <div class="text-sm">👍</div>
-                <div class="mt-0.5 text-xs">リアクション</div>
-              </div>
-            </label>
-            <label class="relative cursor-pointer">
-              <input
-                type="radio"
-                name="expandedMessageType"
-                value="comment"
-                bind:group={messageType}
-                class="sr-only"
-              />
-              <div
-                class="rounded-md border p-2 text-center text-xs transition-all {messageType ===
-                'comment'
-                  ? 'border-orange-400 bg-orange-50 text-orange-700'
-                  : 'border-gray-200 text-gray-600'}"
-              >
-                <div class="text-sm">💬</div>
-                <div class="mt-0.5 text-xs">コメント</div>
-              </div>
-            </label>
-            <label class="relative cursor-pointer">
-              <input
-                type="radio"
-                name="expandedMessageType"
-                value="question"
-                bind:group={messageType}
-                class="sr-only"
-              />
-              <div
-                class="rounded-md border p-2 text-center text-xs transition-all {messageType ===
-                'question'
-                  ? 'border-orange-400 bg-orange-50 text-orange-700'
-                  : 'border-gray-200 text-gray-600'}"
-              >
-                <div class="text-sm">❓</div>
-                <div class="mt-0.5 text-xs">質問</div>
-              </div>
-            </label>
+          <!-- メッセージタイプ：コメントのみ -->
+          <div class="text-center p-2 border border-orange-400 bg-orange-50 text-orange-700 rounded-md">
+            <div class="text-sm">💬</div>
+            <div class="mt-0.5 text-xs">コメント</div>
           </div>
 
-          {#if messageType === 'reaction'}
-            <!-- リアクション選択（コンパクト版） -->
-            <div class="grid grid-cols-3 gap-2">
-              {#each reactionOptions as reaction (reaction.emoji)}
-                <button
-                  type="button"
-                  onclick={() => (selectedReaction = reaction.emoji)}
-                  class="rounded-md p-3 text-center transition-colors hover:bg-gray-100 {selectedReaction ===
-                  reaction.emoji
-                    ? 'bg-orange-100 ring-2 ring-orange-400'
-                    : ''}"
-                >
-                  <div class="text-2xl">{reaction.emoji}</div>
-                  <div class="mt-1 text-xs text-gray-600">{reaction.label}</div>
-                </button>
-              {/each}
-            </div>
-          {:else}
-            <!-- メッセージ内容（コンパクト版） -->
-            <textarea
-              bind:value={messageContent}
-              placeholder="メッセージを入力してください..."
-              rows="2"
-              class="w-full resize-none rounded-md border border-gray-300 px-2 py-1 text-sm focus:border-orange-500 focus:ring-1 focus:ring-orange-500 focus:outline-none"
-            ></textarea>
-          {/if}
+          <!-- メッセージ内容 -->
+          <textarea
+            bind:value={messageContent}
+            placeholder="メッセージを入力してください..."
+            rows="2"
+            class="w-full resize-none rounded-md border border-gray-300 px-2 py-1 text-sm focus:border-orange-500 focus:ring-1 focus:ring-orange-500 focus:outline-none"
+          ></textarea>
 
           <div class="flex justify-end space-x-2">
             <button
@@ -323,8 +253,7 @@
             </button>
             <button
               onclick={handleCustomMessage}
-              disabled={isSubmitting ||
-                (messageType === 'reaction' ? !selectedReaction : !messageContent.trim())}
+              disabled={isSubmitting || !messageContent.trim()}
               class="rounded-md bg-orange-500 px-3 py-1 text-xs text-white transition-colors hover:bg-orange-600 focus:ring-1 focus:ring-orange-500 focus:outline-none disabled:cursor-not-allowed disabled:bg-gray-400"
             >
               {isSubmitting ? '送信中...' : '送信'}
@@ -336,7 +265,55 @@
   {/if}
 
   <!-- 関連メッセージスレッド -->
-  {#if showMessagesThread && relatedMessages.length > 0}
+  {#if showMessagesThread && threadMessages.length > 0}
+    <div class="mt-4 border-t border-gray-200 pt-4">
+      <div class="flex items-center justify-between mb-3">
+        <h4 class="flex items-center text-sm font-medium text-gray-700">
+          <svg class="mr-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+            />
+          </svg>
+          関連メッセージスレッド
+        </h4>
+        <button
+          onclick={() => showMessagesThread = false}
+          class="text-gray-400 hover:text-gray-600"
+        >
+          ✕
+        </button>
+      </div>
+      
+      <div class="max-h-64 overflow-y-auto">
+        {#each threadMessages as threadMessage, index (threadMessage.messageId)}
+          <div class="py-2 {index > 0 ? 'border-t border-gray-200' : ''}">
+            <div class="flex items-center gap-2 mb-1">
+              <img
+                src={threadMessage.fromUser?.iconUrl || '/default-avatar.svg'}
+                alt={threadMessage.fromUser?.displayName}
+                class="w-4 h-4 rounded-full"
+              />
+              <span class="text-xs font-medium text-gray-700">
+                {threadMessage.fromUser?.displayName}
+              </span>
+              <span class="text-xs text-gray-500">
+                {new Date(threadMessage.createdAt).toLocaleString('ja-JP', {
+                  month: 'numeric',
+                  day: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit'
+                })}
+              </span>
+            </div>
+            <p class="text-xs text-gray-800">{threadMessage.content}</p>
+          </div>
+        {/each}
+      </div>
+    </div>
+  {:else if showMessagesThread && relatedMessages.length > 0}
     <div class="mt-4 border-t border-gray-200 pt-4">
       <h4 class="mb-3 flex items-center text-sm font-medium text-gray-700">
         <svg class="mr-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -349,9 +326,9 @@
         </svg>
         この回答への反応・コメント ({relatedMessages.length})
       </h4>
-      <div class="max-h-40 space-y-2 overflow-y-auto">
-        {#each relatedMessages as message (message.messageId || message.id)}
-          <div class="flex items-start space-x-2 rounded-md bg-gray-50 p-2 text-sm">
+      <div class="max-h-40 overflow-y-auto">
+        {#each relatedMessages as message, index (message.messageId || message.id)}
+          <div class="flex items-start space-x-2 p-2 text-sm {index > 0 ? 'border-t border-gray-200' : ''}">
             <img
               src={message.fromUser?.iconUrl || '/default-avatar.svg'}
               alt=""

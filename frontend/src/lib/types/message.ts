@@ -1,4 +1,4 @@
-export type MessageType = "question" | "comment" | "request" | "reaction";
+export type MessageType = "comment";
 export type MessageStatus = "unread" | "read" | "replied";
 
 export interface Message {
@@ -8,6 +8,7 @@ export interface Message {
   messageType: MessageType;
   content: string;
   referenceAnswerId?: number;
+  parentMessageId?: string;
   status: MessageStatus;
   createdAt: string;
   fromUser?: {
@@ -22,6 +23,10 @@ export interface Message {
     displayName: string;
     iconUrl?: string;
   };
+  replies?: Message[];
+  replyCount?: number;
+  threadDepth?: number;
+  threadParentId?: string;
 }
 
 export interface MessageCreate {
@@ -29,6 +34,7 @@ export interface MessageCreate {
   messageType: MessageType;
   content: string;
   referenceAnswerId?: number;
+  parentMessageId?: string;
 }
 
 export interface MessagesPageData {

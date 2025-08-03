@@ -1,3 +1,5 @@
+export type NotificationLevel = "none" | "important" | "all";
+
 export interface ProfileItem {
   profileItemId: string;
   label: string;
@@ -11,6 +13,7 @@ export interface Profile {
   displayName: string;
   iconUrl?: string;
   bio?: string;
+  notificationLevel: NotificationLevel;
   createdAt: string;
 }
 
@@ -20,4 +23,12 @@ export interface UserCandidate {
   displayName: string;
   iconUrl?: string;
   createdAt: string;
+}
+
+export interface UserUpdate {
+  userName?: string;
+  displayName?: string;
+  bio?: string;
+  iconUrl?: string;
+  notificationLevel?: NotificationLevel;
 }
