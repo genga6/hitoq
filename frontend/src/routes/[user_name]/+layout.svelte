@@ -32,7 +32,7 @@
         userName={data.profile.userName}
         isOwner={data.isOwner}
       />
-      <TabNavigation userName={data.profile.userName} />
+      <TabNavigation userName={data.profile.userName} isOwner={data.isOwner} />
     {/if}
     {#if children}
       {@render children()}

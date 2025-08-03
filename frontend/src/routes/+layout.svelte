@@ -10,6 +10,7 @@
     refreshAccessToken,
     getCurrentUser
   } from '$lib/api-client/auth';
+  import NotificationDropdown from '$lib/components/NotificationDropdown.svelte';
   import type { Snippet } from 'svelte';
 
   import type { UserCandidate, Profile } from '$lib/types/profile';
@@ -240,8 +241,10 @@
         {/if}
       </div>
 
-      <div class="absolute right-0 flex items-center">
+      <div class="absolute right-0 flex items-center gap-2">
         {#if isLoggedIn}
+          <NotificationDropdown {isLoggedIn} currentUserName={currentUser?.userName} />
+          
           <div class="relative">
             <button
               bind:this={toggleButton}
@@ -307,13 +310,16 @@
         >
 
         {#if isLoggedIn}
-          <div class="relative">
-            <button
-              bind:this={toggleButton}
-              onclick={() => (showMenu = !showMenu)}
-              class="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border border-gray-300 ring-orange-400 transition hover:ring-2"
-              aria-label="ユーザーメニューを開く"
-            >
+          <div class="flex items-center gap-2">
+            <NotificationDropdown {isLoggedIn} currentUserName={currentUser?.userName} />
+            
+            <div class="relative">
+              <button
+                bind:this={toggleButton}
+                onclick={() => (showMenu = !showMenu)}
+                class="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border border-gray-300 ring-orange-400 transition hover:ring-2"
+                aria-label="ユーザーメニューを開く"
+              >
               {#if currentUser?.iconUrl}
                 <img
                   src={currentUser.iconUrl}
@@ -334,23 +340,24 @@
                   />
                 </svg>
               {/if}
-            </button>
+              </button>
 
-            {#if showMenu}
-              <div
-                bind:this={menuElement}
-                class="absolute top-full right-0 z-10 mt-2 w-40 rounded-lg border border-gray-200 bg-white shadow-lg"
-              >
-                <a
-                  href="/{currentUser?.userName}/settings"
-                  class="block px-4 py-2 hover:bg-gray-100"
-                  >設定
-                </a>
-                <button onclick={logout} class="w-full px-4 py-2 text-left hover:bg-gray-100"
-                  >ログアウト</button
+              {#if showMenu}
+                <div
+                  bind:this={menuElement}
+                  class="absolute top-full right-0 z-10 mt-2 w-40 rounded-lg border border-gray-200 bg-white shadow-lg"
                 >
-              </div>
-            {/if}
+                  <a
+                    href="/{currentUser?.userName}/settings"
+                    class="block px-4 py-2 hover:bg-gray-100"
+                    >設定
+                  </a>
+                  <button onclick={logout} class="w-full px-4 py-2 text-left hover:bg-gray-100"
+                    >ログアウト</button
+                  >
+                </div>
+              {/if}
+            </div>
           </div>
         {:else}
           <button
