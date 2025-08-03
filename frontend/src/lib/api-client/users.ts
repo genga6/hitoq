@@ -1,5 +1,5 @@
-import { fetchApi } from "./base";
-import type { Profile, UserCandidate } from "$lib/types/profile";
+import { fetchApi, fetchApiWithAuth } from "./base";
+import type { Profile, UserCandidate, UserUpdate } from "$lib/types/profile";
 
 export const getUserByUserName = async (userName: string): Promise<Profile> => {
   return fetchApi<Profile>(`/users/by-username/${userName}`);
@@ -30,4 +30,16 @@ export const searchUsersByDisplayName = async (
   } catch {
     return [];
   }
+};
+
+export const updateCurrentUser = async (
+  userUpdate: UserUpdate,
+): Promise<Profile> => {
+  return fetchApiWithAuth("/users/me", {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(userUpdate),
+  });
 };

@@ -2,6 +2,8 @@
   import type { PageData } from './$types';
   import { deleteUser } from '$lib/api-client/auth';
   import { getVisitsVisibility, updateVisitsVisibility } from '$lib/api-client/visits';
+  import { updateCurrentUser } from '$lib/api-client/users';
+  import type { NotificationLevel } from '$lib/types/profile';
 
   type Props = {
     data: PageData;
@@ -17,8 +19,14 @@
   let loadingVisibility = $state(true);
   let savingVisibility = $state(false);
 
-  // Load visits visibility setting
+  // Notification settings
+  let notificationLevel = $state<NotificationLevel>('all');
+  let loadingNotification = $state(true);
+  let savingNotification = $state(false);
+
+  // Load initial settings
   $effect(() => {
+    // Load visits visibility
     getVisitsVisibility(data.profile.userId)
       .then((result) => {
         visitsVisible = result.visible;
@@ -29,6 +37,10 @@
       .finally(() => {
         loadingVisibility = false;
       });
+
+    // Load notification level
+    notificationLevel = data.profile.notificationLevel;
+    loadingNotification = false;
   });
 
   const handleVisibilityChange = async () => {
@@ -41,6 +53,22 @@
       visitsVisible = !visitsVisible;
     } finally {
       savingVisibility = false;
+    }
+  };
+
+  const handleNotificationLevelChange = async (newLevel: NotificationLevel) => {
+    savingNotification = true;
+    const previousLevel = notificationLevel;
+    
+    try {
+      notificationLevel = newLevel;
+      await updateCurrentUser({ notificationLevel: newLevel });
+    } catch (e) {
+      console.error('Failed to update notification level:', e);
+      // Revert the change
+      notificationLevel = previousLevel;
+    } finally {
+      savingNotification = false;
     }
   };
 
@@ -59,19 +87,20 @@
   };
 </script>
 
-<div class="space-y-4 md:space-y-6">
-  <h1 class="text-responsive-xl font-bold text-gray-800">設定</h1>
-
-  <div class="card-body rounded-lg bg-gray-50">
-    <p class="mb-2 text-xs text-gray-600 md:text-sm">ログイン中のユーザー:</p>
-    <p class="text-sm font-semibold break-words md:text-base">
-      {data.profile.displayName} (@{data.profile.userName})
-    </p>
+<div class="space-y-0">
+  <div class="flex items-center justify-between border-b border-gray-200 pb-4 mb-4">
+    <h1 class="text-xl font-bold text-gray-800 md:text-2xl">設定</h1>
+    <div class="text-right">
+      <p class="text-xs text-gray-600 md:text-sm">ログイン中のユーザー</p>
+      <p class="text-sm font-semibold break-words md:text-base">
+        {data.profile.displayName} (@{data.profile.userName})
+      </p>
+    </div>
   </div>
 
-  <div class="space-y-6 md:space-y-8">
+  <div class="space-y-0">
     <!-- プライバシー設定セクション -->
-    <div class="card p-4 md:p-6">
+    <div class="border-b border-gray-200 p-4 md:p-6">
       <h2 class="text-responsive-lg mb-4 font-semibold text-gray-800">プライバシー設定</h2>
 
       <div class="space-y-4">
@@ -106,13 +135,96 @@
       </div>
     </div>
 
-    <div class="py-6 text-center md:py-8">
+    <!-- 通知設定セクション -->
+    <div class="border-b border-gray-200 p-4 md:p-6">
+      <h2 class="text-responsive-lg mb-4 font-semibold text-gray-800">通知設定</h2>
+
+      <div class="space-y-4">
+        <div>
+          <h3 class="text-sm font-medium text-gray-700 md:text-base">通知レベル</h3>
+          <p class="mt-1 text-xs text-gray-500 md:text-sm">
+            受け取る通知の種類を選択できます。
+          </p>
+        </div>
+
+        {#if loadingNotification}
+          <div class="flex items-center justify-center py-4">
+            <div class="h-5 w-5 animate-spin rounded-full border-b-2 border-gray-400"></div>
+          </div>
+        {:else}
+          <div class="space-y-3">
+            <label class="flex items-center">
+              <input
+                type="radio"
+                name="notificationLevel"
+                value="all"
+                checked={notificationLevel === 'all'}
+                onchange={() => handleNotificationLevelChange('all')}
+                disabled={savingNotification}
+                class="h-4 w-4 border-gray-300 text-orange-600 focus:ring-orange-500"
+              />
+              <div class="ml-3">
+                <span class="text-sm font-medium text-gray-700 md:text-base">すべての通知</span>
+                <p class="text-xs text-gray-500 md:text-sm">
+                  質問、コメント、リクエスト、リアクションのすべてを通知します
+                </p>
+              </div>
+            </label>
+
+            <label class="flex items-center">
+              <input
+                type="radio"
+                name="notificationLevel"
+                value="important"
+                checked={notificationLevel === 'important'}
+                onchange={() => handleNotificationLevelChange('important')}
+                disabled={savingNotification}
+                class="h-4 w-4 border-gray-300 text-orange-600 focus:ring-orange-500"
+              />
+              <div class="ml-3">
+                <span class="text-sm font-medium text-gray-700 md:text-base">重要な通知のみ</span>
+                <p class="text-xs text-gray-500 md:text-sm">
+                  質問とリクエストのみを通知します
+                </p>
+              </div>
+            </label>
+
+            <label class="flex items-center">
+              <input
+                type="radio"
+                name="notificationLevel"
+                value="none"
+                checked={notificationLevel === 'none'}
+                onchange={() => handleNotificationLevelChange('none')}
+                disabled={savingNotification}
+                class="h-4 w-4 border-gray-300 text-orange-600 focus:ring-orange-500"
+              />
+              <div class="ml-3">
+                <span class="text-sm font-medium text-gray-700 md:text-base">通知なし</span>
+                <p class="text-xs text-gray-500 md:text-sm">
+                  すべての通知を無効にします
+                </p>
+              </div>
+            </label>
+          </div>
+
+          {#if savingNotification}
+            <div class="flex items-center gap-2 text-sm text-gray-600">
+              <div class="h-4 w-4 animate-spin rounded-full border-b-2 border-orange-400"></div>
+              設定を保存中...
+            </div>
+          {/if}
+        {/if}
+      </div>
+    </div>
+
+    <div class="border-b border-gray-200 py-6 text-center md:py-8">
       <p class="text-responsive text-gray-600">その他の設定は現在開発中です</p>
       <p class="mt-2 text-xs text-gray-500 md:text-sm">近日中に機能を追加予定です</p>
     </div>
 
     <!-- アカウント削除セクション -->
-    <div class="card border-red-200 bg-red-50 p-4 md:p-6">
+    <div class="border-red-200 bg-red-50 p-4 md:p-6">
       <div class="space-y-4">
         <div>
           <h3 class="text-sm font-medium text-red-700 md:text-base">アカウント削除</h3>
