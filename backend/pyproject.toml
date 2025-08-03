@@ -23,6 +23,7 @@ dependencies = [
     "sentry-sdk[fastapi]>=2.0.0",
     "slowapi>=0.1.9",
     "types-pyyaml>=6.0.12.20250516",
+    "pydantic>=2.10.2",
 ]
 
 [dependency-groups]
