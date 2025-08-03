@@ -11,7 +11,6 @@
 
   const {
     initialAnswerGroups = [],
-    availableTemplates = [],
     categories: categoriesFromProps = {},
     isOwner,
     userId,
@@ -113,11 +112,6 @@
     return `group-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
   }
 
-  // 回答済みのテンプレートIDを抽出（使用されていないが将来の拡張用に保持）
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const answeredTemplateIds = new Set(
-    initialAnswerGroups?.map((group: UserAnswerGroupBackend) => group.templateId) || []
-  );
 
   // 回答済みのグループのみを表示（未回答テンプレートは非表示にしてガチャ機能に移行）
   let answerGroups = $state<(UserAnswerGroup & { groupId: string })[]>([
@@ -181,15 +175,6 @@
     })
   );
 
-  // 後方互換性のため、グループ形式も維持（現在は使用されていない）
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const filteredAnswerGroups = $derived(
-    allDisplayGroups.filter((group) => {
-      if (selectedCategories.length === 0) return true;
-      const template = availableTemplates.find((t: QATemplate) => t.id === group.templateId);
-      return template && selectedCategories.includes(template.category || '');
-    })
-  );
 
   // カテゴリーフィルターの切り替え
   function toggleCategory(category: string) {
@@ -205,7 +190,6 @@
     selectedCategories = [];
   }
 
-  // 展開/折りたたみ機能は削除（常に展開状態）
 
   function toggleNewQuestionForm() {
     showNewQuestionForm = !showNewQuestionForm;
@@ -426,7 +410,7 @@
                 <span class="hidden sm:inline">または、カテゴリを選んでガチャ:</span>
               </p>
               <div class="flex flex-wrap justify-center gap-1.5 sm:gap-2">
-                {#each availableCategories.slice(0, 8) as categoryId (categoryId)}
+                {#each availableCategories as categoryId (categoryId)}
                   {@const category = categories[categoryId]}
                   {#if category}
                     <button
@@ -442,14 +426,6 @@
                     </button>
                   {/if}
                 {/each}
-                {#if availableCategories.length > 8}
-                  <button
-                    onclick={() => showCategoryFilter = true}
-                    class="inline-flex items-center gap-1 rounded-full border border-gray-300 bg-gray-100 px-2.5 py-1 sm:px-3 sm:py-1.5 text-xs font-medium text-gray-600 transition-all hover:border-gray-400 hover:bg-gray-200"
-                  >
-                    +{availableCategories.length - 8}
-                  </button>
-                {/if}
               </div>
             </div>
           {/if}

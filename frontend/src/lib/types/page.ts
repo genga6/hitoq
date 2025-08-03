@@ -8,7 +8,3 @@ export interface BasePageData {
 export interface ProfileCardPageData extends BasePageData {
   profileItems: ProfileItem[];
 }
-
-// export interface QAPageData extends BasePageData {
-
-// }
