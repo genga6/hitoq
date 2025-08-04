@@ -13,7 +13,7 @@
   import NotificationDropdown from '$lib/components/NotificationDropdown.svelte';
   import type { Snippet } from 'svelte';
 
-  import type { UserCandidate, Profile } from '$lib/types/profile';
+  import type { UserCandidate, Profile } from '$lib/types';
   import '../app.css';
 
   type Props = {

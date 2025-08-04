@@ -1,6 +1,6 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import type { CategoryInfo, Question } from '$lib/types/qna';
+  import type { CategoryInfo, Question } from '$lib/types';
 
   type Props = {
     categories: Record<string, CategoryInfo>;

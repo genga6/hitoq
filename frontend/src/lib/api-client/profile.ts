@@ -1,5 +1,5 @@
 import { fetchApi, fetchApiWithAuth } from "./base";
-import type { Profile, ProfileItem } from "$lib/types/profile";
+import type { Profile, ProfileItem } from "$lib/types";
 
 // Profile Page Data
 // TODO: タブによる画面遷移のたびに、サーバーにリクエストを送る仕様を再検討する（キャッシュなど？）

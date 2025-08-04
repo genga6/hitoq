@@ -1,5 +1,5 @@
 <script lang="ts">
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+   
   import { getUserVisits, type Visit } from '$lib/api-client/visits';
 
   interface Props {
@@ -14,102 +14,22 @@
   // フィルタリング機能の状態
   let showOnlyLoggedIn = $state(false);
 
-  // TODO: Remove this mock data after testing
-  const mockVisits: Visit[] = [
-    {
-      visit_id: 1,
-      visitor_user_id: 'user123',
-      visited_user_id: userId,
-      is_anonymous: false,
-      visited_at: new Date(Date.now() - 1000 * 60 * 30).toISOString(), // 30分前
-      visitor_info: {
-        user_id: 'user123',
-        user_name: 'tanaka_taro',
-        display_name: '田中太郎',
-        icon_url: 'https://via.placeholder.com/40x40/4ade80/ffffff?text=T',
-        is_anonymous: false
-      }
-    },
-    {
-      visit_id: 2,
-      visitor_user_id: null,
-      visited_user_id: userId,
-      is_anonymous: true,
-      visited_at: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(), // 2時間前
-      visitor_info: {
-        is_anonymous: true
-      }
-    },
-    {
-      visit_id: 3,
-      visitor_user_id: 'user456',
-      visited_user_id: userId,
-      is_anonymous: false,
-      visited_at: new Date(Date.now() - 1000 * 60 * 60 * 5).toISOString(), // 5時間前
-      visitor_info: {
-        user_id: 'user456',
-        user_name: 'yamada_hanako',
-        display_name: '山田花子',
-        icon_url: 'https://via.placeholder.com/40x40/f59e0b/ffffff?text=Y',
-        is_anonymous: false
-      }
-    },
-    {
-      visit_id: 4,
-      visitor_user_id: 'user789',
-      visited_user_id: userId,
-      is_anonymous: false,
-      visited_at: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(), // 1日前
-      visitor_info: {
-        user_id: 'user789',
-        user_name: 'sato_jiro',
-        display_name: '佐藤次郎',
-        icon_url: 'https://via.placeholder.com/40x40/3b82f6/ffffff?text=S',
-        is_anonymous: false
-      }
-    },
-    {
-      visit_id: 5,
-      visitor_user_id: null,
-      visited_user_id: userId,
-      is_anonymous: true,
-      visited_at: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString(), // 2日前
-      visitor_info: {
-        is_anonymous: true
-      }
-    },
-    {
-      visit_id: 6,
-      visitor_user_id: null, // 削除されたユーザー
-      visited_user_id: userId,
-      is_anonymous: false,
-      visited_at: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3).toISOString(), // 3日前
-      visitor_info: undefined // 削除されたユーザー
-    }
-  ];
-
   $effect(() => {
     loading = true;
     error = '';
 
     // TODO: Replace with real API call after testing
 
-    // getUserVisits(userId)
-    //   .then((result) => {
-    //     visits = result;
-    //   })
-    //   .catch((e) => {
-    //     error = e instanceof Error ? e.message : '訪問者リストの取得に失敗しました';
-    //   })
-    //   .finally(() => {
-    //     loading = false;
-    //   });
-
-    // Mock data for testing
-    setTimeout(() => {
-      visits = mockVisits;
-      loading = false;
-    }, 500); // 500ms delay to simulate API call
+    getUserVisits(userId)
+      .then((result) => {
+        visits = result;
+      })
+      .catch((e) => {
+        error = e instanceof Error ? e.message : '訪問者リストの取得に失敗しました';
+      })
+      .finally(() => {
+        loading = false;
+      });
   });
 
   const formatDate = (dateString: string) => {

@@ -3,7 +3,7 @@
   import { deleteUser } from '$lib/api-client/auth';
   import { getVisitsVisibility, updateVisitsVisibility } from '$lib/api-client/visits';
   import { updateCurrentUser } from '$lib/api-client/users';
-  import type { NotificationLevel } from '$lib/types/profile';
+  import type { NotificationLevel } from '$lib/types';
 
   type Props = {
     data: PageData;

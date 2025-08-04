@@ -2,7 +2,7 @@
   import ProfileHeader from '$lib/components/ProfileHeader.svelte';
   import TabNavigation from '$lib/components/TabNavigation.svelte';
   import type { Snippet } from 'svelte';
-  import type { BasePageData } from '$lib/types/page';
+  import type { BasePageData } from '$lib/types';
   import { recordVisit } from '$lib/api-client/visits';
 
   type Props = {

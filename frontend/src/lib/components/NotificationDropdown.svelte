@@ -5,7 +5,7 @@
     getNotificationCount,
     markMessageAsRead
   } from '$lib/api-client/messages';
-  import type { Message } from '$lib/types/message';
+  import type { Message } from '$lib/types';
 
   type Props = {
     isLoggedIn: boolean;

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { MessagesPageData } from '$lib/types/message';
+  import type { MessagesPageData } from '$lib/types';
   import MessageList from './MessageList.svelte';
   import { invalidateAll } from '$app/navigation';
 

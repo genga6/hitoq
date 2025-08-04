@@ -4,7 +4,7 @@ import type {
   MessageCreate,
   MessageLike,
   MessagesPageData,
-} from "$lib/types/message";
+} from "$lib/types";
 
 export async function getMessagesPageData(
   userName: string,

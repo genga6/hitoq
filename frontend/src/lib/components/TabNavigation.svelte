@@ -1,6 +1,6 @@
 <script lang="ts">
   import { page } from '$app/state';
-  import type { Profile } from '$lib/types/profile';
+  import type { Profile } from '$lib/types';
 
   type Props = {
     userName: Profile['userName'];

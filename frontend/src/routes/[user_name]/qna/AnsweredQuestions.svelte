@@ -1,6 +1,6 @@
 <script lang="ts">
   import QAItem from './QAItem.svelte';
-  import type { CategoryInfo, Question } from '$lib/types/qna';
+  import type { CategoryInfo, Question } from '$lib/types';
 
   interface AnsweredQAPair {
     groupId: string;
