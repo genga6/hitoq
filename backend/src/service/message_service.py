@@ -115,7 +115,7 @@ def get_notification_count(db: Session, user_id: str) -> int:
 
 
 def get_notifications_for_user(
-    db: Session, user_id: str, skip: int = 0, limit: int = 10
+    db: Session, user_id: str, skip: int = 0, limit: int = 50
 ) -> list[Message]:
     """Get notification messages for a user based on their notification level."""
     user = db.query(User).filter(User.user_id == user_id).first()
@@ -138,7 +138,25 @@ def get_notifications_for_user(
             )
         )
 
-    return query.order_by(Message.created_at.desc()).offset(skip).limit(limit).all()
+    notifications = (
+        query.order_by(Message.created_at.desc()).offset(skip).limit(limit).all()
+    )
+
+    # 親メッセージの情報を追加で取得
+    for notification in notifications:
+        if notification.parent_message_id:
+            parent_message = (
+                db.query(Message)
+                .options(joinedload(Message.from_user))
+                .filter(Message.message_id == notification.parent_message_id)
+                .first()
+            )
+            # 親メッセージの情報を追加の属性として設定
+            notification.parent_message = parent_message
+        else:
+            notification.parent_message = None
+
+    return notifications
 
 
 def get_message_thread(db: Session, message_id: str, user_id: str) -> list[Message]:

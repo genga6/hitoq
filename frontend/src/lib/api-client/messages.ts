@@ -77,7 +77,7 @@ export async function getNotifications(): Promise<Message[]> {
 }
 
 export async function getNotificationCount(): Promise<{
-  notificationCount: number;
+  notification_count: number;
 }> {
   try {
     return await fetchApiWithAuth("/messages/notification-count");

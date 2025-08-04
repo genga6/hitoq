@@ -1,4 +1,4 @@
-export type MessageType = "comment";
+export type MessageType = "comment" | "like" | "question" | "request";
 export type MessageStatus = "unread" | "read" | "replied";
 
 export interface Message {
@@ -27,6 +27,7 @@ export interface Message {
   replyCount?: number;
   threadDepth?: number;
   threadParentId?: string;
+  parentMessage?: Message; // 親メッセージの情報
 }
 
 export interface MessageCreate {

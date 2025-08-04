@@ -4,7 +4,12 @@ from sqlalchemy.orm import Session
 from src.db.session import get_db
 from src.db.tables import User
 from src.router.auth import _get_current_user
-from src.schema.message import MessageCreate, MessageRead, MessageUpdate
+from src.schema.message import (
+    MessageCreate,
+    MessageRead,
+    MessageUpdate,
+    NotificationRead,
+)
 from src.service import message_service, user_service
 
 message_router = APIRouter(
@@ -77,10 +82,10 @@ def get_unread_count(
     return {"unread_count": count}
 
 
-@message_router.get("/notifications", response_model=list[MessageRead])
+@message_router.get("/notifications", response_model=list[NotificationRead])
 def get_notifications(
     skip: int = 0,
-    limit: int = 10,
+    limit: int = 50,
     db: Session = Depends(get_db),
     current_user: User = Depends(_get_current_user),
 ):

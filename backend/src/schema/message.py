@@ -30,3 +30,26 @@ class MessageRead(MessageBase):
     to_user: UserRead | None = None
     replies: list["MessageRead"] = []
     reply_count: int = 0
+    parent_message: "MessageRead | None" = None  # 親メッセージの情報
+
+
+class ParentMessageInfo(OrmBaseModel):
+    """親メッセージの基本情報（循環参照を避けるため）"""
+
+    message_id: str
+    content: str
+    from_user: UserRead | None = None
+    created_at: datetime
+
+
+class NotificationRead(MessageBase):
+    """通知専用のメッセージスキーマ（循環参照を避ける）"""
+
+    message_id: str
+    from_user_id: str
+    to_user_id: str
+    status: MessageStatusEnum
+    created_at: datetime
+    from_user: UserRead | None = None
+    to_user: UserRead | None = None
+    parent_message: ParentMessageInfo | None = None  # 親メッセージの基本情報のみ
