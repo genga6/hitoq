@@ -21,7 +21,6 @@
   };
 
   const { messages, profile, currentUser, isLoggedIn, onMessageUpdate }: Props = $props();
-
 </script>
 
 <div class="space-y-4">
@@ -31,7 +30,7 @@
 
   <div class="space-y-2">
     {#each messages as message (message.messageId)}
-      <MessageItem {message} {profile} {currentUser} {isLoggedIn} onMessageUpdate={onMessageUpdate} />
+      <MessageItem {message} {profile} {currentUser} {isLoggedIn} {onMessageUpdate} />
     {:else}
       <div class="py-8 text-center">
         <div

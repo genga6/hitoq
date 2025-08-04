@@ -244,7 +244,7 @@
       <div class="absolute right-0 flex items-center gap-2">
         {#if isLoggedIn}
           <NotificationDropdown {isLoggedIn} currentUserName={currentUser?.userName} />
-          
+
           <div class="relative">
             <button
               bind:this={toggleButton}
@@ -312,7 +312,7 @@
         {#if isLoggedIn}
           <div class="flex items-center gap-2">
             <NotificationDropdown {isLoggedIn} currentUserName={currentUser?.userName} />
-            
+
             <div class="relative">
               <button
                 bind:this={toggleButton}
@@ -320,26 +320,26 @@
                 class="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border border-gray-300 ring-orange-400 transition hover:ring-2"
                 aria-label="ユーザーメニューを開く"
               >
-              {#if currentUser?.iconUrl}
-                <img
-                  src={currentUser.iconUrl}
-                  alt="ユーザーアイコン"
-                  class="h-full w-full rounded-full object-cover"
-                />
-              {:else}
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                  class="h-5 w-5 text-gray-600"
-                >
-                  <path
-                    fill-rule="evenodd"
-                    d="M7.5 6a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM3.751 20.105a8.25 8.25 0 0116.498 0 .75.75 0 01-.437.695A18.683 18.683 0 0112 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 01-.437-.695z"
-                    clip-rule="evenodd"
+                {#if currentUser?.iconUrl}
+                  <img
+                    src={currentUser.iconUrl}
+                    alt="ユーザーアイコン"
+                    class="h-full w-full rounded-full object-cover"
                   />
-                </svg>
-              {/if}
+                {:else}
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    class="h-5 w-5 text-gray-600"
+                  >
+                    <path
+                      fill-rule="evenodd"
+                      d="M7.5 6a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM3.751 20.105a8.25 8.25 0 0116.498 0 .75.75 0 01-.437.695A18.683 18.683 0 0112 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 01-.437-.695z"
+                      clip-rule="evenodd"
+                    />
+                  </svg>
+                {/if}
               </button>
 
               {#if showMenu}

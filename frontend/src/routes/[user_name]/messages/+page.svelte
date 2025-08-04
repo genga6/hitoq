@@ -18,17 +18,20 @@
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { currentUser, isLoggedIn, isOwner } = data;
 
-
-
   const messages = data.messages && data.messages.length > 0 ? data.messages : [];
   const profile = data.profile;
-
 </script>
 
 <div class="space-y-6">
   <!-- メッセージログ -->
   {#if messages && messages.length > 0}
-    <MessageList {messages} {profile} currentUser={data.currentUser} isLoggedIn={data.isLoggedIn} onMessageUpdate={handleMessageUpdate} />
+    <MessageList
+      {messages}
+      {profile}
+      currentUser={data.currentUser}
+      isLoggedIn={data.isLoggedIn}
+      onMessageUpdate={handleMessageUpdate}
+    />
   {:else}
     <div class="py-12 text-center">
       <div class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gray-100">

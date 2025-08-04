@@ -9,7 +9,8 @@
     onClearFilters: () => void;
   };
 
-  const { categories, selectedCategories, answeredCount, onToggleCategory, onClearFilters }: Props = $props();
+  const { categories, selectedCategories, answeredCount, onToggleCategory, onClearFilters }: Props =
+    $props();
 
   const availableCategories = Object.keys(categories);
   let showCategoryFilter = $state(false);
@@ -43,34 +44,57 @@
           </div>
         {/if}
       </div>
-      
+
       <div class="rounded-lg border border-gray-200 bg-white">
         <button
-          onclick={() => showCategoryFilter = !showCategoryFilter}
+          onclick={() => (showCategoryFilter = !showCategoryFilter)}
           class="flex w-full items-center justify-between p-4 text-left transition-colors hover:bg-gray-50"
         >
           <div class="flex items-center gap-2">
-            <svg class="h-4 w-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.707A1 1 0 013 7V4z" />
+            <svg
+              class="h-4 w-4 text-gray-500"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.707A1 1 0 013 7V4z"
+              />
             </svg>
             <span class="text-sm font-medium text-gray-700">カテゴリで絞り込み</span>
             {#if selectedCategories.length > 0}
-              <span class="rounded-full bg-orange-100 px-2 py-0.5 text-xs font-medium text-orange-700">
+              <span
+                class="rounded-full bg-orange-100 px-2 py-0.5 text-xs font-medium text-orange-700"
+              >
                 {selectedCategories.length}個選択中
               </span>
             {/if}
           </div>
-          <svg 
-            class="h-4 w-4 text-gray-400 transition-transform duration-200 {showCategoryFilter ? 'rotate-180' : ''}"
-            fill="none" 
-            viewBox="0 0 24 24" 
+          <svg
+            class="h-4 w-4 text-gray-400 transition-transform duration-200 {showCategoryFilter
+              ? 'rotate-180'
+              : ''}"
+            fill="none"
+            viewBox="0 0 24 24"
             stroke="currentColor"
           >
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M19 9l-7 7-7-7"
+            />
           </svg>
         </button>
-        
-        <div class="overflow-hidden transition-all duration-300 ease-in-out {showCategoryFilter ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}">
+
+        <div
+          class="overflow-hidden transition-all duration-300 ease-in-out {showCategoryFilter
+            ? 'max-h-96 opacity-100'
+            : 'max-h-0 opacity-0'}"
+        >
           <div class="border-t border-gray-200 p-4">
             <div class="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
               {#each availableCategories as categoryId (categoryId)}
@@ -85,18 +109,34 @@
                       : 'hover:bg-gray-50'}"
                   >
                     <div class="flex items-center justify-between">
-                      <span class="text-sm font-medium {selectedCategories.includes(categoryId) ? 'text-orange-700' : 'text-gray-700 group-hover:text-gray-900'}">
+                      <span
+                        class="text-sm font-medium {selectedCategories.includes(categoryId)
+                          ? 'text-orange-700'
+                          : 'text-gray-700 group-hover:text-gray-900'}"
+                      >
                         {category.label}
                       </span>
                       {#if selectedCategories.includes(categoryId)}
                         <div class="rounded-full bg-orange-100 p-1">
-                          <svg class="h-3 w-3 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
+                          <svg
+                            class="h-3 w-3 text-orange-600"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              stroke-width="3"
+                              d="M5 13l4 4L19 7"
+                            />
                           </svg>
                         </div>
                       {/if}
                     </div>
-                    <p class="mt-1 text-xs text-gray-500 truncate" title="{category.description}">{category.description}</p>
+                    <p class="mt-1 truncate text-xs text-gray-500" title={category.description}>
+                      {category.description}
+                    </p>
                   </button>
                 {/if}
               {/each}

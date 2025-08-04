@@ -138,7 +138,10 @@
       <button
         type="submit"
         disabled={isSubmitting || !content.trim()}
-        class="rounded-md px-4 py-2 text-sm font-medium focus:ring-2 focus:ring-orange-400 focus:ring-offset-2 focus:outline-none transition-colors {isSubmitting || !content.trim() ? 'cursor-not-allowed bg-gray-400 text-gray-600' : 'bg-orange-400 text-white hover:bg-orange-500'}"
+        class="rounded-md px-4 py-2 text-sm font-medium transition-colors focus:ring-2 focus:ring-orange-400 focus:ring-offset-2 focus:outline-none {isSubmitting ||
+        !content.trim()
+          ? 'cursor-not-allowed bg-gray-400 text-gray-600'
+          : 'bg-orange-400 text-white hover:bg-orange-500'}"
       >
         {isSubmitting ? '送信中...' : '質問を送信'}
       </button>

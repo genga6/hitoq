@@ -37,6 +37,13 @@ export interface MessageCreate {
   parentMessageId?: string;
 }
 
+export interface MessageLike {
+  user_id: string;
+  user_name: string;
+  display_name: string;
+  icon_url?: string;
+}
+
 export interface MessagesPageData {
   profile: {
     userId: string;

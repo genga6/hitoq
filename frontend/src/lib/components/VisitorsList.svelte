@@ -308,9 +308,7 @@
           </a>
         {:else}
           <!-- クリック不可能な訪問者（匿名または削除済み） -->
-          <div
-            class="group relative border-b border-gray-200 transition-all duration-200"
-          >
+          <div class="group relative border-b border-gray-200 transition-all duration-200">
             <div class="relative flex items-center space-x-2 p-2 sm:space-x-3 sm:p-3">
               {#if visit.visitor_info?.is_anonymous}
                 <div class="flex-shrink-0">

@@ -1,6 +1,10 @@
 <script lang="ts">
   import { useClickOutside } from '$lib/utils/useClickOutside';
-  import { getNotifications, getNotificationCount, markMessageAsRead } from '$lib/api-client/messages';
+  import {
+    getNotifications,
+    getNotificationCount,
+    markMessageAsRead
+  } from '$lib/api-client/messages';
   import type { Message } from '$lib/types/message';
 
   type Props = {
@@ -20,13 +24,13 @@
 
   const loadNotifications = async () => {
     if (!isLoggedIn) return;
-    
+
     try {
       const [countResult, notificationsResult] = await Promise.all([
         getNotificationCount(),
         getNotifications()
       ]);
-      
+
       notificationCount = countResult.notificationCount;
       notifications = notificationsResult;
     } catch (error) {
@@ -47,10 +51,8 @@
         await markMessageAsRead(notification.messageId);
         // Update notification count and status
         notificationCount = Math.max(0, notificationCount - 1);
-        notifications = notifications.map(n => 
-          n.messageId === notification.messageId 
-            ? { ...n, status: 'read' as const }
-            : n
+        notifications = notifications.map((n) =>
+          n.messageId === notification.messageId ? { ...n, status: 'read' as const } : n
         );
       }
     } catch (error) {
@@ -60,18 +62,16 @@
 
   const markAllAsRead = async () => {
     try {
-      const unreadNotifications = notifications.filter(n => n.status === 'unread');
-      
+      const unreadNotifications = notifications.filter((n) => n.status === 'unread');
+
       // Mark all unread notifications as read
       await Promise.all(
-        unreadNotifications.map(notification => 
-          markMessageAsRead(notification.messageId)
-        )
+        unreadNotifications.map((notification) => markMessageAsRead(notification.messageId))
       );
-      
+
       // Update state
       notificationCount = 0;
-      notifications = notifications.map(n => ({ ...n, status: 'read' as const }));
+      notifications = notifications.map((n) => ({ ...n, status: 'read' as const }));
     } catch (error) {
       console.error('Failed to mark all notifications as read:', error);
     }
@@ -131,7 +131,7 @@
     <button
       bind:this={toggleButton}
       onclick={toggleDropdown}
-      class="relative flex h-10 w-10 items-center justify-center transition hover:bg-gray-100 rounded-full md:h-12 md:w-12"
+      class="relative flex h-10 w-10 items-center justify-center rounded-full transition hover:bg-gray-100 md:h-12 md:w-12"
       aria-label="通知を開く"
     >
       <svg
@@ -146,10 +146,12 @@
           clip-rule="evenodd"
         />
       </svg>
-      
+
       {#if notificationCount > 0}
-        <span class="absolute -right-1 -top-1 h-3 w-3 rounded-full bg-orange-500">
-          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
+        <span class="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-orange-500">
+          <span
+            class="absolute inline-flex h-full w-full animate-ping rounded-full bg-orange-400 opacity-75"
+          ></span>
         </span>
       {/if}
     </button>
@@ -157,74 +159,74 @@
     {#if showDropdown}
       <div
         bind:this={dropdownElement}
-        class="absolute top-full z-10 mt-2 w-80 rounded-lg border border-gray-200 bg-white shadow-lg -right-16 sm:right-0"
+        class="absolute top-full -right-16 z-10 mt-2 w-80 rounded-lg border border-gray-200 bg-white shadow-lg sm:right-0"
       >
-        <div class="p-3 border-b border-gray-100">
+        <div class="border-b border-gray-100 p-3">
           <div class="flex items-center justify-between">
             <div>
               <h3 class="text-sm font-semibold text-gray-800">通知</h3>
-              <p class="text-xs text-gray-500 mt-1">最新10件まで表示</p>
+              <p class="mt-1 text-xs text-gray-500">最新10件まで表示</p>
             </div>
-            {#if notifications.some(n => n.status === 'unread')}
+            {#if notifications.some((n) => n.status === 'unread')}
               <button
                 onclick={markAllAsRead}
-                class="text-xs text-orange-600 hover:text-orange-800 font-medium"
+                class="text-xs font-medium text-orange-600 hover:text-orange-800"
               >
                 すべてを既読にする
               </button>
             {/if}
           </div>
         </div>
-        
+
         <div class="max-h-96 overflow-y-auto">
           {#if isLoading}
             <div class="flex items-center justify-center py-8">
               <div class="h-6 w-6 animate-spin rounded-full border-b-2 border-orange-400"></div>
             </div>
           {:else if notifications.length === 0}
-            <div class="p-4 text-center text-sm text-gray-500">
-              新しい通知はありません
-            </div>
+            <div class="p-4 text-center text-sm text-gray-500">新しい通知はありません</div>
           {:else}
             {#each notifications as notification (notification.messageId)}
               <button
                 onclick={() => handleNotificationClick(notification)}
-                class="flex w-full items-start gap-3 p-3 text-left hover:bg-gray-50 {notification.status === 'unread' ? 'bg-orange-50' : ''}"
+                class="flex w-full items-start gap-3 p-3 text-left hover:bg-gray-50 {notification.status ===
+                'unread'
+                  ? 'bg-orange-50'
+                  : ''}"
               >
                 <div class="flex-shrink-0 text-lg">
                   {getNotificationIcon(notification.messageType)}
                 </div>
-                
-                <div class="flex-1 min-w-0">
-                  <div class="flex items-center gap-2 mb-1">
+
+                <div class="min-w-0 flex-1">
+                  <div class="mb-1 flex items-center gap-2">
                     {#if notification.fromUser?.iconUrl}
-                      <img 
-                        src={notification.fromUser.iconUrl} 
-                        alt="アイコン" 
+                      <img
+                        src={notification.fromUser.iconUrl}
+                        alt="アイコン"
                         class="h-4 w-4 rounded-full"
                       />
                     {/if}
-                    <span class="text-xs font-medium text-gray-700 truncate">
+                    <span class="truncate text-xs font-medium text-gray-700">
                       {notification.fromUser?.displayName || 'Unknown'}
                     </span>
                     <span class="text-xs text-gray-500">
                       {formatTimeAgo(notification.createdAt)}
                     </span>
                   </div>
-                  
-                  <p class="text-sm text-gray-800 line-clamp-2">
+
+                  <p class="line-clamp-2 text-sm text-gray-800">
                     {notification.content}
                   </p>
-                  
                 </div>
               </button>
             {/each}
           {/if}
         </div>
-        
+
         {#if notifications.length > 0}
           <div class="border-t border-gray-100 p-2">
-            <a 
+            <a
               href={currentUserName ? `/${currentUserName}/messages` : '/'}
               onclick={handleViewAllMessages}
               class="block w-full rounded p-2 text-center text-sm text-orange-600 hover:bg-orange-50"

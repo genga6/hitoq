@@ -98,7 +98,8 @@
     }
   };
 
-  const categories = Object.keys(categoriesFromProps).length > 0 ? categoriesFromProps : fallbackCategories;
+  const categories =
+    Object.keys(categoriesFromProps).length > 0 ? categoriesFromProps : fallbackCategories;
 
   function generateGroupId(): string {
     return `group-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
@@ -145,13 +146,13 @@
   const answeredQAPairs = $derived.by(() => {
     const answered = allQAPairs.filter((pair) => {
       const isAnswered = pair.answerText && pair.answerText.trim() !== '';
-      
+
       if (!isAnswered) return false;
-      
+
       if (selectedCategories.length === 0) return true;
       return pair.categoryInfo && selectedCategories.includes(pair.categoryInfo.id);
     });
-    
+
     return answered;
   });
 
@@ -159,7 +160,6 @@
   function toggleNewQuestionForm() {
     showNewQuestionForm = !showNewQuestionForm;
   }
-
 
   function toggleCategory(category: string) {
     if (selectedCategories.includes(category)) {
@@ -203,11 +203,9 @@
       console.error('回答の保存に失敗しました:', error);
     }
   }
-
 </script>
 
 <div>
-
   <!-- 新規質問ボタン（他人のプロフィールでログイン時のみ表示） -->
   {#if !isOwner && isLoggedIn && currentUser}
     <div class="mb-6">
@@ -244,11 +242,10 @@
     {/if}
   {/if}
 
-
   <!-- カテゴリーフィルター -->
-  <CategoryFilter 
-    {categories} 
-    {selectedCategories} 
+  <CategoryFilter
+    {categories}
+    {selectedCategories}
     answeredCount={answeredQAPairs.length}
     onToggleCategory={toggleCategory}
     onClearFilters={clearFilters}
@@ -282,7 +279,7 @@
   {/if}
 
   <!-- 回答済みQ&Aエリア -->
-  <AnsweredQuestions 
+  <AnsweredQuestions
     {answeredQAPairs}
     {selectedCategories}
     {isOwner}

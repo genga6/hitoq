@@ -59,7 +59,7 @@
   const handleNotificationLevelChange = async (newLevel: NotificationLevel) => {
     savingNotification = true;
     const previousLevel = notificationLevel;
-    
+
     try {
       notificationLevel = newLevel;
       await updateCurrentUser({ notificationLevel: newLevel });
@@ -88,7 +88,7 @@
 </script>
 
 <div class="space-y-0">
-  <div class="flex items-center justify-between border-b border-gray-200 pb-4 mb-4">
+  <div class="mb-4 flex items-center justify-between border-b border-gray-200 pb-4">
     <h1 class="text-xl font-bold text-gray-800 md:text-2xl">設定</h1>
     <div class="text-right">
       <p class="text-xs text-gray-600 md:text-sm">ログイン中のユーザー</p>
@@ -142,9 +142,7 @@
       <div class="space-y-4">
         <div>
           <h3 class="text-sm font-medium text-gray-700 md:text-base">通知レベル</h3>
-          <p class="mt-1 text-xs text-gray-500 md:text-sm">
-            受け取る通知の種類を選択できます。
-          </p>
+          <p class="mt-1 text-xs text-gray-500 md:text-sm">受け取る通知の種類を選択できます。</p>
         </div>
 
         {#if loadingNotification}
@@ -183,9 +181,7 @@
               />
               <div class="ml-3">
                 <span class="text-sm font-medium text-gray-700 md:text-base">重要な通知のみ</span>
-                <p class="text-xs text-gray-500 md:text-sm">
-                  質問とリクエストのみを通知します
-                </p>
+                <p class="text-xs text-gray-500 md:text-sm">質問とリクエストのみを通知します</p>
               </div>
             </label>
 
@@ -201,9 +197,7 @@
               />
               <div class="ml-3">
                 <span class="text-sm font-medium text-gray-700 md:text-base">通知なし</span>
-                <p class="text-xs text-gray-500 md:text-sm">
-                  すべての通知を無効にします
-                </p>
+                <p class="text-xs text-gray-500 md:text-sm">すべての通知を無効にします</p>
               </div>
             </label>
           </div>

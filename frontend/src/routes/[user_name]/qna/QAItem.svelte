@@ -38,7 +38,6 @@
 
   let actionBoxElement: HTMLDivElement | null = $state(null);
 
-
   function handleSave(newAnswer: string) {
     onUpdate(newAnswer);
   }
@@ -123,9 +122,15 @@
       {typeof question === 'string' ? question : question.text}
     </p>
     {#if categoryInfo}
-      <span class="inline-flex items-center gap-1 rounded-full bg-orange-100 px-2.5 py-1 text-xs font-medium text-orange-700">
+      <span
+        class="inline-flex items-center gap-1 rounded-full bg-orange-100 px-2.5 py-1 text-xs font-medium text-orange-700"
+      >
         <svg class="h-3 w-3" fill="currentColor" viewBox="0 0 20 20">
-          <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm0 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V8zm0 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1v-2z" clip-rule="evenodd" />
+          <path
+            fill-rule="evenodd"
+            d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm0 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V8zm0 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1v-2z"
+            clip-rule="evenodd"
+          />
         </svg>
         {categoryInfo.label}
       </span>
@@ -231,7 +236,9 @@
           </p>
 
           <!-- メッセージタイプ：コメントのみ -->
-          <div class="text-center p-2 border border-orange-400 bg-orange-50 text-orange-700 rounded-md">
+          <div
+            class="rounded-md border border-orange-400 bg-orange-50 p-2 text-center text-orange-700"
+          >
             <div class="text-sm">💬</div>
             <div class="mt-0.5 text-xs">コメント</div>
           </div>
@@ -267,7 +274,7 @@
   <!-- 関連メッセージスレッド -->
   {#if showMessagesThread && threadMessages.length > 0}
     <div class="mt-4 border-t border-gray-200 pt-4">
-      <div class="flex items-center justify-between mb-3">
+      <div class="mb-3 flex items-center justify-between">
         <h4 class="flex items-center text-sm font-medium text-gray-700">
           <svg class="mr-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
@@ -280,21 +287,21 @@
           関連メッセージスレッド
         </h4>
         <button
-          onclick={() => showMessagesThread = false}
+          onclick={() => (showMessagesThread = false)}
           class="text-gray-400 hover:text-gray-600"
         >
           ✕
         </button>
       </div>
-      
+
       <div class="max-h-64 overflow-y-auto">
         {#each threadMessages as threadMessage, index (threadMessage.messageId)}
           <div class="py-2 {index > 0 ? 'border-t border-gray-200' : ''}">
-            <div class="flex items-center gap-2 mb-1">
+            <div class="mb-1 flex items-center gap-2">
               <img
                 src={threadMessage.fromUser?.iconUrl || '/default-avatar.svg'}
                 alt={threadMessage.fromUser?.displayName}
-                class="w-4 h-4 rounded-full"
+                class="h-4 w-4 rounded-full"
               />
               <span class="text-xs font-medium text-gray-700">
                 {threadMessage.fromUser?.displayName}
@@ -328,7 +335,11 @@
       </h4>
       <div class="max-h-40 overflow-y-auto">
         {#each relatedMessages as message, index (message.messageId || message.id)}
-          <div class="flex items-start space-x-2 p-2 text-sm {index > 0 ? 'border-t border-gray-200' : ''}">
+          <div
+            class="flex items-start space-x-2 p-2 text-sm {index > 0
+              ? 'border-t border-gray-200'
+              : ''}"
+          >
             <img
               src={message.fromUser?.iconUrl || '/default-avatar.svg'}
               alt=""
