@@ -206,24 +206,6 @@
                   {formatDate(visit.visited_at)}
                 </p>
               </div>
-              <!-- クリック可能であることを示すアイコン -->
-              <div
-                class="flex-shrink-0 opacity-0 transition-opacity duration-200 group-hover:opacity-100"
-              >
-                <svg
-                  class="h-5 w-5 text-orange-500"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M9 5l7 7-7 7"
-                  ></path>
-                </svg>
-              </div>
             </div>
           </a>
         {:else}
