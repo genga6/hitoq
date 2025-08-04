@@ -331,6 +331,13 @@
             <span class="text-xs text-blue-500" title="受信">←</span>
           {/if}
 
+          <!-- 返信アイコン -->
+          {#if message.parentMessageId}
+            <svg class="h-3 w-3 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" title="返信">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"></path>
+            </svg>
+          {/if}
+
           <span class="min-w-0 text-sm font-medium text-gray-900">
             {message.fromUser?.displayName || 'Unknown User'}
           </span>
@@ -354,6 +361,24 @@
           {formatDate(message.createdAt)}
         </span>
       </div>
+
+      <!-- 親メッセージの表示（リプライの場合） -->
+      {#if message.parentMessage}
+        <div class="mt-2 border-l-2 border-gray-200 pl-3 py-1 bg-gray-50 rounded-r-lg">
+          <div class="flex items-center gap-2 mb-1">
+            <svg class="h-3 w-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"></path>
+            </svg>
+            <span class="text-xs text-gray-500">返信先:</span>
+            <span class="text-xs font-medium text-gray-700">
+              {message.parentMessage.fromUser?.displayName || 'Unknown User'}
+            </span>
+          </div>
+          <p class="text-xs text-gray-600 line-clamp-2">
+            {message.parentMessage.content}
+          </p>
+        </div>
+      {/if}
 
       <!-- メッセージ内容 -->
       <div class="mt-1">

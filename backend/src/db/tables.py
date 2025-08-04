@@ -28,7 +28,7 @@ class User(Base):
     display_name: Mapped[str] = mapped_column(String(100), nullable=False)
     bio: Mapped[str | None] = mapped_column(String(300), nullable=True)
     icon_url: Mapped[str | None] = mapped_column(String(512), nullable=True)
-    visits_visible: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    visits_visible: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     notification_level: Mapped[NotificationLevelEnum] = mapped_column(
         default=NotificationLevelEnum.all, nullable=False
     )
@@ -179,5 +179,8 @@ class Message(Base):
         "Message", foreign_keys=[parent_message_id], remote_side=[message_id]
     )
     replies: Mapped[list["Message"]] = relationship(
-        "Message", back_populates="parent_message", cascade="all, delete-orphan"
+        "Message",
+        foreign_keys=[parent_message_id],
+        cascade="all, delete-orphan",
+        overlaps="parent_message",
     )

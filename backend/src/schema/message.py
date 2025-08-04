@@ -20,6 +20,26 @@ class MessageUpdate(OrmBaseModel):
     status: MessageStatusEnum
 
 
+class ParentMessageInfo(OrmBaseModel):
+    """親メッセージの基本情報（循環参照を避けるため）"""
+
+    message_id: str
+    content: str
+    from_user: UserRead | None = None
+    created_at: datetime
+
+
+class ReplyInfo(OrmBaseModel):
+    """リプライの基本情報（循環参照を避けるため）"""
+
+    message_id: str
+    content: str
+    from_user: UserRead | None = None
+    created_at: datetime
+    status: MessageStatusEnum
+    reply_count: int = 0
+
+
 class MessageRead(MessageBase):
     message_id: str
     from_user_id: str
@@ -28,18 +48,9 @@ class MessageRead(MessageBase):
     created_at: datetime
     from_user: UserRead | None = None
     to_user: UserRead | None = None
-    replies: list["MessageRead"] = []
+    replies: list[ReplyInfo] = []
     reply_count: int = 0
-    parent_message: "MessageRead | None" = None  # 親メッセージの情報
-
-
-class ParentMessageInfo(OrmBaseModel):
-    """親メッセージの基本情報（循環参照を避けるため）"""
-
-    message_id: str
-    content: str
-    from_user: UserRead | None = None
-    created_at: datetime
+    parent_message: ParentMessageInfo | None = None  # 親メッセージの基本情報のみ
 
 
 class NotificationRead(MessageBase):

@@ -251,33 +251,6 @@
     onClearFilters={clearFilters}
   />
 
-  <!-- 他ユーザーのプロフィールでログイン時に操作説明を表示 -->
-  {#if !isOwner && isLoggedIn && currentUser}
-    <div class="mb-4 rounded-lg border border-orange-200 bg-orange-50 p-3">
-      <div class="flex items-start gap-2">
-        <svg
-          class="mt-0.5 h-4 w-4 flex-shrink-0 text-orange-600"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-          />
-        </svg>
-        <div class="text-sm text-orange-800">
-          <p class="mb-1 font-medium">💡 操作のヒント</p>
-          <p>
-            回答をホバー（PC）またはタップ（スマホ）すると、質問やリアクションを送れるアクションボタンが表示されます。
-          </p>
-        </div>
-      </div>
-    </div>
-  {/if}
-
   <!-- 回答済みQ&Aエリア -->
   <AnsweredQuestions
     {answeredQAPairs}

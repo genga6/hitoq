@@ -142,20 +142,6 @@ def get_notifications_for_user(
         query.order_by(Message.created_at.desc()).offset(skip).limit(limit).all()
     )
 
-    # 親メッセージの情報を追加で取得
-    for notification in notifications:
-        if notification.parent_message_id:
-            parent_message = (
-                db.query(Message)
-                .options(joinedload(Message.from_user))
-                .filter(Message.message_id == notification.parent_message_id)
-                .first()
-            )
-            # 親メッセージの情報を追加の属性として設定
-            notification.parent_message = parent_message
-        else:
-            notification.parent_message = None
-
     return notifications
 
 

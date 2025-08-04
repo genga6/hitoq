@@ -1,5 +1,6 @@
 <script lang="ts">
   import QAItem from './QAItem.svelte';
+  import HintTooltip from '$lib/components/HintTooltip.svelte';
   import type { CategoryInfo, Question } from '$lib/types';
 
   interface AnsweredQAPair {
@@ -48,6 +49,16 @@
       <span class="rounded-full bg-orange-100 px-2.5 py-1 text-xs font-medium text-orange-700">
         {answeredQAPairs.length}件
       </span>
+      <!-- 他ユーザーのプロフィールでログイン時にヒントを表示 -->
+      {#if !isOwner && isLoggedIn && currentUser}
+        <div class="ml-1">
+          <HintTooltip 
+            content="回答をホバー（PC）またはタップ（スマホ）すると、いいねやコメント送れるアクションボタンが表示されます。"
+            position="bottom"
+            trigger="both"
+          />
+        </div>
+      {/if}
     </div>
     {#if selectedCategories.length > 0}
       <div class="flex items-center gap-3">

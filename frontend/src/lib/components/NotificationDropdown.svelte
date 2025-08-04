@@ -85,30 +85,55 @@
     showDropdown = false;
   };
 
-  const getNotificationIcon = (messageType: string, isLike: boolean = false) => {
+  const getNotificationIcon = (notification: Message) => {
+    const isLike = notification.content?.includes('いいね') || notification.messageType === 'like';
     if (isLike) return '❤️';
-    switch (messageType) {
+    
+    // 返信かどうかを判定
+    const isReply = notification.parentMessageId;
+    
+    switch (notification.messageType) {
       case 'comment':
-        return '💬';
+        return isReply ? '↩️' : '💬';
       default:
-        return '📩';
+        return isReply ? '↩️' : '📩';
     }
   };
 
   const getNotificationMessage = (notification: Message) => {
     // ハートリアクションかどうかを判定（将来的にはメッセージタイプを拡張）
     const isLike = notification.content?.includes('いいね') || notification.messageType === 'like';
+    const isReply = notification.parentMessageId;
 
     if (isLike) {
       return 'あなたのコメントにいいねしました';
     }
 
     if (notification.messageType === 'comment') {
-      // コメントの場合は実際のコメント内容を表示
+      // 返信の場合は返信であることを明示
+      if (isReply) {
+        return notification.content;
+      }
+      // 新規コメントの場合はそのまま内容を表示
       return notification.content;
     }
 
     return notification.content;
+  };
+
+  const getNotificationLabel = (notification: Message) => {
+    const isLike = notification.content?.includes('いいね') || notification.messageType === 'like';
+    const isReply = notification.parentMessageId;
+
+    if (isLike) {
+      return 'いいね';
+    }
+
+    if (notification.messageType === 'comment') {
+      return isReply ? '返信' : '新しいメッセージ';
+    }
+
+    return isReply ? '返信' : 'メッセージ';
   };
 
   // const getNotificationContext = (notification: Message) => {
@@ -308,7 +333,7 @@
                   : ''}"
               >
                 <div class="flex-shrink-0 text-lg">
-                  {getNotificationIcon(notification.messageType, isLike)}
+                  {getNotificationIcon(notification)}
                 </div>
 
                 <div class="min-w-0 flex-1">
@@ -340,8 +365,10 @@
                   <div class="mb-1 text-xs text-gray-600">
                     {#if isLike}
                       <span class="font-medium text-red-600">❤️ いいね</span> をつけました
+                    {:else if notification.parentMessageId}
+                      <span class="font-medium text-blue-600">↩️ {getNotificationLabel(notification)}</span> をしました
                     {:else}
-                      <span class="font-medium text-blue-600">💬 返信</span> しました
+                      <span class="font-medium text-blue-600">💬 {getNotificationLabel(notification)}</span> を送りました
                     {/if}
                   </div>
 

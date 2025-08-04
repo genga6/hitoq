@@ -2,7 +2,7 @@
   import Editable from '$lib/components/Editable.svelte';
   import { sendMessage, getMessageThread } from '$lib/api-client/messages';
   import type { Message } from '$lib/types';
-  // import { browser } from '$app/environment'; // 将来使用予定
+
 
   const {
     question,
