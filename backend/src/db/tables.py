@@ -27,6 +27,7 @@ class User(Base):
     )
     display_name: Mapped[str] = mapped_column(String(100), nullable=False)
     bio: Mapped[str | None] = mapped_column(String(300), nullable=True)
+    self_introduction: Mapped[str | None] = mapped_column(String(500), nullable=True)
     icon_url: Mapped[str | None] = mapped_column(String(512), nullable=True)
     visits_visible: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     notification_level: Mapped[NotificationLevelEnum] = mapped_column(
@@ -81,10 +82,8 @@ class ProfileItem(Base):
 
 
 class MessageTypeEnum(enum.Enum):
-    question = "question"
     comment = "comment"
-    request = "request"
-    reaction = "reaction"
+    like = "like"
 
 
 class MessageStatusEnum(enum.Enum):

@@ -18,7 +18,7 @@
 
 <!-- カテゴリーフィルター -->
 {#if categories && Object.keys(categories).length > 0}
-  <div class="mb-6">
+  <div class="w-full">
     <div class="flex flex-col space-y-4">
       <div class="flex items-center justify-between">
         <div></div>

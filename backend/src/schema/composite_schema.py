@@ -1,4 +1,3 @@
-from src.schema.answer import AnswerBase
 from src.schema.common import OrmBaseModel
 from src.schema.message import MessageRead
 from src.schema.profile_item import ProfileItemRead
@@ -11,7 +10,9 @@ class ProfilePageData(OrmBaseModel):
     profile_items: list[ProfileItemRead] = []
 
 
-class AnsweredQARead(AnswerBase):
+class AnsweredQARead(OrmBaseModel):
+    answer_id: int
+    answer_text: str
     question: QuestionRead
 
 

@@ -18,7 +18,10 @@
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { currentUser, isLoggedIn, isOwner } = data;
 
-  const messages = data.messages && data.messages.length > 0 ? data.messages : [];
+  // いいねメッセージを除外してコメントのみを表示
+  const messages = data.messages && data.messages.length > 0 
+    ? data.messages.filter(msg => msg.messageType !== 'like') 
+    : [];
   const profile = data.profile;
 </script>
 

@@ -16,7 +16,7 @@
     as?: 'div' | 'span';
     inputType?: 'input' | 'textarea';
     startInEditMode?: boolean;
-    validationType?: 'profileLabel' | 'profileValue' | 'qaAnswer' | 'displayName' | 'bio';
+    validationType?: 'profileLabel' | 'profileValue' | 'qaAnswer' | 'displayName' | 'bio' | 'selfIntroduction';
   };
 
   const {

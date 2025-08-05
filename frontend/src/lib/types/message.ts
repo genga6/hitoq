@@ -3,7 +3,7 @@ import type { BaseUser, BaseEntity } from "./common";
 /**
  * メッセージの種類
  */
-export type MessageType = "comment" | "like" | "question" | "request";
+export type MessageType = "comment" | "like";
 
 /**
  * メッセージの読み取り状態

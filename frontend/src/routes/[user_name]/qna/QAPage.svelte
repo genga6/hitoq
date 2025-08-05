@@ -6,7 +6,6 @@
     CategoryInfo
   } from '$lib/types/qna';
   import MessageForm from '../messages/MessageForm.svelte';
-  import CategoryFilter from '$lib/components/CategoryFilter.svelte';
   import AnsweredQuestions from './AnsweredQuestions.svelte';
 
   const {
@@ -242,15 +241,6 @@
     {/if}
   {/if}
 
-  <!-- カテゴリーフィルター -->
-  <CategoryFilter
-    {categories}
-    {selectedCategories}
-    answeredCount={answeredQAPairs.length}
-    onToggleCategory={toggleCategory}
-    onClearFilters={clearFilters}
-  />
-
   <!-- 回答済みQ&Aエリア -->
   <AnsweredQuestions
     {answeredQAPairs}
@@ -259,7 +249,9 @@
     {profile}
     {currentUser}
     {isLoggedIn}
+    {categories}
     onAnswerUpdate={handleAnswerUpdate}
     onClearFilters={clearFilters}
+    onToggleCategory={toggleCategory}
   />
 </div>

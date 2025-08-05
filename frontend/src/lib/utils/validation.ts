@@ -91,6 +91,10 @@ export const ValidationRules = {
     required: false,
     maxLength: 200,
   },
+  selfIntroduction: {
+    required: false,
+    maxLength: 500,
+  },
 
   // お問い合わせフォーム
   contactTitle: {

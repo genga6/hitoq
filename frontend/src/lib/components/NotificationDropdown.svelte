@@ -86,7 +86,7 @@
   };
 
   const getNotificationIcon = (notification: Message) => {
-    const isLike = notification.content?.includes('いいね') || notification.messageType === 'like';
+    const isLike = notification.messageType === 'like';
     if (isLike) return '❤️';
     
     // 返信かどうかを判定
@@ -101,70 +101,21 @@
   };
 
   const getNotificationMessage = (notification: Message) => {
-    // ハートリアクションかどうかを判定（将来的にはメッセージタイプを拡張）
-    const isLike = notification.content?.includes('いいね') || notification.messageType === 'like';
-    const isReply = notification.parentMessageId;
-
+    const isLike = notification.messageType === 'like';
     if (isLike) {
-      return 'あなたのコメントにいいねしました';
-    }
-
-    if (notification.messageType === 'comment') {
-      // 返信の場合は返信であることを明示
-      if (isReply) {
-        return notification.content;
-      }
-      // 新規コメントの場合はそのまま内容を表示
-      return notification.content;
+      return '❤️をしました';
     }
 
     return notification.content;
   };
 
-  const getNotificationLabel = (notification: Message) => {
-    const isLike = notification.content?.includes('いいね') || notification.messageType === 'like';
-    const isReply = notification.parentMessageId;
-
-    if (isLike) {
-      return 'いいね';
-    }
-
-    if (notification.messageType === 'comment') {
-      return isReply ? '返信' : '新しいメッセージ';
-    }
-
-    return isReply ? '返信' : 'メッセージ';
-  };
-
-  // const getNotificationContext = (notification: Message) => {
-  //   // 元のコメントや質問への参照情報を表示
-  //   if (notification.referenceAnswerId) {
-  //     return `Q&A回答 #${notification.referenceAnswerId}`;
-  //   }
-  //   if (notification.parentMessageId) {
-  //     return 'あなたのコメント';
-  //   }
-  //   return 'メッセージ';
-  // };
-
-  // const getOriginalCommentDisplay = (notification: Message) => {
-  //   // 返信の場合、元のコメント内容を表示したいが、現在のAPIでは取得できないため
-  //   // 将来的にはparentMessageの内容を含むAPIレスポンスが必要
-  //   if (notification.parentMessageId) {
-  //     return '（元のコメント内容）'; // プレースホルダー
-  //   }
-  //   return getNotificationContext(notification);
-  // };
-
   const getFilteredNotifications = () => {
     if (activeTab === 'all') return notifications;
     if (activeTab === 'likes') {
-      return notifications.filter((n) => n.content?.includes('いいね') || n.messageType === 'like');
+      return notifications.filter((n) => n.messageType === 'like');
     }
     if (activeTab === 'comments') {
-      return notifications.filter(
-        (n) => n.messageType === 'comment' && !n.content?.includes('いいね')
-      );
+      return notifications.filter((n) => n.messageType === 'comment');
     }
     return notifications;
   };
@@ -285,6 +236,16 @@
               すべて ({notifications.length})
             </button>
             <button
+              onclick={() => (activeTab = 'likes')}
+              class="flex-1 px-4 py-2 text-sm font-medium transition-colors {activeTab === 'likes'
+                ? 'border-b-2 border-orange-500 text-orange-600'
+                : 'text-gray-500 hover:text-gray-700'}"
+            >
+              ❤️ いいね ({notifications.filter(
+                (n) => n.messageType === 'like' || n.content?.includes('いいね')
+              ).length})
+            </button>
+            <button
               onclick={() => (activeTab = 'comments')}
               class="flex-1 px-4 py-2 text-sm font-medium transition-colors {activeTab ===
               'comments'
@@ -293,16 +254,6 @@
             >
               💬 コメント ({notifications.filter(
                 (n) => n.messageType === 'comment' && !n.content?.includes('いいね')
-              ).length})
-            </button>
-            <button
-              onclick={() => (activeTab = 'likes')}
-              class="flex-1 px-4 py-2 text-sm font-medium transition-colors {activeTab === 'likes'
-                ? 'border-b-2 border-orange-500 text-orange-600'
-                : 'text-gray-500 hover:text-gray-700'}"
-            >
-              ❤️ いいね ({notifications.filter(
-                (n) => n.content?.includes('いいね') || n.messageType === 'like'
               ).length})
             </button>
           </nav>
@@ -323,8 +274,6 @@
             </div>
           {:else}
             {#each getFilteredNotifications() as notification (notification.messageId)}
-              {@const isLike =
-                notification.content?.includes('いいね') || notification.messageType === 'like'}
               <button
                 onclick={() => handleNotificationClick(notification)}
                 class="flex w-full items-start gap-3 p-3 text-left hover:bg-gray-50 {notification.status ===
@@ -361,38 +310,10 @@
                     </div>
                   {/if}
 
-                  <!-- アクションの説明 -->
-                  <div class="mb-1 text-xs text-gray-600">
-                    {#if isLike}
-                      <span class="font-medium text-red-600">❤️ いいね</span> をつけました
-                    {:else if notification.parentMessageId}
-                      <span class="font-medium text-blue-600">↩️ {getNotificationLabel(notification)}</span> をしました
-                    {:else}
-                      <span class="font-medium text-blue-600">💬 {getNotificationLabel(notification)}</span> を送りました
-                    {/if}
-                  </div>
-
                   <!-- メッセージ内容 -->
-                  {#if !isLike}
-                    <p class="line-clamp-2 text-sm text-gray-800">
-                      {getNotificationMessage(notification)}
-                    </p>
-                  {/if}
-
-                  <!-- 関連する投稿/回答の詳細情報 -->
-                  {#if notification.referenceAnswerId}
-                    <div class="mt-2 rounded bg-blue-50 px-2 py-1">
-                      <p class="text-xs text-blue-700">
-                        📝 関連: Q&A回答 #{notification.referenceAnswerId}
-                      </p>
-                    </div>
-                  {:else if notification.parentMessageId}
-                    <div class="mt-2 rounded bg-gray-50 px-2 py-1">
-                      <p class="text-xs text-gray-600">
-                        💬 関連: あなたのコメントへの返信
-                      </p>
-                    </div>
-                  {/if}
+                  <p class="line-clamp-2 text-sm text-gray-800">
+                    {getNotificationMessage(notification)}
+                  </p>
                 </div>
               </button>
             {/each}

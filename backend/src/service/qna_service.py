@@ -43,6 +43,7 @@ def get_user_qna(db: Session, user_id: str) -> list[UserAnswerGroupRead]:
             user_answer = answers_by_question_id.get(question.question_id)
             answers.append(
                 AnsweredQARead(
+                    answer_id=user_answer.answer_id if user_answer else 0,
                     answer_text=user_answer.answer_text if user_answer else "",
                     question=QuestionRead.model_validate(question),
                 )

@@ -173,7 +173,7 @@ def get_message_thread(db: Session, message_id: str, user_id: str) -> list[Messa
                 SELECT m.*, 1 as depth, m.parent_message_id as thread_parent
                 FROM messages m 
                 WHERE m.parent_message_id = :root_id
-                AND NOT (m.message_type = 'reaction' AND m.content = '❤️')
+                AND NOT (m.message_type = 'like' AND m.content = '❤️')
                 
                 UNION ALL
                 
@@ -181,7 +181,7 @@ def get_message_thread(db: Session, message_id: str, user_id: str) -> list[Messa
                 SELECT m.*, tt.depth + 1 as depth, m.parent_message_id as thread_parent
                 FROM messages m
                 INNER JOIN thread_tree tt ON m.parent_message_id = tt.message_id
-                WHERE NOT (m.message_type = 'reaction' AND m.content = '❤️')
+                WHERE NOT (m.message_type = 'like' AND m.content = '❤️')
             )
             SELECT *, thread_parent FROM thread_tree ORDER BY thread_parent, created_at ASC
             """),
@@ -348,7 +348,7 @@ def get_user_heart_reaction(
         .filter(
             Message.from_user_id == user_id,
             Message.parent_message_id == target_message_id,
-            Message.message_type == MessageTypeEnum.reaction,
+            Message.message_type == MessageTypeEnum.like,
             Message.content == "❤️",
         )
         .first()
@@ -374,7 +374,7 @@ def toggle_heart_reaction(
             message_id=str(uuid.uuid4()),
             from_user_id=user_id,
             to_user_id=to_user_id,
-            message_type=MessageTypeEnum.reaction,
+            message_type=MessageTypeEnum.like,
             content="❤️",
             parent_message_id=target_message_id,
             status=MessageStatusEnum.unread,
@@ -388,7 +388,7 @@ def toggle_heart_reaction(
         db.query(Message)
         .filter(
             Message.parent_message_id == target_message_id,
-            Message.message_type == MessageTypeEnum.reaction,
+            Message.message_type == MessageTypeEnum.like,
             Message.content == "❤️",
         )
         .count()
@@ -404,7 +404,7 @@ def get_message_likes(db: Session, message_id: str) -> list[dict]:
         .options(joinedload(Message.from_user))
         .filter(
             Message.parent_message_id == message_id,
-            Message.message_type == MessageTypeEnum.reaction,
+            Message.message_type == MessageTypeEnum.like,
             Message.content == "❤️",
         )
         .order_by(Message.created_at.desc())
@@ -437,7 +437,7 @@ def get_heart_states_for_messages(
         .filter(
             Message.from_user_id == user_id,
             Message.parent_message_id.in_(message_ids),
-            Message.message_type == MessageTypeEnum.reaction,
+            Message.message_type == MessageTypeEnum.like,
             Message.content == "❤️",
         )
         .all()
@@ -451,7 +451,7 @@ def get_heart_states_for_messages(
         )
         .filter(
             Message.parent_message_id.in_(message_ids),
-            Message.message_type == MessageTypeEnum.reaction,
+            Message.message_type == MessageTypeEnum.like,
             Message.content == "❤️",
         )
         .group_by(Message.parent_message_id)

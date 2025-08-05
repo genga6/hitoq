@@ -1,12 +1,14 @@
 <script lang="ts">
   import QAItem from './QAItem.svelte';
   import HintTooltip from '$lib/components/HintTooltip.svelte';
+  import CategoryFilter from '$lib/components/CategoryFilter.svelte';
   import type { CategoryInfo, Question } from '$lib/types';
 
   interface AnsweredQAPair {
     groupId: string;
     question: Question;
     answerText: string;
+    answerId?: number;
     questionIndex: number;
     groupIndex: number;
     categoryInfo?: CategoryInfo;
@@ -15,6 +17,7 @@
   type Props = {
     answeredQAPairs: AnsweredQAPair[];
     selectedCategories: string[];
+    categories: Record<string, CategoryInfo>;
     isOwner: boolean;
     profile?: {
       userId: string;
@@ -27,60 +30,54 @@
     isLoggedIn?: boolean;
     onAnswerUpdate: (groupIndex: number, questionIndex: number, newAnswer: string) => void;
     onClearFilters: () => void;
+    onToggleCategory: (categoryId: string) => void;
   };
 
   const {
     answeredQAPairs,
     selectedCategories,
+    categories,
     isOwner,
     profile,
     currentUser,
     isLoggedIn,
     onAnswerUpdate,
-    onClearFilters
+    onClearFilters,
+    onToggleCategory
   }: Props = $props();
 </script>
 
 <!-- 回答済みQ&Aエリア -->
 <div>
-  <div class="mb-4 flex items-center justify-between">
-    <div class="flex items-center gap-2">
-      <h2 class="text-lg font-semibold text-gray-800">回答済みQ&A</h2>
-      <span class="rounded-full bg-orange-100 px-2.5 py-1 text-xs font-medium text-orange-700">
-        {answeredQAPairs.length}件
-      </span>
-      <!-- 他ユーザーのプロフィールでログイン時にヒントを表示 -->
-      {#if !isOwner && isLoggedIn && currentUser}
-        <div class="ml-1">
-          <HintTooltip 
-            content="回答をホバー（PC）またはタップ（スマホ）すると、いいねやコメント送れるアクションボタンが表示されます。"
-            position="bottom"
-            trigger="both"
-          />
-        </div>
-      {/if}
-    </div>
-    {#if selectedCategories.length > 0}
-      <div class="flex items-center gap-3">
-        <span class="text-sm text-gray-500">
-          {answeredQAPairs.length}件表示中
+  <div class="mb-6">
+    <!-- タイトルとヒント -->
+    <div class="mb-4">
+      <div class="flex items-center gap-2">
+        <h2 class="text-lg font-semibold text-gray-800">回答済みQ&A</h2>
+        <span class="rounded-full bg-orange-100 px-2.5 py-1 text-xs font-medium text-orange-700">
+          {answeredQAPairs.length}件
         </span>
-        <button
-          onclick={onClearFilters}
-          class="inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100"
-        >
-          <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M6 18L18 6M6 6l12 12"
+        <!-- 他ユーザーのプロフィールでログイン時にヒントを表示 -->
+        {#if !isOwner && isLoggedIn && currentUser}
+          <div class="ml-1">
+            <HintTooltip 
+              content="回答をホバー（PC）またはタップ（スマホ）すると、いいねやコメント送れるアクションボタンが表示されます。"
+              position="bottom"
+              trigger="both"
             />
-          </svg>
-          フィルタをクリア
-        </button>
+          </div>
+        {/if}
       </div>
-    {/if}
+    </div>
+    
+    <!-- カテゴリフィルター -->
+    <CategoryFilter
+      {categories}
+      {selectedCategories}
+      answeredCount={answeredQAPairs.length}
+      onToggleCategory={onToggleCategory}
+      onClearFilters={onClearFilters}
+    />
   </div>
 
   {#if answeredQAPairs && answeredQAPairs.length > 0}
@@ -91,6 +88,7 @@
           <QAItem
             question={pair.question.text}
             answer={pair.answerText}
+            answerId={pair.answerId}
             categoryInfo={pair.categoryInfo}
             {isOwner}
             onUpdate={(newAnswer: string) => {

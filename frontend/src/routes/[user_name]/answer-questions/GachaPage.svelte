@@ -1,23 +1,18 @@
 <script lang="ts">
-  import { goto } from '$app/navigation';
-  import type { CategoryInfo, Question } from '$lib/types';
+  import type { CategoryInfo } from '$lib/types';
+  import type { Question } from '$lib/types';
+  import CategoryFilter from '$lib/components/CategoryFilter.svelte';
 
   type Props = {
     categories: Record<string, CategoryInfo>;
     isOwner: boolean;
-    profile?: {
-      userId: string;
-      userName: string;
-      displayName: string;
-      bio?: string;
-      iconUrl?: string;
-    };
+    userId: string;
   };
 
-  const { categories, isOwner, profile }: Props = $props();
+  const { categories, isOwner, userId }: Props = $props();
 
-  const availableCategories = Object.keys(categories);
   let gachaQuestionCount = $state(3);
+  let selectedCategories = $state<string[]>([]);
 
   // 各質問の入力値を管理
   let questionInputs = $state<Record<string, string>>({});
@@ -33,9 +28,15 @@
   // ガチャ結果の未回答質問を管理
   let unansweredQAPairs = $state<UnansweredQAPair[]>([]);
 
+  // localStorageのキー
+  const STORAGE_KEY = `hitoq-unanswered-questions-${userId}`;
+  const STORAGE_KEY_INPUTS = `hitoq-question-inputs-${userId}`;
+  const STORAGE_KEY_NEW_QUESTIONS = `hitoq-new-questions-${userId}`;
+
   interface NewQuestion {
     messageId: string;
     content: string;
+    fromUserId: string;
     fromUserName: string;
     fromDisplayName: string;
     createdAt: string;
@@ -87,6 +88,7 @@
       );
 
       unansweredQAPairs = [...unansweredQAPairs, ...newUnansweredPairs];
+      saveToStorage();
 
       return selectedQuestions.length;
     } catch (error) {
@@ -96,19 +98,30 @@
   }
 
   async function performRandomGacha() {
-    const count = await performGacha(undefined, gachaQuestionCount);
-    if (count === 0) {
-      alert('もう回答できる質問がありません！');
+    // カテゴリが選択されている場合はカテゴリフィルターを適用
+    if (selectedCategories.length > 0) {
+      // 複数カテゴリが選択されている場合はランダムに1つを選択
+      const randomCategory = selectedCategories[Math.floor(Math.random() * selectedCategories.length)];
+      const count = await performGacha(randomCategory, gachaQuestionCount);
+      if (count === 0) {
+        const categoryInfo = categories[randomCategory];
+        alert(`${categoryInfo?.label || randomCategory}カテゴリにはもう回答できる質問がありません！`);
+      }
+    } else {
+      const count = await performGacha(undefined, gachaQuestionCount);
+      if (count === 0) {
+        alert('もう回答できる質問がありません！');
+      }
     }
   }
 
-  async function performCategoryGacha(category: string) {
-    const count = await performGacha(category, gachaQuestionCount);
-    if (count === 0) {
-      const categoryInfo = categories[category];
-      alert(`${categoryInfo?.label || category}カテゴリにはもう回答できる質問がありません！`);
-    }
-  }
+  // async function performCategoryGacha(category: string) {
+  //   const count = await performGacha(category, gachaQuestionCount);
+  //   if (count === 0) {
+  //     const categoryInfo = categories[category];
+  //     alert(`${categoryInfo?.label || category}カテゴリにはもう回答できる質問がありません！`);
+  //   }
+  // }
 
   async function handleSaveAnswer(pair: UnansweredQAPair) {
     const questionKey = `${pair.groupId}-${pair.questionIndex}`;
@@ -117,28 +130,32 @@
     if (!inputValue.trim()) return;
 
     try {
-      const { saveAnswer } = await import('$lib/api-client/qna');
+      const { createAnswer } = await import('$lib/api-client/qna');
 
-      // 新しい回答グループを作成
-      const newAnswerGroup = {
-        templateId: pair.question.categoryId,
-        templateTitle: `🎲 ${pair.categoryInfo?.label || pair.question.categoryId}`,
-        answers: [
-          {
-            question: pair.question,
-            answerText: inputValue.trim()
-          }
-        ]
-      };
+      // 質問に対する回答を作成
+      await createAnswer(
+        userId,
+        pair.question.questionId,
+        inputValue.trim()
+      );
 
-      await saveAnswer(newAnswerGroup);
-
-      // 成功したら未回答リストから削除
-      unansweredQAPairs = unansweredQAPairs.filter((p) => p.groupId !== pair.groupId);
-      questionInputs[questionKey] = '';
-
-      // 成功メッセージ
-      alert('回答を保存しました！');
+      // 成功したら未回答リストから削除（フェードアウト効果付き）
+      const questionElement = document.querySelector(`[data-question-id="${pair.groupId}"]`) as HTMLElement;
+      if (questionElement) {
+        questionElement.style.transition = 'opacity 0.3s ease-out, transform 0.3s ease-out';
+        questionElement.style.opacity = '0';
+        questionElement.style.transform = 'translateY(-10px)';
+        
+        setTimeout(() => {
+          unansweredQAPairs = unansweredQAPairs.filter((p) => p.groupId !== pair.groupId);
+          questionInputs[questionKey] = '';
+          saveToStorage();
+        }, 300);
+      } else {
+        unansweredQAPairs = unansweredQAPairs.filter((p) => p.groupId !== pair.groupId);
+        questionInputs[questionKey] = '';
+        saveToStorage();
+      }
     } catch (error) {
       console.error('回答保存エラー:', error);
       alert('回答の保存に失敗しました。');
@@ -151,37 +168,39 @@
     // 入力値をクリア
     const questionKey = `${pair.groupId}-${pair.questionIndex}`;
     questionInputs[questionKey] = '';
+    saveToStorage();
   }
 
-  function goToAnswers() {
-    if (profile?.userName) {
-      goto(`/${profile.userName}/qna`);
-    }
-  }
 
   // 新規質問を取得
   async function loadNewQuestions() {
     if (!isOwner) return;
 
     try {
-      const { getReceivedMessages } = await import('$lib/api-client/messages');
-      const messages = await getReceivedMessages();
+      const { getMyMessages } = await import('$lib/api-client/messages');
+      const messages = await getMyMessages();
 
-      interface MessageWithAnswer {
+
+      // 未回答のメッセージのみを新規質問として表示（いいねメッセージは除外）
+      interface APIMessage {
         messageId: string;
         content: string;
+        fromUserId: string;
         fromUserName: string;
         fromDisplayName: string;
         createdAt: string;
         isAnswered: boolean;
+        messageType: string;
       }
-
-      // 未回答のメッセージのみを新規質問として表示
-      const unansweredMessages = (messages as MessageWithAnswer[]).filter((msg) => !msg.isAnswered);
-      newQuestions = unansweredMessages.map(
+      
+      const unansweredMessages = (messages as APIMessage[]).filter((msg: APIMessage) => 
+        !msg.isAnswered && msg.messageType !== 'like'
+      );
+      const newQuestionsFromAPI = unansweredMessages.map(
         (msg): NewQuestion => ({
           messageId: msg.messageId,
           content: msg.content,
+          fromUserId: msg.fromUserId,
           fromUserName: msg.fromUserName,
           fromDisplayName: msg.fromDisplayName,
           createdAt: msg.createdAt,
@@ -189,6 +208,15 @@
           questionIndex: 0
         })
       );
+
+      // 既存のローカル質問と重複しないようにマージ
+      const existingMessageIds = new Set(newQuestions.map(q => q.messageId));
+      const newUniqueQuestions = newQuestionsFromAPI.filter(q => !existingMessageIds.has(q.messageId));
+      
+      if (newUniqueQuestions.length > 0) {
+        newQuestions = [...newQuestions, ...newUniqueQuestions];
+        saveToStorage();
+      }
     } catch (error) {
       console.error('新規質問の取得に失敗しました:', error);
     }
@@ -202,14 +230,20 @@
     if (!inputValue.trim()) return;
 
     try {
-      const { replyToMessage } = await import('$lib/api-client/messages');
+      const { createMessage } = await import('$lib/api-client/messages');
 
       // メッセージに返信
-      await replyToMessage(question.messageId, inputValue.trim());
+      await createMessage({
+        toUserId: question.fromUserId || '',
+        messageType: 'comment',
+        content: inputValue.trim(),
+        parentMessageId: question.messageId
+      });
 
       // 成功したら新規質問リストから削除
       newQuestions = newQuestions.filter((q) => q.messageId !== question.messageId);
       questionInputs[questionKey] = '';
+      saveToStorage();
 
       // 成功メッセージ
       alert('回答を送信しました！');
@@ -225,263 +259,174 @@
     // 入力値をクリア
     const questionKey = `new-${question.groupId}`;
     questionInputs[questionKey] = '';
+    saveToStorage();
   }
 
-  // ページ読み込み時に新規質問を取得
+  // localStorageから保存されたデータを読み込み
+  function loadFromStorage() {
+    if (typeof window === 'undefined') return;
+    
+    try {
+      const savedQuestions = localStorage.getItem(STORAGE_KEY);
+      const savedInputs = localStorage.getItem(STORAGE_KEY_INPUTS);
+      const savedNewQuestions = localStorage.getItem(STORAGE_KEY_NEW_QUESTIONS);
+      
+      if (savedQuestions) {
+        const parsed = JSON.parse(savedQuestions);
+        if (Array.isArray(parsed)) {
+          unansweredQAPairs = parsed;
+          console.log('復元した未回答質問数:', parsed.length);
+        }
+      }
+      
+      if (savedInputs) {
+        const parsed = JSON.parse(savedInputs);
+        if (typeof parsed === 'object' && parsed !== null) {
+          questionInputs = parsed;
+        }
+      }
+
+      if (savedNewQuestions) {
+        const parsed = JSON.parse(savedNewQuestions);
+        if (Array.isArray(parsed)) {
+          newQuestions = parsed;
+          console.log('復元した新規質問数:', parsed.length);
+        }
+      }
+    } catch (error) {
+      console.error('localStorageからのデータ読み込みエラー:', error);
+    }
+  }
+
+  // localStorageにデータを保存
+  function saveToStorage() {
+    if (typeof window === 'undefined') return;
+    
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(unansweredQAPairs));
+      localStorage.setItem(STORAGE_KEY_INPUTS, JSON.stringify(questionInputs));
+      localStorage.setItem(STORAGE_KEY_NEW_QUESTIONS, JSON.stringify(newQuestions));
+      console.log('保存した未回答質問数:', unansweredQAPairs.length, '新規質問数:', newQuestions.length);
+    } catch (error) {
+      console.error('localStorageへのデータ保存エラー:', error);
+    }
+  }
+
+  // 初期化フラグ
+  let isInitialized = $state(false);
+
+  // ページ読み込み時に新規質問を取得とlocalStorageから復元
   $effect(() => {
-    if (isOwner) {
-      loadNewQuestions();
+    if (!isInitialized) {
+      loadFromStorage();
+      if (isOwner) {
+        loadNewQuestions();
+      }
+      isInitialized = true;
+    }
+  });
+
+  // データが変更された時にlocalStorageに保存（初期化後のみ）
+  $effect(() => {
+    if (isInitialized) {
+      saveToStorage();
     }
   });
 </script>
 
-<div class="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 p-4">
-  <div class="mx-auto max-w-4xl">
-    <!-- ヘッダー -->
-    <div class="mb-6 text-center">
-      <h1 class="mb-2 text-2xl font-bold text-gray-800 sm:text-3xl">🎯 質問に答える</h1>
-      <p class="text-gray-600">質問ガチャや受信した質問に答えて、自分を表現しよう！</p>
-      <button
-        onclick={goToAnswers}
-        class="mt-3 text-sm text-orange-600 underline hover:text-orange-800"
-      >
-        Q&A一覧を見る →
+<!-- 質問ガチャとカテゴリフィルター -->
+<div>
+  <!-- 質問ガチャ -->
+  <div class="rounded-2xl bg-white p-6">
+    <h2 class="text-lg font-semibold text-gray-800 mb-4">質問ガチャ</h2>
+    
+    <div class="flex items-center gap-4 mb-4">
+      <span class="text-sm text-gray-700">質問数</span>
+      <select bind:value={gachaQuestionCount} class="px-3 py-1 border border-gray-300 rounded text-sm">
+        {#each [1, 2, 3, 4, 5] as num (num)}
+          <option value={num}>{num}問</option>
+        {/each}
+      </select>
+      <button onclick={performRandomGacha} class="px-4 py-2 bg-orange-500 text-white rounded-lg text-sm font-medium hover:bg-orange-600">
+        ガチャ
       </button>
     </div>
-
-    <!-- ガチャセクション -->
-    <div class="mb-6">
-      <div class="rounded-2xl border border-orange-200 bg-white p-4 sm:p-6">
-        <div class="flex flex-col space-y-3 sm:space-y-4">
-          <!-- 質問数スライダー -->
-          <div class="rounded-lg border border-orange-200 bg-white/50 p-3">
-            <div class="mb-2 flex items-center justify-between">
-              <label for="gacha-slider" class="text-sm font-medium text-gray-700">質問数:</label>
-              <span class="text-sm font-bold text-orange-600">{gachaQuestionCount}問</span>
-            </div>
-            <div class="relative">
-              <input
-                id="gacha-slider"
-                type="range"
-                min="1"
-                max="10"
-                bind:value={gachaQuestionCount}
-                class="slider h-2 w-full cursor-pointer appearance-none rounded-lg bg-gray-200"
-                style="background: linear-gradient(to right, #f97316 0%, #f97316 {(gachaQuestionCount -
-                  1) *
-                  11.11}%, #e5e7eb {(gachaQuestionCount - 1) * 11.11}%, #e5e7eb 100%);"
-              />
-              <div class="mt-1 flex justify-between text-xs text-gray-500">
-                <span>1問</span>
-                <span>10問</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="flex flex-col justify-center gap-2 sm:flex-row sm:gap-3">
-            <!-- おまかせガチャ -->
-            <button
-              onclick={performRandomGacha}
-              class="inline-flex flex-1 items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-orange-400 to-red-400 px-4 py-2.5 text-sm font-medium text-white shadow-md transition-all hover:from-orange-500 hover:to-red-500 hover:shadow-lg focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 focus:outline-none sm:flex-none sm:px-6 sm:py-3"
-            >
-              <svg
-                class="h-4 w-4 sm:h-5 sm:w-5"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4"
-                />
-              </svg>
-              <span class="sm:hidden">🎲 ガチャ</span>
-              <span class="hidden sm:inline">🎲 おまかせガチャ</span>
-            </button>
-          </div>
-
-          <!-- カテゴリ別ガチャ -->
-          {#if categories && Object.keys(categories).length > 0}
-            <div class="border-t border-orange-200 pt-3 sm:pt-4">
-              <p class="mb-2 text-center text-xs text-gray-600 sm:mb-3">
-                <span class="sm:hidden">カテゴリ選択:</span>
-                <span class="hidden sm:inline">または、カテゴリを選んでガチャ:</span>
-              </p>
-              <div class="flex flex-wrap justify-center gap-1.5 sm:gap-2">
-                {#each availableCategories as categoryId (categoryId)}
-                  {@const category = categories[categoryId]}
-                  {#if category}
-                    <button
-                      onclick={() => performCategoryGacha(categoryId)}
-                      class="inline-flex items-center gap-1 rounded-full border border-orange-300 bg-white px-2.5 py-1 text-xs font-medium text-gray-700 transition-all hover:border-orange-400 hover:bg-orange-50 focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 focus:outline-none sm:px-3 sm:py-1.5"
-                    >
-                      🎯 {category.label}
-                    </button>
-                  {/if}
-                {/each}
-              </div>
-            </div>
-          {/if}
-        </div>
-      </div>
-    </div>
-
-    <!-- 新規質問エリア -->
-    {#if newQuestions && newQuestions.length > 0}
-      <div class="mb-6 rounded-lg border border-blue-200 bg-white p-4">
-        <div class="mb-4 flex items-center gap-2">
-          <h2 class="text-lg font-semibold text-blue-800">💌 受信した質問</h2>
-          <span class="rounded-full bg-blue-200 px-2 py-0.5 text-xs font-medium text-blue-800">
-            {newQuestions.length}件
-          </span>
-        </div>
-        <div class="space-y-4">
-          {#each newQuestions as question (`new-question-${question.messageId}`)}
-            {@const questionKey = `new-${question.groupId}`}
-            <div class="rounded-md border border-gray-200 p-4">
-              <!-- 質問者情報 -->
-              <div class="mb-3 flex flex-wrap items-center gap-1.5">
-                <span
-                  class="inline-flex items-center gap-1 rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700"
-                >
-                  <svg class="h-2.5 w-2.5" fill="currentColor" viewBox="0 0 20 20">
-                    <path
-                      fill-rule="evenodd"
-                      d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
-                      clip-rule="evenodd"
-                    />
-                  </svg>
-                  {question.fromDisplayName} (@{question.fromUserName})
-                </span>
-                <span class="text-xs text-gray-500">
-                  {new Date(question.createdAt).toLocaleDateString('ja-JP')}
-                </span>
-              </div>
-
-              <!-- 質問内容と回答フォーム -->
-              <div class="space-y-3">
-                <p class="text-base font-medium text-gray-700">
-                  {question.content}
-                </p>
-                <div class="space-y-3">
-                  <textarea
-                    bind:value={questionInputs[questionKey]}
-                    placeholder="回答を入力..."
-                    class="w-full rounded-md border border-blue-200 p-3 text-sm focus:border-blue-400 focus:ring-1 focus:ring-blue-400 focus:outline-none"
-                    rows="3"
-                  ></textarea>
-                  <div class="flex items-center justify-end gap-3">
-                    <button
-                      onclick={() => handleSkipNewQuestion(question)}
-                      class="px-4 py-2 text-sm text-gray-600 transition-colors hover:text-gray-800"
-                    >
-                      スキップ
-                    </button>
-                    <button
-                      onclick={() => handleAnswerNewQuestion(question)}
-                      disabled={!questionInputs[questionKey]?.trim()}
-                      class="rounded-md bg-blue-500 px-4 py-2 text-sm text-white transition-colors hover:bg-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                      回答を送信
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          {/each}
-        </div>
-      </div>
-    {/if}
-
-    <!-- 未回答の質問エリア -->
-    {#if unansweredQAPairs && unansweredQAPairs.length > 0}
-      <div class="rounded-lg border border-orange-200 bg-white p-4">
-        <div class="mb-4 flex items-center gap-2">
-          <h2 class="text-lg font-semibold text-orange-800">📝 回答待ちの質問</h2>
-          <span class="rounded-full bg-orange-200 px-2 py-0.5 text-xs font-medium text-orange-800">
-            {unansweredQAPairs.length}件
-          </span>
-        </div>
-        <div class="space-y-4">
-          {#each unansweredQAPairs as pair (`unanswered-gacha-${pair.groupId}-${pair.question.questionId}-${pair.questionIndex}`)}
-            {@const questionKey = `${pair.groupId}-${pair.questionIndex}`}
-            <div class="rounded-md border border-gray-200 p-4">
-              <!-- カテゴリー情報 -->
-              <div class="mb-3 flex flex-wrap items-center gap-1.5">
-                {#if pair.categoryInfo}
-                  <span
-                    class="inline-flex items-center gap-1 rounded-full bg-orange-100 px-2 py-0.5 text-xs font-medium text-orange-700"
-                  >
-                    <svg class="h-2.5 w-2.5" fill="currentColor" viewBox="0 0 20 20">
-                      <path
-                        fill-rule="evenodd"
-                        d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm0 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V8zm0 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1v-2z"
-                        clip-rule="evenodd"
-                      />
-                    </svg>
-                    {pair.categoryInfo.label}
-                  </span>
-                {/if}
-              </div>
-
-              <!-- Q&Aアイテム -->
-              <div class="space-y-3">
-                <p class="text-base font-medium text-gray-700">
-                  {pair.question.text}
-                </p>
-                <div class="space-y-3">
-                  <textarea
-                    bind:value={questionInputs[questionKey]}
-                    placeholder="回答を入力..."
-                    class="w-full rounded-md border border-orange-200 p-3 text-sm focus:border-orange-400 focus:ring-1 focus:ring-orange-400 focus:outline-none"
-                    rows="3"
-                  ></textarea>
-                  <div class="flex items-center justify-end gap-3">
-                    <button
-                      onclick={() => handleSkip(pair)}
-                      class="px-4 py-2 text-sm text-gray-600 transition-colors hover:text-gray-800"
-                    >
-                      スキップ
-                    </button>
-                    <button
-                      onclick={() => handleSaveAnswer(pair)}
-                      disabled={!questionInputs[questionKey]?.trim()}
-                      class="rounded-md bg-orange-500 px-4 py-2 text-sm text-white transition-colors hover:bg-orange-600 disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                      保存
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          {/each}
-        </div>
-      </div>
-    {/if}
   </div>
+
+  <!-- カテゴリフィルター -->
+  <CategoryFilter
+    {categories}
+    {selectedCategories}
+    answeredCount={0}
+    onToggleCategory={(categoryId) => {
+      if (selectedCategories.includes(categoryId)) {
+        selectedCategories = selectedCategories.filter(c => c !== categoryId);
+      } else {
+        selectedCategories = [...selectedCategories, categoryId];
+      }
+    }}
+    onClearFilters={() => {
+      selectedCategories = [];
+    }}
+  />
 </div>
 
-<style>
-  .slider::-webkit-slider-thumb {
-    appearance: none;
-    height: 20px;
-    width: 20px;
-    border-radius: 50%;
-    background: #f97316;
-    cursor: pointer;
-    border: 2px solid #ffffff;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  }
+<!-- 受信した質問 -->
+{#if newQuestions && newQuestions.length > 0}
+  <div class="mt-8 rounded-2xl border border-gray-200 bg-white p-6">
+    <div class="flex items-center gap-2 mb-4">
+      <h2 class="text-lg font-semibold text-gray-800">受信した質問</h2>
+      <span class="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600">{newQuestions.length}件</span>
+    </div>
+    
+    {#each newQuestions as question (`new-question-${question.messageId}`)}
+      {@const questionKey = `new-${question.groupId}`}
+      <div class="border border-gray-200 rounded-lg p-4 mb-4">
+        <div class="flex items-center gap-2 mb-3">
+          <span class="text-sm text-gray-600">{question.fromDisplayName}</span>
+          <span class="text-xs text-gray-400">{new Date(question.createdAt).toLocaleDateString('ja-JP')}</span>
+        </div>
+        
+        <p class="text-gray-700 mb-3">{question.content}</p>
+        
+        <textarea bind:value={questionInputs[questionKey]} placeholder="回答を入力..." class="w-full rounded-lg border border-gray-300 p-3 text-sm focus:border-orange-400 focus:outline-none mb-3" rows="3"></textarea>
+        
+        <div class="flex items-center justify-end gap-3">
+          <button onclick={() => handleSkipNewQuestion(question)} class="px-4 py-2 text-sm text-gray-500 hover:text-gray-700">スキップ</button>
+          <button onclick={() => handleAnswerNewQuestion(question)} disabled={!questionInputs[questionKey]?.trim()} class="rounded-lg bg-orange-500 px-4 py-2 text-sm text-white hover:bg-orange-600 disabled:opacity-50">回答を送信</button>
+        </div>
+      </div>
+    {/each}
+  </div>
+{/if}
 
-  .slider::-moz-range-thumb {
-    height: 20px;
-    width: 20px;
-    border-radius: 50%;
-    background: #f97316;
-    cursor: pointer;
-    border: 2px solid #ffffff;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  }
-</style>
+<!-- 回答待ちの質問 -->
+{#if unansweredQAPairs && unansweredQAPairs.length > 0}
+  <div class="mt-8 rounded-2xl border border-gray-200 bg-white p-6">
+    <div class="flex items-center gap-2 mb-4">
+      <h2 class="text-lg font-semibold text-gray-800">回答待ちの質問</h2>
+      <span class="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600">{unansweredQAPairs.length}件</span>
+    </div>
+    
+    {#each unansweredQAPairs as pair (`unanswered-gacha-${pair.groupId}-${pair.question.questionId}-${pair.questionIndex}`)}
+      {@const questionKey = `${pair.groupId}-${pair.questionIndex}`}
+      <div class="border border-gray-200 rounded-lg p-4 mb-4" data-question-id="{pair.groupId}">
+        {#if pair.categoryInfo}
+          <div class="mb-3">
+            <span class="text-xs text-gray-500">{pair.categoryInfo.label}</span>
+          </div>
+        {/if}
+        
+        <p class="text-gray-700 mb-3">{pair.question.text}</p>
+        
+        <textarea bind:value={questionInputs[questionKey]} placeholder="回答を入力..." class="w-full rounded-lg border border-gray-300 p-3 text-sm focus:border-orange-400 focus:outline-none mb-3" rows="3"></textarea>
+        
+        <div class="flex items-center justify-end gap-3">
+          <button onclick={() => handleSkip(pair)} class="px-4 py-2 text-sm text-gray-500 hover:text-gray-700">スキップ</button>
+          <button onclick={() => handleSaveAnswer(pair)} disabled={!questionInputs[questionKey]?.trim()} class="rounded-lg bg-orange-500 px-4 py-2 text-sm text-white hover:bg-orange-600 disabled:opacity-50">保存</button>
+        </div>
+      </div>
+    {/each}
+  </div>
+{/if}
+

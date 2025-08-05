@@ -29,4 +29,7 @@ if ! grep -q '"tailwindcss"' package.json; then
 fi
 cd ..
 
+echo "Installing Claude Code..."
+npm install -g @anthropic-ai/claude-code
+
 echo "Setup complete"

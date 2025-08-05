@@ -15,6 +15,7 @@ export interface ProfileItem {
  */
 export interface Profile extends BaseUser, BaseEntity {
   bio?: string;
+  selfIntroduction?: string;
   notificationLevel: NotificationLevel;
 }
 
@@ -30,6 +31,7 @@ export interface UserUpdate {
   userName?: string;
   displayName?: string;
   bio?: string;
+  selfIntroduction?: string;
   iconUrl?: string;
   notificationLevel?: NotificationLevel;
 }
