@@ -303,7 +303,7 @@
 </script>
 
 <div
-  class="border-b border-gray-200 p-3 transition-all duration-200 hover:bg-gray-50
+  class="border-b border-gray-300 p-3 transition-all duration-200 hover:bg-gray-50
         {message.status === 'unread' ? 'bg-orange-50' : ''}"
   role="button"
   tabindex="0"
