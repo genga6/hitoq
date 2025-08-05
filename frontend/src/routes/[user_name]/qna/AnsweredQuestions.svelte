@@ -83,7 +83,7 @@
   {#if answeredQAPairs && answeredQAPairs.length > 0}
     <div class="space-y-4">
       {#each answeredQAPairs as pair (`answered-${pair.groupId}-${pair.question.questionId}-${pair.questionIndex}`)}
-        <div class="border-b border-gray-200 p-4 transition-colors hover:bg-gray-50">
+        <div class="border-b border-gray-300 p-4 transition-colors hover:bg-gray-50">
           <!-- Q&Aアイテム -->
           <QAItem
             question={pair.question.text}

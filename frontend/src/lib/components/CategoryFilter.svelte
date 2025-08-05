@@ -45,7 +45,7 @@
         {/if}
       </div>
 
-      <div class="rounded-lg border border-gray-200 bg-white">
+      <div class="rounded-lg border border-gray-300 bg-white">
         <button
           onclick={() => (showCategoryFilter = !showCategoryFilter)}
           class="flex w-full items-center justify-between p-4 text-left transition-colors hover:bg-gray-50"
@@ -95,14 +95,14 @@
             ? 'max-h-96 opacity-100'
             : 'max-h-0 opacity-0'}"
         >
-          <div class="border-t border-gray-200 p-4">
+          <div class="border-t border-gray-300 p-4">
             <div class="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
               {#each availableCategories as categoryId (categoryId)}
                 {@const category = categories[categoryId]}
                 {#if category}
                   <button
                     onclick={() => onToggleCategory(categoryId)}
-                    class="group relative overflow-hidden rounded-lg border border-gray-200 bg-white p-3 text-left transition-all duration-200 hover:border-orange-300 hover:shadow-sm {selectedCategories.includes(
+                    class="group relative overflow-hidden rounded-lg border border-gray-300 bg-white p-3 text-left transition-all duration-200 hover:border-orange-300 hover:shadow-sm {selectedCategories.includes(
                       categoryId
                     )
                       ? 'border-orange-400 bg-orange-50 ring-2 ring-orange-200'

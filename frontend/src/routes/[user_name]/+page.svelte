@@ -62,7 +62,7 @@
 
 <!-- 自己紹介セクション -->
 <div class="mt-8">
-  <div class="group relative rounded-2xl border border-gray-200 bg-white p-6 transition-all duration-300 {isOwner ? 'hover:border-orange-300' : ''}">
+  <div class="group relative rounded-2xl border border-gray-300 bg-white p-6 transition-all duration-300 {isOwner ? 'hover:border-orange-300' : ''}">
     <div class="mb-4">
       <p class="mb-1 text-sm font-medium tracking-wide text-gray-700">自己紹介</p>
     </div>
@@ -100,60 +100,61 @@
 </div>
 
 <!-- プロフィール項目 -->
-<div class="mt-8 grid grid-cols-1 gap-8 md:grid-cols-2">
+<div class="mt-8 grid grid-cols-1 md:grid-cols-2 md:gap-8">
   {#if profileItems && profileItems.length > 0}
     {#each profileItems as item, index (item.profileItemId)}
-      <div
-        class="group relative rounded-2xl border border-gray-200 bg-white p-6 transition-all duration-300 {isOwner
-          ? 'hover:border-orange-300'
-          : ''}"
-      >
-        <div class="relative">
-          <p class="mb-2 text-sm font-medium tracking-wide text-gray-700">{item.label}</p>
-        </div>
-
-        <Editable
-          {isOwner}
-          value={item.value}
-          onSave={(newValue) => handleItemSave(index, 'value', newValue)}
-          inputType="input"
-          validationType="profileValue"
-        >
-          <div
-            class="relative {isOwner
-              ? 'cursor-pointer transition-all duration-200 hover:-mx-2 hover:-my-1 hover:rounded-md hover:bg-orange-50 hover:px-2 hover:py-1'
-              : ''}"
-          >
-            <p class="text-base font-semibold break-words text-gray-700">
-              {#if item.value}
-                {item.value}
-              {:else}
-                <span class="text-base text-gray-400 italic">ー</span>
-              {/if}
-            </p>
+      <div class="group relative rounded-2xl border-gray-300 bg-white transition-all duration-300 md:border md:p-6 {isOwner ? 'hover:border-orange-300' : ''}">
+        <div class="p-6 md:p-0">
+          <div class="relative">
+            <p class="mb-2 text-sm font-medium tracking-wide text-gray-700">{item.label}</p>
           </div>
-        </Editable>
 
-        {#if isOwner}
-          <div
-            class="pointer-events-none absolute top-4 right-4 text-gray-400 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+          <Editable
+            {isOwner}
+            value={item.value}
+            onSave={(newValue) => handleItemSave(index, 'value', newValue)}
+            inputType="input"
+            validationType="profileValue"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              class="h-5 w-5"
-              viewBox="0 0 20 20"
-              fill="currentColor"
+            <div
+              class="relative {isOwner
+                ? 'cursor-pointer transition-all duration-200 hover:-mx-2 hover:-my-1 hover:rounded-md hover:bg-orange-50 hover:px-2 hover:py-1'
+                : ''}"
             >
-              <path
-                d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z"
-              />
-              <path
-                fill-rule="evenodd"
-                d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z"
-                clip-rule="evenodd"
-              />
-            </svg>
-          </div>
+              <p class="text-base font-semibold break-words text-gray-700">
+                {#if item.value}
+                  {item.value}
+                {:else}
+                  <span class="text-base text-gray-400 italic">ー</span>
+                {/if}
+              </p>
+            </div>
+          </Editable>
+
+          {#if isOwner}
+            <div
+              class="pointer-events-none absolute top-4 right-4 text-gray-400 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-5 w-5"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z"
+                />
+                <path
+                  fill-rule="evenodd"
+                  d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z"
+                  clip-rule="evenodd"
+                />
+              </svg>
+            </div>
+          {/if}
+        </div>
+        {#if index < profileItems.length - 1}
+          <hr class="border-gray-300 md:hidden" />
         {/if}
       </div>
     {/each}
