@@ -1,5 +1,6 @@
 import type { LayoutServerLoad } from "./$types";
-import { getUserByUserName, getCurrentUserServer } from "$lib/api/client";
+import { getUserByUserName } from "$lib/api-client/users";
+import { getCurrentUserServer } from "$lib/api-client/auth";
 import { error } from "@sveltejs/kit";
 
 export const load: LayoutServerLoad = async ({
@@ -20,7 +21,7 @@ export const load: LayoutServerLoad = async ({
   let currentUser = null;
   try {
     currentUser = await getCurrentUserServer(cookieHeader);
-  } catch (e) {
+  } catch {
     // 認証エラーは正常な状態
     currentUser = null;
   }
@@ -32,6 +33,8 @@ export const load: LayoutServerLoad = async ({
     return {
       isOwner,
       profile,
+      currentUser,
+      isLoggedIn: !!currentUser,
     };
   } catch (e) {
     console.error("Error loading profile data for user:", userName, e);

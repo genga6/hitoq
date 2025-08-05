@@ -7,13 +7,13 @@ from src.db.tables import ProfileItem
 from src.schema.profile_item import ProfileItemCreate, ProfileItemUpdate
 
 
-def _get_profile_item(db: Session, user_id: str, item_id: str) -> ProfileItem:
-    # Convert string item_id to UUID if needed
+def _get_profile_item(
+    db: Session, user_id: str, item_id: str | uuid.UUID
+) -> ProfileItem:
     if isinstance(item_id, str):
         try:
             item_id = uuid.UUID(item_id)
         except ValueError as e:
-            # Invalid UUID format, return None to trigger 404
             raise HTTPException(status_code=404, detail="Profile item not found") from e
 
     item = (

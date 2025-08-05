@@ -1,3 +1,8 @@
+import type { BaseUser, NotificationLevel, BaseEntity } from "./common";
+
+/**
+ * プロフィール項目
+ */
 export interface ProfileItem {
   profileItemId: string;
   label: string;
@@ -5,19 +10,28 @@ export interface ProfileItem {
   displayOrder: number;
 }
 
-export interface Profile {
-  userId: string;
-  userName: string;
-  displayName: string;
-  iconUrl?: string;
+/**
+ * ユーザープロフィール情報
+ */
+export interface Profile extends BaseUser, BaseEntity {
   bio?: string;
-  createdAt: string;
+  selfIntroduction?: string;
+  notificationLevel: NotificationLevel;
 }
 
-export interface UserCandidate {
-  userId: string;
-  userName: string;
-  displayName: string;
+/**
+ * ユーザー候補（登録前のユーザー情報）
+ */
+export interface UserCandidate extends BaseUser, BaseEntity {}
+
+/**
+ * ユーザー情報更新用のリクエストデータ
+ */
+export interface UserUpdate {
+  userName?: string;
+  displayName?: string;
+  bio?: string;
+  selfIntroduction?: string;
   iconUrl?: string;
-  createdAt: string;
+  notificationLevel?: NotificationLevel;
 }

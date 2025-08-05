@@ -1,6 +1,6 @@
 import type { PageServerLoad } from "./$types";
-import { getQnAPageData } from "$lib/api/client";
-import { getCurrentUserServer } from "$lib/api/client";
+import { getQnAPageData } from "$lib/api-client/qna";
+import { getCurrentUserServer } from "$lib/api-client/auth";
 import { error } from "@sveltejs/kit";
 
 export const load: PageServerLoad = async ({ params, request }) => {
@@ -9,23 +9,31 @@ export const load: PageServerLoad = async ({ params, request }) => {
 
   try {
     const rawData = await getQnAPageData(userName);
-    const { profile, userAnswerGroups, availableTemplates } = rawData;
+    const { profile, userAnswerGroups, availableTemplates, categories } =
+      rawData;
 
-    // Check if the current user is the owner
+    // Check if the current user is the owner and get authentication status
     let isOwner = false;
+    let currentUser = null;
+    let isLoggedIn = false;
     try {
-      const currentUser = await getCurrentUserServer(cookieHeader);
+      currentUser = await getCurrentUserServer(cookieHeader);
       isOwner = currentUser && currentUser.userName === userName;
-    } catch (e) {
+      isLoggedIn = !!currentUser;
+    } catch {
       // User not authenticated - this is expected for logged out users
       isOwner = false;
+      isLoggedIn = false;
     }
 
     return {
       profile,
       userAnswerGroups,
       availableTemplates,
+      categories,
       isOwner,
+      currentUser,
+      isLoggedIn,
     };
   } catch (e) {
     console.error("Error loading Q&A data:", e);

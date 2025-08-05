@@ -33,4 +33,14 @@ export default ts.config(
       },
     },
   },
+  {
+    ignores: [
+      ".svelte-kit/**",
+      ".svelte-kit/**/*",
+      "build/**/*",
+      "dist/**/*",
+      "node_modules/**/*",
+      "**/.svelte-kit/**",
+    ],
+  },
 );

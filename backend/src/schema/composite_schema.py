@@ -1,6 +1,5 @@
-from src.schema.answer import AnswerBase
-from src.schema.bucket_list_item import BucketListItemRead
 from src.schema.common import OrmBaseModel
+from src.schema.message import MessageRead
 from src.schema.profile_item import ProfileItemRead
 from src.schema.question import QuestionRead
 from src.schema.user import UserRead
@@ -11,12 +10,9 @@ class ProfilePageData(OrmBaseModel):
     profile_items: list[ProfileItemRead] = []
 
 
-class BucketListPageData(OrmBaseModel):
-    profile: UserRead
-    bucket_list_items: list[BucketListItemRead] = []
-
-
-class AnsweredQARead(AnswerBase):
+class AnsweredQARead(OrmBaseModel):
+    answer_id: int
+    answer_text: str
     question: QuestionRead
 
 
@@ -26,13 +22,26 @@ class UserAnswerGroupRead(OrmBaseModel):
     answers: list[AnsweredQARead]
 
 
+class CategoryInfoRead(OrmBaseModel):
+    id: str
+    label: str
+    description: str
+
+
 class AvailableQATemplateRead(OrmBaseModel):
     id: str
     title: str
     questions: list[QuestionRead]
+    category: str
 
 
 class QnAPageData(OrmBaseModel):
     profile: UserRead
     user_answer_groups: list[UserAnswerGroupRead]
     available_templates: list[AvailableQATemplateRead]
+    categories: dict[str, CategoryInfoRead]
+
+
+class MessagesPageData(OrmBaseModel):
+    profile: UserRead
+    messages: list[MessageRead]

@@ -2,7 +2,7 @@
   import { page } from '$app/state';
 </script>
 
-<div class="flex flex-col items-center justify-center text-center px-4 py-24">
+<div class="flex flex-col items-center justify-center px-4 py-24 text-center">
   <div class="max-w-md">
     <h1 class="text-6xl font-bold text-orange-400 drop-shadow-sm">
       {page.status}
@@ -17,9 +17,10 @@
       URLに間違いがないかご確認ください。
     </p>
 
-    <a 
-      href="/" 
-      class="block w-1/2 mx-auto mt-8 py-2 px-4 rounded-xl bg-orange-100 text-orange-500 font-semibold hover:bg-orange-200 active:bg-orange-300 transition duration-200">
+    <a
+      href="/"
+      class="mx-auto mt-8 block w-1/2 rounded-xl bg-orange-100 px-4 py-2 font-semibold text-orange-500 transition duration-200 hover:bg-orange-200 active:bg-orange-300"
+    >
       トップページに戻る
     </a>
   </div>

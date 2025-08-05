@@ -1,29 +1,32 @@
 <script lang="ts">
   import { page } from '$app/state';
-  import type { Profile } from '$lib/types/profile';
+  import type { Profile } from '$lib/types';
 
   type Props = {
     userName: Profile['userName'];
+    isOwner: boolean;
   };
-  const { userName }: Props = $props();
+  const { userName, isOwner }: Props = $props();
 
-  const tabs = [
-    { path: `/${userName}`,               label: 'プロフィール' },
-    { path: `/${userName}/qna`,           label: 'パーソナルQ&A' },
-    { path: `/${userName}/bucket`,        label: 'バケットリスト' }
-  ];
+  // すべてのタブを表示（履歴タブも非ログインユーザーに表示）
+  const tabs = $derived([
+    { path: `/${userName}`, label: 'プロフィール' },
+    ...(isOwner ? [{ path: `/${userName}/answer-questions`, label: '質問に答える' }] : []),
+    { path: `/${userName}/qna`, label: 'Q&A' },
+    { path: `/${userName}/messages`, label: 'メッセージ' }
+  ]);
 </script>
 
-<nav class="flex justify-around border-b border-gray-300 text-sm font-semibold">
-  {#each tabs as { path, label }}
+<nav class="flex justify-around border-b border-gray-300">
+  {#each tabs as { path, label } (path)}
     <a
       href={path}
-      class="pb-2 transition hover:text-gray-700
+      class="min-w-0 flex-1 px-2 py-3 text-center text-xs font-semibold transition hover:text-gray-700 sm:text-sm
             {page.url.pathname === path
-              ? 'text-gray-700 border-b-2 border-orange-400'
-              : 'text-gray-400'}"
+        ? 'border-b-2 border-orange-400 text-gray-700'
+        : 'text-gray-400'}"
     >
-      {label}
+      <span class="block truncate">{label}</span>
     </a>
   {/each}
 </nav>

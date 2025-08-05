@@ -1,16 +1,33 @@
+/**
+ * 質問のカテゴリ
+ */
 export type QuestionCategory =
-  | "self-introduction"
   | "values"
-  | "otaku"
-  | "misc";
+  | "personality"
+  | "relationships"
+  | "romance"
+  | "childhood"
+  | "school"
+  | "career"
+  | "lifestyle"
+  | "activities"
+  | "entertainment"
+  | "goals"
+  | "hypothetical";
 
+/**
+ * 質問
+ */
 export interface Question {
   questionId: number;
   text: string;
-  category: QuestionCategory;
+  categoryId: QuestionCategory;
   displayOrder: number;
 }
 
+/**
+ * 回答
+ */
 export interface Answer {
   answerId: number;
   userId: string;
@@ -18,40 +35,62 @@ export interface Answer {
   answerText: string;
 }
 
+/**
+ * 質問と回答のペア
+ */
 export interface QandA {
   question: Question;
   answer?: Answer;
 }
 
-export interface QATemplate {
-  id: string;
-  title: string;
-  questions: string[];
+/**
+ * カテゴリ情報
+ */
+export interface CategoryInfo {
+  id: QuestionCategory;
+  label: string;
+  description: string;
 }
 
-// バックエンドから受信する実際の構造
+/**
+ * 質問テンプレート
+ */
+export interface QuestionTemplate {
+  id: string;
+  title: string;
+  questions: Question[];
+  category?: string;
+}
+
+/**
+ * バックエンドから受信するユーザー回答グループ
+ */
 export interface UserAnswerGroupBackend {
   templateId: string;
   templateTitle: string;
   answers: Array<{
     question: Question;
     answerText: string;
-    answerId?: number; // 既存の回答ID
+    answerId?: number;
   }>;
 }
 
-// フロントエンドで使用する拡張された構造（未回答質問も含む）
+/**
+ * フロントエンドで使用するユーザー回答グループ（未回答質問も含む）
+ */
 export interface UserAnswerGroup {
   templateId: string;
   templateTitle: string;
   answers: Array<{
     question: Question;
     answerText: string;
-    answerId?: number; // 既存の回答ID（新規回答の場合はundefined）
+    answerId?: number;
   }>;
 }
 
-// テンプレート選択時に使用する簡易版（まだ質問IDが取得できていない場合）
+/**
+ * テンプレート選択時に使用する簡易版のユーザー回答グループ
+ */
 export interface UserAnswerGroupTemplate {
   templateId: string;
   templateTitle: string;

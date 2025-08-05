@@ -2,14 +2,15 @@ from collections import defaultdict
 
 from sqlalchemy.orm import Session, joinedload
 
-from src.db.tables import Answer, Question, QuestionCategoryEnum
+from src.db.tables import Answer, Question
 from src.schema.answer import AnswerCreate
 from src.schema.composite_schema import AnsweredQARead, UserAnswerGroupRead
-from src.service.question_templates import get_category_title, get_default_templates
+from src.schema.question import QuestionRead
+from src.service.categories import get_category_by_id
+from src.service.yaml_loader import get_yaml_loader
 
 
 def get_user_qna(db: Session, user_id: str) -> list[UserAnswerGroupRead]:
-    # ユーザーの回答を取得
     user_answers = (
         db.query(Answer)
         .options(joinedload(Answer.question))
@@ -17,41 +18,41 @@ def get_user_qna(db: Session, user_id: str) -> list[UserAnswerGroupRead]:
         .all()
     )
 
-    # 回答をquestion_idでマッピング
     answers_by_question_id = {answer.question_id: answer for answer in user_answers}
 
-    # 回答済みの質問のカテゴリを取得
     answered_categories = set()
     for answer in user_answers:
         if answer.question:
-            answered_categories.add(answer.question.category)
+            answered_categories.add(answer.question.category_id)
 
-    # カテゴリ内のすべての質問を取得し、回答状況と合わせて返す
     user_answer_groups = []
-    for category in answered_categories:
-        # このカテゴリのすべての質問を取得
+    for category_id in answered_categories:
+        category_info = get_category_by_id(category_id)
+        if not category_info:
+            continue
+
         category_questions = (
             db.query(Question)
-            .filter(Question.category == category)
+            .filter(Question.category_id == category_id)
             .order_by(Question.display_order)
             .all()
         )
 
-        # 各質問に対して回答があるかチェック
         answers = []
         for question in category_questions:
             user_answer = answers_by_question_id.get(question.question_id)
             answers.append(
                 AnsweredQARead(
+                    answer_id=user_answer.answer_id if user_answer else 0,
                     answer_text=user_answer.answer_text if user_answer else "",
-                    question=question,
+                    question=QuestionRead.model_validate(question),
                 )
             )
 
         user_answer_groups.append(
             UserAnswerGroupRead(
-                template_id=category.name,
-                template_title=get_category_title(category),
+                template_id=category_id,
+                template_title=category_info.name,
                 answers=answers,
             )
         )
@@ -61,19 +62,26 @@ def get_user_qna(db: Session, user_id: str) -> list[UserAnswerGroupRead]:
 
 def get_all_questions_grouped(
     db: Session,
-) -> dict[QuestionCategoryEnum, list[Question]]:
+) -> dict[str, list[Question]]:
     questions = db.query(Question).order_by(Question.display_order).all()
     grouped_questions = defaultdict(list)
     for q in questions:
-        grouped_questions[q.category].append(q)
+        grouped_questions[q.category_id].append(q)
     return grouped_questions
-
-
-# Remove this function as it's now imported from question_templates
 
 
 def get_all_questions(db: Session) -> list[Question]:
     return db.query(Question).order_by(Question.display_order).all()
+
+
+def get_questions_by_category(db: Session, category_id: str) -> list[Question]:
+    """指定されたカテゴリの質問を取得（ガチャ機能用）"""
+    return (
+        db.query(Question)
+        .filter(Question.category_id == category_id)
+        .order_by(Question.display_order)
+        .all()
+    )
 
 
 def create_answer(
@@ -89,19 +97,17 @@ def create_answer(
 
 
 def initialize_default_questions(db: Session) -> None:
-    """Initialize default questions in the database if they don't exist."""
-    # Check if questions already exist
     existing_questions = db.query(Question).first()
     if existing_questions:
         return
 
-    # Get default templates and create questions
-    templates = get_default_templates()
+    loader = get_yaml_loader()
+    templates = loader.load_templates()
 
     for template in templates:
         for i, question_text in enumerate(template.questions, 1):
             question = Question(
-                category=template.category, text=question_text, display_order=i
+                category_id=template.category_id, text=question_text, display_order=i
             )
             db.add(question)
 

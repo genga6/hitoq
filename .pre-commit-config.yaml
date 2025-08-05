@@ -20,18 +20,10 @@ repos:
           - prettier@4.0.0-alpha.8
           - prettier-plugin-svelte@latest
 
-  - repo: https://github.com/pre-commit/mirrors-eslint
-    rev: v9.30.1
+  - repo: local
     hooks:
       - id: eslint
-        args:
-          [
-            "--config=frontend/eslint.config.js",
-            "--ext",
-            ".ts,.svelte",
-            "--fix",
-          ]
-        additional_dependencies:
-          - "eslint@9.30.1"
-          - "eslint-plugin-svelte@latest"
-          - "svelte-eslint-parser@latest"
+        name: ESLint
+        entry: bash -c 'cd frontend && npx eslint --config eslint.config.js --fix "${@#frontend/}"' --
+        language: system
+        files: "^frontend/.*\\.(ts|js|svelte)$"

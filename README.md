@@ -1,101 +1,104 @@
 # hitoQ
 
-hitoQは、Q&A形式でプロフィールを作成・共有できるソーシャルプロフィールサービスです。
+<p align="center">
+  <img src="https://raw.githubusercontent.com/gengaret/hitoQ/main/docs/images/logo.png" alt="hitoQ Logo" width="200"/>
+</p>
 
-## 🚀 サービス概要
+<p align="center">
+  <strong>Q&Aを通じて自分を表現できるプロフィールサービス</strong>
+</p>
 
-hitoQは、従来のプロフィールサービスとは異なり、質問と回答を通じて自分自身を表現できるプラットフォームです。
+<p align="center">
+  <img alt="Language: Python" src="https://img.shields.io/badge/Python-3.11+-blue?logo=python&logoColor=white">
+  <img alt="Framework: FastAPI" src="https://img.shields.io/badge/FastAPI-0.110+-green?logo=fastapi&logoColor=white">
+  <img alt="Language: TypeScript" src="https://img.shields.io/badge/TypeScript-5.x-blue?logo=typescript&logoColor=white">
+  <img alt="Framework: SvelteKit" src="https://img.shields.io/badge/SvelteKit-2.x-orange?logo=svelte&logoColor=white">
+  <img alt="License: Apache 2.0" src="https://img.shields.io/badge/License-Apache_2.0-blue.svg">
+</p>
 
-### 主な機能
+---
 
-- **Q&Aプロフィール**: 質問に答えることで自分らしさを表現
-- **バケットリスト**: やりたいことリストを作成・管理
-- **プロフィール項目**: 基本的なプロフィール情報の設定
-- **X（Twitter）認証**: OAuth2.0によるセキュアなログイン
+**hitoQ (ヒトキュー)** は、用意された質問に答えたり、友達から質問を受け取ったりすることで、あなたの多面的な魅力を引き出すプロフィールを簡単に作成・共有できるサービスです。
 
-### 技術スタック
+従来のプロフィール項目だけでは伝わらない、あなたの価値観、好きなこと、ユニークな一面を、Q&A形式で楽しく表現してみませんか？
 
-**フロントエンド**
+## ✨ 主な機能
 
-- SvelteKit
-- TypeScript
-- Tailwind CSS
-- Vite
+- **📝 Q&Aプロフィール**: 豊富な質問テンプレートから選んで回答するだけで、あなただけのユニークなプロフィールが完成します。
+- **💬 メッセージ機能**: 他のユーザーに質問を送ったり、感想を伝えたりできます。
+- **❤️ リアクション機能**: 気になる回答に「いいね」をしたり、コメントを送ってコミュニケーションできます。
+- **🎨 カスタマイズ**: プロフィール項目を自由に追加・編集して、あなただけのオリジナルページを作成できます。
+- **🔒 X (Twitter) 認証**: 安全なOAuth2.0認証で、簡単かつセキュアにログインできます。
 
-**バックエンド**
+## 🛠️ 技術スタック
 
-- FastAPI
-- SQLAlchemy
-- PostgreSQL
-- Alembic (データベースマイグレーション)
-- Python 3.11+
+`hitoQ` は、モダンでスケーラブルな技術スタックで構築されています。
 
-## 🏗️ アーキテクチャ
+| カテゴリ           | フロントエンド                                                                   | バックエンド                                                                                               |
+| :----------------- | :------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------- |
+| **フレームワーク** | [SvelteKit](https://kit.svelte.dev/)<br>[Tailwind CSS](https://tailwindcss.com/) | [FastAPI](https://fastapi.tiangolo.com/)<br>[SQLAlchemy](https://www.sqlalchemy.org/)                      |
+| **言語**           | [TypeScript](https://www.typescriptlang.org/)                                    | [Python 3.11+](https://www.python.org/)                                                                    |
+| **パッケージ管理** | [pnpm](https://pnpm.io/)                                                         | [uv](https://github.com/astral-sh/uv)                                                                      |
+| **DB**             | -                                                                                | [PostgreSQL](https://www.postgresql.org/)<br>[Alembic](https://alembic.sqlalchemy.org/en/latest/)          |
+| **テスト**         | [Vitest](https://vitest.dev/)                                                    | [pytest](https://docs.pytest.org/)                                                                         |
+| **その他**         | [ESLint](https://eslint.org/)<br>[Prettier](https://prettier.io/)                | [Sentry](https://sentry.io/)<br>[Ruff](https://github.com/astral-sh/ruff)<br>[Mypy](http://mypy-lang.org/) |
 
-```
-hitoq/
-├── frontend/           # SvelteKitフロントエンド
-│   ├── src/
-│   │   ├── lib/
-│   │   │   ├── api/    # API クライアント
-│   │   │   ├── components/  # UI コンポーネント
-│   │   │   ├── types/  # TypeScript型定義
-│   │   │   └── utils/  # ユーティリティ関数
-│   │   └── routes/     # ページとAPI ルート
-└── backend/            # FastAPI バックエンド
-    └── src/
-        ├── db/         # データベース設定
-        ├── router/     # API ルーター
-        ├── schema/     # Pydantic スキーマ
-        └── service/    # ビジネスロジック
-```
+## 🚀 ローカルでの起動方法
 
-## 🔧 セットアップ
+このプロジェクトはDockerを使用して、簡単に開発環境を構築できます。
 
-### 必要な環境
+### 前提条件
 
-- Node.js 18+
-- Python 3.11+
-- PostgreSQL
-- pnpm (推奨)
+- [Docker](https://www.docker.com/get-started)
+- [Docker Compose](https://docs.docker.com/compose/install/)
 
-### 開発環境の起動
+### 手順
 
-**バックエンド**
+1.  **リポジトリをクローン**
 
-```bash
-cd backend
-uv sync
-uv run uvicorn src.main:app --reload
-```
+    ```bash
+    git clone https://github.com/gengaret/hitoQ.git
+    cd hitoQ
+    ```
 
-**フロントエンド**
+2.  **環境変数の設定**
 
-```bash
-cd frontend
-pnpm install
-pnpm run dev
-```
+    `.env.example` をコピーして `.env` ファイルを作成します。
 
-## 🌐 アクセス
+    ```bash
+    cp .env.example .env
+    ```
 
-- フロントエンド: http://localhost:5173
-- バックエンド API: http://localhost:8000
-- API ドキュメント: http://localhost:8000/docs
+    次に、`.env` ファイルを開き、最低限以下の項目を設定してください。特に `SECRET_KEY` と `SESSION_SECRET_KEY` は必ずユニークな値に変更してください。
 
-## 📊 データモデル
+    ```dotenv
+    # Application Security
+    SECRET_KEY= # `openssl rand -hex 32` などで生成した強力なキーを設定
+    SESSION_SECRET_KEY= # `openssl rand -hex 32` などで生成した強力なキーを設定
 
-### 質問カテゴリ
+    # Twitter OAuth Configuration (Twitterログインを試す場合)
+    TWITTER_CLIENT_ID=your_twitter_client_id
+    TWITTER_CLIENT_SECRET=your_twitter_client_secret
+    ```
 
-- `self-introduction`: 自己紹介
-- `values`: 価値観
-- `otaku`: 趣味・オタク
-- `misc`: その他
+3.  **Dockerコンテナを起動**
 
-### 主要なエンティティ
+    以下のコマンドを実行して、すべてのサービスをビルドしてバックグラウンドで起動します。
 
-- **User**: ユーザー情報
-- **Question**: 質問
-- **Answer**: 回答
-- **ProfileItem**: プロフィール項目
-- **BucketListItem**: バケットリスト項目
+    ```bash
+    docker-compose -f .devcontainer/docker-compose.yml up -d --build
+    ```
+
+    初回起動時は、依存関係のダウンロードとビルドのため、数分かかることがあります。
+
+## 🌐 アクセスポイント
+
+コンテナが正常に起動したら、以下のURLにアクセスできます。
+
+- **フロントエンド**: [http://localhost:5173](http://localhost:5173)
+- **バックエンドAPI**: [http://localhost:8000](http://localhost:8000)
+- **APIドキュメント (Swagger UI)**: [http://localhost:8000/docs](http://localhost:8000/docs)
+
+## 📄 ライセンス
+
+このプロジェクトは [Apache License 2.0](LICENSE) の下で公開されています。

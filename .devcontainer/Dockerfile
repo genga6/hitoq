@@ -14,7 +14,7 @@ ENV PATH="$VENV_PATH/bin:$PATH"
 
 RUN curl -LsSf https://astral.sh/uv/0.7.2/install.sh | sh
 
-RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - && \
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
     apt-get update -y && \
     apt-get install -y nodejs && \
     npm install -g pnpm && \
