@@ -1,12 +1,12 @@
 import { fetchApi, fetchApiWithAuth } from "./base";
-import type { Profile } from "$lib/types/profile";
 import type {
+  Profile,
   Question,
   Answer,
   UserAnswerGroupBackend,
   QATemplate,
   CategoryInfo,
-} from "$lib/types/qna";
+} from "$lib/types";
 
 // Q&A Page Data
 export const getQnAPageData = async (

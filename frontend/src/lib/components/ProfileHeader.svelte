@@ -20,12 +20,10 @@
   <div class="min-w-0 flex-1 {isOwner ? 'pr-0 sm:pr-12 md:pr-16 lg:pr-20' : ''}">
     <div class="flex flex-col space-y-2 sm:flex-row sm:items-center sm:space-y-0 sm:space-x-6">
       <!-- ユーザー名 -->
-      <h2
-        class="text-xl font-bold break-words text-gray-700 sm:text-2xl"
-      >
+      <h2 class="text-xl font-bold break-words text-gray-700 sm:text-2xl">
         {displayName}
       </h2>
-      
+
       <!-- Xボタン（スマホ版では中央配置、PC版では十分な余白） -->
       <div class="flex justify-center sm:justify-start">
         <a

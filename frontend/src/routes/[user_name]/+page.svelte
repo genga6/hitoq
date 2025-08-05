@@ -1,8 +1,7 @@
 <script lang="ts">
   import Editable from '$lib/components/Editable.svelte';
 
-  import type { ProfileCardPageData } from '$lib/types/page';
-  import type { ProfileItem } from '$lib/types/profile';
+  import type { ProfileCardPageData, ProfileItem } from '$lib/types';
 
   type Props = {
     data: ProfileCardPageData;
@@ -19,6 +18,8 @@
       ? [...initialProfileItems].sort((a, b) => a.displayOrder - b.displayOrder)
       : []
   );
+
+  let selfIntroduction = $state(data.profile.selfIntroduction || '');
 
   async function handleItemSave(index: number, field: 'value', newValue: string): Promise<boolean> {
     const item = profileItems[index];
@@ -40,18 +41,75 @@
       return false;
     }
   }
+
+  async function handleSelfIntroductionSave(newValue: string): Promise<boolean> {
+    try {
+      console.log('🔄 自己紹介を保存中:', { userId: data.profile.userId, selfIntroduction: newValue });
+      const { updateUser } = await import('$lib/api-client/profile');
+      const result = await updateUser(data.profile.userId, {
+        selfIntroduction: newValue
+      });
+      console.log('✅ 自己紹介の更新成功:', result);
+      
+      selfIntroduction = newValue;
+      return true;
+    } catch (error) {
+      console.error('❌ 自己紹介の更新に失敗しました:', error);
+      return false;
+    }
+  }
 </script>
 
+<!-- 自己紹介セクション -->
+<div class="mt-8">
+  <div class="group relative rounded-2xl border border-gray-200 bg-white p-6 transition-all duration-300 {isOwner ? 'hover:border-orange-300' : ''}">
+    <div class="mb-4">
+      <p class="mb-1 text-sm font-medium tracking-wide text-gray-700">自己紹介</p>
+    </div>
+    
+    <Editable
+      {isOwner}
+      value={selfIntroduction}
+      onSave={handleSelfIntroductionSave}
+      inputType="textarea"
+      validationType="selfIntroduction"
+      placeholder="自己紹介を書いてみましょう..."
+    >
+      <div class="relative {isOwner ? 'cursor-pointer transition-all duration-200 hover:-mx-2 hover:-my-1 hover:rounded-md hover:bg-orange-50 hover:px-2 hover:py-1' : ''}">
+        {#if selfIntroduction}
+          <p class="whitespace-pre-wrap text-base font-semibold break-words text-gray-700 leading-relaxed">{selfIntroduction}</p>
+        {:else if isOwner}
+          <p class="whitespace-pre-wrap text-base font-semibold text-gray-400 italic leading-relaxed">{`例： hito Q太郎です！普段は会社員をしています。
+        趣味はゲームと料理です。最近は〇〇というゲームにハマっています！
+        気軽に話しかけてください！よろしくお願いします！`}</p>
+        {:else}
+          <p class="text-gray-400 italic">まだ自己紹介が登録されていません</p>
+        {/if}
+      </div>
+    </Editable>
+
+    {#if isOwner}
+      <div class="pointer-events-none absolute top-4 right-4 text-gray-400 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+          <path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z" />
+          <path fill-rule="evenodd" d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" clip-rule="evenodd" />
+        </svg>
+      </div>
+    {/if}
+  </div>
+</div>
+
+<!-- プロフィール項目 -->
 <div class="mt-8 grid grid-cols-1 gap-8 md:grid-cols-2">
   {#if profileItems && profileItems.length > 0}
     {#each profileItems as item, index (item.profileItemId)}
       <div
-        class="group relative rounded-3xl border-l-3 border-l-orange-400 bg-white p-6 shadow-sm transition-all duration-300 {isOwner
-          ? 'hover:border-l-orange-500 hover:shadow-md'
+        class="group relative rounded-2xl border border-gray-200 bg-white p-6 transition-all duration-300 {isOwner
+          ? 'hover:border-orange-300'
           : ''}"
       >
         <div class="relative">
-          <p class="mb-1 text-sm font-medium tracking-wide text-gray-700">{item.label}</p>
+          <p class="mb-2 text-sm font-medium tracking-wide text-gray-700">{item.label}</p>
         </div>
 
         <Editable
@@ -66,7 +124,7 @@
               ? 'cursor-pointer transition-all duration-200 hover:-mx-2 hover:-my-1 hover:rounded-md hover:bg-orange-50 hover:px-2 hover:py-1'
               : ''}"
           >
-            <p class="text-lg font-semibold break-words text-gray-700">
+            <p class="text-base font-semibold break-words text-gray-700">
               {#if item.value}
                 {item.value}
               {:else}

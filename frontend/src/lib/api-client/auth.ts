@@ -1,5 +1,5 @@
 import { fetchApiWithAuth, fetchApiWithCookies, API_BASE_URL } from "./base";
-import type { Profile } from "$lib/types/profile";
+import type { Profile } from "$lib/types";
 
 // Authentication APIs
 export const redirectToTwitterLogin = () => {

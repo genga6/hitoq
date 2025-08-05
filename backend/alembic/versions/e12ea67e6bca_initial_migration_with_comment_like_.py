@@ -1,8 +1,8 @@
-"""Initial database schema with updated user structure
+"""initial_migration_with_comment_like_types
 
-Revision ID: e00cb5f5c5bd
+Revision ID: e12ea67e6bca
 Revises:
-Create Date: 2025-07-15 12:43:44.212160
+Create Date: 2025-08-05 08:06:20.314348
 
 """
 
@@ -13,7 +13,7 @@ import sqlalchemy as sa
 from alembic import op
 
 # revision identifiers, used by Alembic.
-revision: str = "e00cb5f5c5bd"
+revision: str = "e12ea67e6bca"
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -25,17 +25,7 @@ def upgrade() -> None:
     op.create_table(
         "questions",
         sa.Column("question_id", sa.Integer(), nullable=False),
-        sa.Column(
-            "category",
-            sa.Enum(
-                "self_introduction",
-                "values",
-                "otaku",
-                "misc",
-                name="questioncategoryenum",
-            ),
-            nullable=False,
-        ),
+        sa.Column("category_id", sa.String(), nullable=False),
         sa.Column("text", sa.String(), nullable=False),
         sa.Column("display_order", sa.Integer(), nullable=False),
         sa.Column(
@@ -53,6 +43,12 @@ def upgrade() -> None:
         sa.Column("display_name", sa.String(length=100), nullable=False),
         sa.Column("bio", sa.String(length=300), nullable=True),
         sa.Column("icon_url", sa.String(length=512), nullable=True),
+        sa.Column("visits_visible", sa.Boolean(), nullable=False),
+        sa.Column(
+            "notification_level",
+            sa.Enum("none", "important", "all", name="notificationlevelenum"),
+            nullable=False,
+        ),
         sa.Column(
             "created_at",
             sa.DateTime(timezone=True),
@@ -85,25 +81,6 @@ def upgrade() -> None:
         sa.PrimaryKeyConstraint("answer_id"),
     )
     op.create_table(
-        "bucket_list_items",
-        sa.Column("bucket_list_item_id", sa.Integer(), nullable=False),
-        sa.Column("user_id", sa.String(), nullable=False),
-        sa.Column("content", sa.String(), nullable=False),
-        sa.Column("is_completed", sa.Boolean(), nullable=False),
-        sa.Column("display_order", sa.Integer(), nullable=False),
-        sa.Column(
-            "created_at",
-            sa.DateTime(timezone=True),
-            server_default=sa.text("now()"),
-            nullable=False,
-        ),
-        sa.ForeignKeyConstraint(
-            ["user_id"],
-            ["users.user_id"],
-        ),
-        sa.PrimaryKeyConstraint("bucket_list_item_id"),
-    )
-    op.create_table(
         "profile_items",
         sa.Column("profile_item_id", sa.Uuid(), nullable=False),
         sa.Column("user_id", sa.String(), nullable=False),
@@ -116,14 +93,79 @@ def upgrade() -> None:
         ),
         sa.PrimaryKeyConstraint("profile_item_id"),
     )
+    op.create_table(
+        "visits",
+        sa.Column("visit_id", sa.Integer(), nullable=False),
+        sa.Column("visitor_user_id", sa.String(), nullable=True),
+        sa.Column("visited_user_id", sa.String(), nullable=False),
+        sa.Column("is_anonymous", sa.Boolean(), nullable=False),
+        sa.Column(
+            "visited_at",
+            sa.DateTime(timezone=True),
+            server_default=sa.text("now()"),
+            nullable=False,
+        ),
+        sa.ForeignKeyConstraint(
+            ["visited_user_id"],
+            ["users.user_id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["visitor_user_id"],
+            ["users.user_id"],
+        ),
+        sa.PrimaryKeyConstraint("visit_id"),
+    )
+    op.create_table(
+        "messages",
+        sa.Column("message_id", sa.String(), nullable=False),
+        sa.Column("from_user_id", sa.String(), nullable=False),
+        sa.Column("to_user_id", sa.String(), nullable=False),
+        sa.Column(
+            "message_type",
+            sa.Enum("comment", "like", name="messagetypeenum"),
+            nullable=False,
+        ),
+        sa.Column("content", sa.String(length=500), nullable=False),
+        sa.Column("reference_answer_id", sa.Integer(), nullable=True),
+        sa.Column("parent_message_id", sa.String(), nullable=True),
+        sa.Column(
+            "status",
+            sa.Enum("unread", "read", "replied", name="messagestatusenum"),
+            nullable=False,
+        ),
+        sa.Column(
+            "created_at",
+            sa.DateTime(timezone=True),
+            server_default=sa.text("now()"),
+            nullable=False,
+        ),
+        sa.ForeignKeyConstraint(
+            ["from_user_id"],
+            ["users.user_id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["parent_message_id"],
+            ["messages.message_id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["reference_answer_id"],
+            ["answers.answer_id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["to_user_id"],
+            ["users.user_id"],
+        ),
+        sa.PrimaryKeyConstraint("message_id"),
+    )
     # ### end Alembic commands ###
 
 
 def downgrade() -> None:
     """Downgrade schema."""
     # ### commands auto generated by Alembic - please adjust! ###
+    op.drop_table("messages")
+    op.drop_table("visits")
     op.drop_table("profile_items")
-    op.drop_table("bucket_list_items")
     op.drop_table("answers")
     op.drop_index(op.f("ix_users_user_name"), table_name="users")
     op.drop_table("users")

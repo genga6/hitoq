@@ -84,7 +84,7 @@ def read_messages_page_data(user_name: str, db: Session = Depends(get_db)):
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
-    messages = message_service.get_messages_for_user(db, user.user_id)
+    messages = message_service.get_conversation_messages_for_user(db, user.user_id)
 
     return {
         "profile": user,

@@ -1,43 +1,58 @@
-export type MessageType = "question" | "comment" | "request" | "reaction";
+import type { BaseUser, BaseEntity } from "./common";
+
+/**
+ * メッセージの種類
+ */
+export type MessageType = "comment" | "like";
+
+/**
+ * メッセージの読み取り状態
+ */
 export type MessageStatus = "unread" | "read" | "replied";
 
-export interface Message {
+/**
+ * メッセージ
+ */
+export interface Message extends BaseEntity {
   messageId: string;
   fromUserId: string;
   toUserId: string;
   messageType: MessageType;
   content: string;
   referenceAnswerId?: number;
+  parentMessageId?: string;
   status: MessageStatus;
-  createdAt: string;
-  fromUser?: {
-    userId: string;
-    userName: string;
-    displayName: string;
-    iconUrl?: string;
-  };
-  toUser?: {
-    userId: string;
-    userName: string;
-    displayName: string;
-    iconUrl?: string;
-  };
+  fromUser?: BaseUser;
+  toUser?: BaseUser;
+  replies?: Message[];
+  replyCount?: number;
+  threadDepth?: number;
+  threadParentId?: string;
+  parentMessage?: Message;
 }
 
+/**
+ * メッセージ作成用のリクエストデータ
+ */
 export interface MessageCreate {
   toUserId: string;
   messageType: MessageType;
   content: string;
   referenceAnswerId?: number;
+  parentMessageId?: string;
 }
 
+/**
+ * メッセージのいいね情報
+ */
+export type MessageLike = BaseUser;
+
+/**
+ * メッセージページのデータ
+ */
 export interface MessagesPageData {
-  profile: {
-    userId: string;
-    userName: string;
-    displayName: string;
+  profile: BaseUser & {
     bio?: string;
-    iconUrl?: string;
   };
   messages: Message[];
 }

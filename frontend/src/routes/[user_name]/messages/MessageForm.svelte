@@ -10,10 +10,10 @@
 
   const { toUserId, toUserName, onSuccess, onCancel }: Props = $props();
 
-  let content = '';
-  let isSubmitting = false;
-  let error = '';
-  let referenceQuestion = '';
+  let content = $state('');
+  let isSubmitting = $state(false);
+  let error = $state('');
+  let referenceQuestion = $state('');
 
   // URLパラメータから初期値を設定
   $effect(() => {
@@ -43,9 +43,9 @@
     try {
       await sendMessage({
         toUserId,
-        messageType: 'question',
+        messageType: 'comment',
         content: content.trim(),
-        referenceAnswerId: referenceQuestion ? 1 : null // TODO: 実際のQ&AIDを取得
+        referenceAnswerId: referenceQuestion ? 1 : undefined // TODO: 実際のQ&AIDを取得
       });
 
       content = '';
@@ -75,7 +75,7 @@
   }
 </script>
 
-<div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+<div class="border-b border-gray-200 p-6">
   <h3 class="mb-4 text-lg font-semibold text-gray-800">
     @{toUserName} さんに質問を送る
   </h3>
@@ -138,7 +138,10 @@
       <button
         type="submit"
         disabled={isSubmitting || !content.trim()}
-        class="rounded-md bg-orange-500 px-4 py-2 text-sm font-medium text-white hover:bg-orange-600 focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:bg-gray-400"
+        class="rounded-md px-4 py-2 text-sm font-medium transition-colors focus:ring-2 focus:ring-orange-400 focus:ring-offset-2 focus:outline-none {isSubmitting ||
+        !content.trim()
+          ? 'cursor-not-allowed bg-gray-400 text-gray-600'
+          : 'bg-orange-400 text-white hover:bg-orange-500'}"
       >
         {isSubmitting ? '送信中...' : '質問を送信'}
       </button>

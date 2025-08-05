@@ -1,6 +1,6 @@
 import { getMessagesPageDataServer } from "$lib/api-client/messages";
 import { getCurrentUserServer } from "$lib/api-client/auth";
-import type { MessagesPageData } from "$lib/types/message";
+import type { MessagesPageData } from "$lib/types";
 import type { PageServerLoad } from "./$types";
 // import { redirect } from "@sveltejs/kit"; // 将来使用予定
 

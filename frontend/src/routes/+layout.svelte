@@ -10,9 +10,10 @@
     refreshAccessToken,
     getCurrentUser
   } from '$lib/api-client/auth';
+  import NotificationDropdown from '$lib/components/NotificationDropdown.svelte';
   import type { Snippet } from 'svelte';
 
-  import type { UserCandidate, Profile } from '$lib/types/profile';
+  import type { UserCandidate, Profile } from '$lib/types';
   import '../app.css';
 
   type Props = {
@@ -240,8 +241,10 @@
         {/if}
       </div>
 
-      <div class="absolute right-0 flex items-center">
+      <div class="absolute right-0 flex items-center gap-2">
         {#if isLoggedIn}
+          <NotificationDropdown {isLoggedIn} currentUserName={currentUser?.userName} />
+
           <div class="relative">
             <button
               bind:this={toggleButton}
@@ -307,50 +310,54 @@
         >
 
         {#if isLoggedIn}
-          <div class="relative">
-            <button
-              bind:this={toggleButton}
-              onclick={() => (showMenu = !showMenu)}
-              class="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border border-gray-300 ring-orange-400 transition hover:ring-2"
-              aria-label="ユーザーメニューを開く"
-            >
-              {#if currentUser?.iconUrl}
-                <img
-                  src={currentUser.iconUrl}
-                  alt="ユーザーアイコン"
-                  class="h-full w-full rounded-full object-cover"
-                />
-              {:else}
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                  class="h-5 w-5 text-gray-600"
-                >
-                  <path
-                    fill-rule="evenodd"
-                    d="M7.5 6a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM3.751 20.105a8.25 8.25 0 0116.498 0 .75.75 0 01-.437.695A18.683 18.683 0 0112 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 01-.437-.695z"
-                    clip-rule="evenodd"
-                  />
-                </svg>
-              {/if}
-            </button>
+          <div class="flex items-center gap-2">
+            <NotificationDropdown {isLoggedIn} currentUserName={currentUser?.userName} />
 
-            {#if showMenu}
-              <div
-                bind:this={menuElement}
-                class="absolute top-full right-0 z-10 mt-2 w-40 rounded-lg border border-gray-200 bg-white shadow-lg"
+            <div class="relative">
+              <button
+                bind:this={toggleButton}
+                onclick={() => (showMenu = !showMenu)}
+                class="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border border-gray-300 ring-orange-400 transition hover:ring-2"
+                aria-label="ユーザーメニューを開く"
               >
-                <a
-                  href="/{currentUser?.userName}/settings"
-                  class="block px-4 py-2 hover:bg-gray-100"
-                  >設定
-                </a>
-                <button onclick={logout} class="w-full px-4 py-2 text-left hover:bg-gray-100"
-                  >ログアウト</button
+                {#if currentUser?.iconUrl}
+                  <img
+                    src={currentUser.iconUrl}
+                    alt="ユーザーアイコン"
+                    class="h-full w-full rounded-full object-cover"
+                  />
+                {:else}
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    class="h-5 w-5 text-gray-600"
+                  >
+                    <path
+                      fill-rule="evenodd"
+                      d="M7.5 6a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM3.751 20.105a8.25 8.25 0 0116.498 0 .75.75 0 01-.437.695A18.683 18.683 0 0112 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 01-.437-.695z"
+                      clip-rule="evenodd"
+                    />
+                  </svg>
+                {/if}
+              </button>
+
+              {#if showMenu}
+                <div
+                  bind:this={menuElement}
+                  class="absolute top-full right-0 z-10 mt-2 w-40 rounded-lg border border-gray-200 bg-white shadow-lg"
                 >
-              </div>
-            {/if}
+                  <a
+                    href="/{currentUser?.userName}/settings"
+                    class="block px-4 py-2 hover:bg-gray-100"
+                    >設定
+                  </a>
+                  <button onclick={logout} class="w-full px-4 py-2 text-left hover:bg-gray-100"
+                    >ログアウト</button
+                  >
+                </div>
+              {/if}
+            </div>
           </div>
         {:else}
           <button

@@ -49,29 +49,30 @@ export async function fetchApiWithCookies<T>(
     },
   });
 
-  if (!response.ok) {
-    let errorData;
-    try {
-      errorData = await response.json();
-    } catch {
-      // JSON parse error, likely HTML error page
-      const errorText = await response.text();
-      throw new Error(
-        `API request failed with status ${response.status}: ${errorText}`,
-      );
-    }
-    throw new Error(errorData.detail || "API request failed");
-  }
-
   // No need to parse JSON if the response is empty (204 No Content)
   if (response.status === 204) {
     return undefined as T;
   }
 
+  // Read the response body once
+  const responseText = await response.text();
+
+  if (!response.ok) {
+    let errorData;
+    try {
+      errorData = JSON.parse(responseText);
+    } catch {
+      // JSON parse error, likely HTML error page
+      throw new Error(
+        `API request failed with status ${response.status}: ${responseText}`,
+      );
+    }
+    throw new Error(errorData.detail || "API request failed");
+  }
+
   try {
-    return await response.json();
+    return JSON.parse(responseText);
   } catch {
-    const responseText = await response.text();
     throw new Error(`Failed to parse JSON response: ${responseText}`);
   }
 }
