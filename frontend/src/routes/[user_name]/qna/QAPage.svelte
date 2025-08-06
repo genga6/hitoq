@@ -4,9 +4,9 @@
     UserAnswerGroup,
     UserAnswerGroupBackend,
     CategoryInfo
-  } from '$lib/types/qna';
-  import MessageForm from '../messages/MessageForm.svelte';
-  import AnsweredQuestions from './AnsweredQuestions.svelte';
+  } from "$lib/types/qna";
+  import MessageForm from "../messages/MessageForm.svelte";
+  import AnsweredQuestions from "./AnsweredQuestions.svelte";
 
   const {
     initialAnswerGroups = [],
@@ -36,64 +36,64 @@
   // 新しい12カテゴリのフォールバック情報
   const fallbackCategories: Record<string, CategoryInfo> = {
     values: {
-      id: 'values',
-      label: '価値観',
-      description: '人生観、考え方、大切にしていること'
+      id: "values",
+      label: "価値観",
+      description: "人生観、考え方、大切にしていること"
     },
     personality: {
-      id: 'personality',
-      label: '性格・特徴',
-      description: '自分の性格、特徴、個性について'
+      id: "personality",
+      label: "性格・特徴",
+      description: "自分の性格、特徴、個性について"
     },
     relationships: {
-      id: 'relationships',
-      label: '人間関係',
-      description: '友人、家族、コミュニケーションについて'
+      id: "relationships",
+      label: "人間関係",
+      description: "友人、家族、コミュニケーションについて"
     },
     romance: {
-      id: 'romance',
-      label: '恋愛',
-      description: '恋愛観、パートナーシップについて'
+      id: "romance",
+      label: "恋愛",
+      description: "恋愛観、パートナーシップについて"
     },
     childhood: {
-      id: 'childhood',
-      label: '子供時代',
-      description: '幼少期の思い出、体験、遊び'
+      id: "childhood",
+      label: "子供時代",
+      description: "幼少期の思い出、体験、遊び"
     },
     school: {
-      id: 'school',
-      label: '学生時代',
-      description: '学校生活、青春の思い出'
+      id: "school",
+      label: "学生時代",
+      description: "学校生活、青春の思い出"
     },
     career: {
-      id: 'career',
-      label: 'キャリア',
-      description: '仕事、働き方、キャリアプラン'
+      id: "career",
+      label: "キャリア",
+      description: "仕事、働き方、キャリアプラン"
     },
     lifestyle: {
-      id: 'lifestyle',
-      label: 'ライフスタイル',
-      description: '日常の過ごし方、健康、ファッション、インテリア'
+      id: "lifestyle",
+      label: "ライフスタイル",
+      description: "日常の過ごし方、健康、ファッション、インテリア"
     },
     activities: {
-      id: 'activities',
-      label: 'アクティビティ',
-      description: '旅行、グルメ、アウトドア活動'
+      id: "activities",
+      label: "アクティビティ",
+      description: "旅行、グルメ、アウトドア活動"
     },
     entertainment: {
-      id: 'entertainment',
-      label: 'エンタメ',
-      description: '映画、音楽、ゲーム、読書、創作、趣味'
+      id: "entertainment",
+      label: "エンタメ",
+      description: "映画、音楽、ゲーム、読書、創作、趣味"
     },
     goals: {
-      id: 'goals',
-      label: '目標',
-      description: '学習、成長、将来の目標、夢'
+      id: "goals",
+      label: "目標",
+      description: "学習、成長、将来の目標、夢"
     },
     hypothetical: {
-      id: 'hypothetical',
-      label: 'もしも',
-      description: '仮定の質問、想像の世界、「もし〜だったら」'
+      id: "hypothetical",
+      label: "もしも",
+      description: "仮定の質問、想像の世界、「もし〜だったら」"
     }
   };
 
@@ -144,7 +144,7 @@
 
   const answeredQAPairs = $derived.by(() => {
     const answered = allQAPairs.filter((pair) => {
-      const isAnswered = pair.answerText && pair.answerText.trim() !== '';
+      const isAnswered = pair.answerText && pair.answerText.trim() !== "";
 
       if (!isAnswered) return false;
 
@@ -180,10 +180,10 @@
 
     try {
       if (answer.question.questionId > 0) {
-        const { createAnswer } = await import('$lib/api-client/qna');
+        const { createAnswer } = await import("$lib/api-client/qna");
         await createAnswer(userId, answer.question.questionId, newAnswer);
       } else {
-        console.warn('質問IDが無効なため、サーバーへの保存をスキップしました。');
+        console.warn("質問IDが無効なため、サーバーへの保存をスキップしました。");
       }
 
       // ローカル状態を更新
@@ -199,7 +199,7 @@
         answerGroups = newAnswerGroups;
       }
     } catch (error) {
-      console.error('回答の保存に失敗しました:', error);
+      console.error("回答の保存に失敗しました:", error);
     }
   }
 </script>
@@ -229,7 +229,7 @@
       <div class="mb-6">
         <MessageForm
           toUserId={userId}
-          toUserName={profile?.userName || ''}
+          toUserName={profile?.userName || ""}
           onSuccess={() => {
             showNewQuestionForm = false;
           }}

@@ -1,11 +1,11 @@
 <script lang="ts">
-  import { useClickOutside } from '$lib/utils/useClickOutside';
+  import { useClickOutside } from "$lib/utils/useClickOutside";
   import {
     getNotifications,
     getNotificationCount,
     markMessageAsRead
-  } from '$lib/api-client/messages';
-  import type { Message } from '$lib/types';
+  } from "$lib/api-client/messages";
+  import type { Message } from "$lib/types";
 
   type Props = {
     isLoggedIn: boolean;
@@ -18,7 +18,7 @@
   let notifications = $state<Message[]>([]);
   let showDropdown = $state(false);
   let isLoading = $state(false);
-  let activeTab = $state<'all' | 'likes' | 'comments'>('all');
+  let activeTab = $state<"all" | "likes" | "comments">("all");
 
   let dropdownElement: HTMLDivElement | null = null;
   let toggleButton: HTMLButtonElement | null = null;
@@ -35,7 +35,7 @@
       notificationCount = countResult.notification_count;
       notifications = notificationsResult;
     } catch (error) {
-      console.error('Failed to load notifications:', error);
+      console.error("Failed to load notifications:", error);
       // エラーの場合は空配列にリセット
       notifications = [];
       notificationCount = 0;
@@ -51,22 +51,22 @@
 
   const handleNotificationClick = async (notification: Message) => {
     try {
-      if (notification.status === 'unread') {
+      if (notification.status === "unread") {
         await markMessageAsRead(notification.messageId);
         // Update notification count and status
         notificationCount = Math.max(0, notificationCount - 1);
         notifications = notifications.map((n) =>
-          n.messageId === notification.messageId ? { ...n, status: 'read' as const } : n
+          n.messageId === notification.messageId ? { ...n, status: "read" as const } : n
         );
       }
     } catch (error) {
-      console.error('Failed to mark notification as read:', error);
+      console.error("Failed to mark notification as read:", error);
     }
   };
 
   const markAllAsRead = async () => {
     try {
-      const unreadNotifications = notifications.filter((n) => n.status === 'unread');
+      const unreadNotifications = notifications.filter((n) => n.status === "unread");
 
       // Mark all unread notifications as read
       await Promise.all(
@@ -75,9 +75,9 @@
 
       // Update state
       notificationCount = 0;
-      notifications = notifications.map((n) => ({ ...n, status: 'read' as const }));
+      notifications = notifications.map((n) => ({ ...n, status: "read" as const }));
     } catch (error) {
-      console.error('Failed to mark all notifications as read:', error);
+      console.error("Failed to mark all notifications as read:", error);
     }
   };
 
@@ -86,36 +86,36 @@
   };
 
   const getNotificationIcon = (notification: Message) => {
-    const isLike = notification.messageType === 'like';
-    if (isLike) return '❤️';
-    
+    const isLike = notification.messageType === "like";
+    if (isLike) return "❤️";
+
     // 返信かどうかを判定
     const isReply = notification.parentMessageId;
-    
+
     switch (notification.messageType) {
-      case 'comment':
-        return isReply ? '↩️' : '💬';
+      case "comment":
+        return isReply ? "↩️" : "💬";
       default:
-        return isReply ? '↩️' : '📩';
+        return isReply ? "↩️" : "📩";
     }
   };
 
   const getNotificationMessage = (notification: Message) => {
-    const isLike = notification.messageType === 'like';
+    const isLike = notification.messageType === "like";
     if (isLike) {
-      return '❤️をしました';
+      return "❤️をしました";
     }
 
     return notification.content;
   };
 
   const getFilteredNotifications = () => {
-    if (activeTab === 'all') return notifications;
-    if (activeTab === 'likes') {
-      return notifications.filter((n) => n.messageType === 'like');
+    if (activeTab === "all") return notifications;
+    if (activeTab === "likes") {
+      return notifications.filter((n) => n.messageType === "like");
     }
-    if (activeTab === 'comments') {
-      return notifications.filter((n) => n.messageType === 'comment');
+    if (activeTab === "comments") {
+      return notifications.filter((n) => n.messageType === "comment");
     }
     return notifications;
   };
@@ -131,12 +131,12 @@
     if (diffDays > 0) return `${diffDays}日前`;
     if (diffHours > 0) return `${diffHours}時間前`;
     if (diffMins > 0) return `${diffMins}分前`;
-    return '今';
+    return "今";
   };
 
   // Load initial notification count immediately
   $effect(() => {
-    console.log('🔔 NotificationDropdown effect - isLoggedIn:', isLoggedIn);
+    console.log("🔔 NotificationDropdown effect - isLoggedIn:", isLoggedIn);
     if (isLoggedIn) {
       // Load notification count immediately on mount
       loadNotificationCount();
@@ -149,13 +149,13 @@
   // Load just the notification count (for the badge)
   const loadNotificationCount = async () => {
     if (!isLoggedIn) return;
-    
+
     try {
       const countResult = await getNotificationCount();
       notificationCount = countResult.notification_count;
-      console.log('🔔 通知数を読み込み:', notificationCount);
+      console.log("🔔 通知数を読み込み:", notificationCount);
     } catch (error) {
-      console.error('Failed to load notification count:', error);
+      console.error("Failed to load notification count:", error);
       // 認証エラーや他のエラーの場合、通知数を0にリセット
       notificationCount = 0;
     }
@@ -196,9 +196,9 @@
 
       <!-- 通知バッジ - シンプルなオレンジの点 -->
       {#if notificationCount > 0}
-      <div class="absolute -top-0 -right-0 z-20">
-        <div class="h-3 w-3 rounded-full bg-orange-400 shadow-lg"></div>
-      </div>
+        <div class="absolute -top-0 -right-0 z-20">
+          <div class="h-3 w-3 rounded-full bg-orange-400 shadow-lg"></div>
+        </div>
       {/if}
     </button>
 
@@ -213,7 +213,7 @@
               <h3 class="text-sm font-semibold text-gray-800">通知</h3>
               <p class="mt-1 text-xs text-gray-500">最新50件まで表示</p>
             </div>
-            {#if notifications.some((n) => n.status === 'unread')}
+            {#if notifications.some((n) => n.status === "unread")}
               <button
                 onclick={markAllAsRead}
                 class="text-xs font-medium text-orange-600 hover:text-orange-800"
@@ -228,7 +228,7 @@
         <div class="border-b border-gray-100">
           <nav class="flex">
             <button
-              onclick={() => (activeTab = 'all')}
+              onclick={() => (activeTab = "all")}
               class="flex-1 px-4 py-2 text-sm font-medium transition-colors {activeTab === 'all'
                 ? 'border-b-2 border-orange-500 text-orange-600'
                 : 'text-gray-500 hover:text-gray-700'}"
@@ -236,24 +236,24 @@
               すべて ({notifications.length})
             </button>
             <button
-              onclick={() => (activeTab = 'likes')}
+              onclick={() => (activeTab = "likes")}
               class="flex-1 px-4 py-2 text-sm font-medium transition-colors {activeTab === 'likes'
                 ? 'border-b-2 border-orange-500 text-orange-600'
                 : 'text-gray-500 hover:text-gray-700'}"
             >
               ❤️ いいね ({notifications.filter(
-                (n) => n.messageType === 'like' || n.content?.includes('いいね')
+                (n) => n.messageType === "like" || n.content?.includes("いいね")
               ).length})
             </button>
             <button
-              onclick={() => (activeTab = 'comments')}
+              onclick={() => (activeTab = "comments")}
               class="flex-1 px-4 py-2 text-sm font-medium transition-colors {activeTab ===
               'comments'
                 ? 'border-b-2 border-orange-500 text-orange-600'
                 : 'text-gray-500 hover:text-gray-700'}"
             >
               💬 コメント ({notifications.filter(
-                (n) => n.messageType === 'comment' && !n.content?.includes('いいね')
+                (n) => n.messageType === "comment" && !n.content?.includes("いいね")
               ).length})
             </button>
           </nav>
@@ -266,11 +266,11 @@
             </div>
           {:else if getFilteredNotifications().length === 0}
             <div class="p-4 text-center text-sm text-gray-500">
-              {activeTab === 'all'
-                ? '新しい通知はありません'
-                : activeTab === 'likes'
-                  ? 'いいねの通知はありません'
-                  : 'コメントの通知はありません'}
+              {activeTab === "all"
+                ? "新しい通知はありません"
+                : activeTab === "likes"
+                  ? "いいねの通知はありません"
+                  : "コメントの通知はありません"}
             </div>
           {:else}
             {#each getFilteredNotifications() as notification (notification.messageId)}
@@ -295,7 +295,7 @@
                       />
                     {/if}
                     <span class="truncate text-xs font-medium text-gray-700">
-                      {notification.fromUser?.displayName || 'Unknown'}
+                      {notification.fromUser?.displayName || "Unknown"}
                     </span>
                     <span class="text-xs text-gray-500">
                       {formatTimeAgo(notification.createdAt)}
@@ -306,7 +306,9 @@
                   {#if notification.parentMessage}
                     <div class="mb-2 rounded bg-gray-100 px-2 py-1">
                       <p class="text-xs text-gray-600">あなたのコメント:</p>
-                      <p class="line-clamp-2 text-xs text-gray-800">{notification.parentMessage.content}</p>
+                      <p class="line-clamp-2 text-xs text-gray-800">
+                        {notification.parentMessage.content}
+                      </p>
                     </div>
                   {/if}
 
@@ -323,7 +325,7 @@
         {#if notifications.length > 0}
           <div class="border-t border-gray-100 p-2">
             <a
-              href={currentUserName ? `/${currentUserName}/messages` : '/'}
+              href={currentUserName ? `/${currentUserName}/messages` : "/"}
               onclick={handleViewAllMessages}
               class="block w-full rounded p-2 text-center text-sm text-orange-600 hover:bg-orange-50"
             >

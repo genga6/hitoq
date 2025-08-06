@@ -1,12 +1,16 @@
 <script lang="ts">
+  import UserActions from './UserActions.svelte';
+
   type Props = {
     displayName: string;
     iconUrl?: string;
     bio?: string;
     userName: string;
+    userId: string;
     isOwner?: boolean;
+    onBlockStatusChange?: (blocked: boolean) => void;
   };
-  const { displayName, iconUrl, bio, userName, isOwner = false }: Props = $props();
+  const { displayName, iconUrl, bio, userName, userId, isOwner = false, onBlockStatusChange }: Props = $props();
 </script>
 
 <div
@@ -73,5 +77,10 @@
         />
       </svg>
     </a>
+  {:else}
+    <!-- ユーザーアクション（ブロック・通報）メニュー -->
+    <div class="absolute top-0 right-0 z-10 sm:-top-2 sm:-right-2 lg:-top-3 lg:-right-3">
+      <UserActions {userId} {onBlockStatusChange} class="" />
+    </div>
   {/if}
 </div>

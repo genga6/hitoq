@@ -44,3 +44,14 @@ export type {
 
 // ページデータ関連の型
 export type { BasePageData, ProfileCardPageData } from "./page";
+
+// ブロック・通報関連の型
+export type {
+  ReportType,
+  ReportStatus,
+  Block,
+  BlockCreate,
+  Report,
+  ReportCreate,
+  ReportUpdate,
+} from "./block";

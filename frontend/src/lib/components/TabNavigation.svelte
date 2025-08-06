@@ -1,19 +1,19 @@
 <script lang="ts">
-  import { page } from '$app/state';
-  import type { Profile } from '$lib/types';
+  import { page } from "$app/state";
+  import type { Profile } from "$lib/types";
 
   type Props = {
-    userName: Profile['userName'];
+    userName: Profile["userName"];
     isOwner: boolean;
   };
   const { userName, isOwner }: Props = $props();
 
   // すべてのタブを表示（履歴タブも非ログインユーザーに表示）
   const tabs = $derived([
-    { path: `/${userName}`, label: 'プロフィール' },
-    ...(isOwner ? [{ path: `/${userName}/answer-questions`, label: '質問に答える' }] : []),
-    { path: `/${userName}/qna`, label: 'Q&A' },
-    { path: `/${userName}/messages`, label: 'メッセージ' }
+    { path: `/${userName}`, label: "プロフィール" },
+    ...(isOwner ? [{ path: `/${userName}/answer-questions`, label: "質問に答える" }] : []),
+    { path: `/${userName}/qna`, label: "Q&A" },
+    { path: `/${userName}/messages`, label: "メッセージ" }
   ]);
 </script>
 

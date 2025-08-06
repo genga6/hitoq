@@ -1,11 +1,11 @@
 <script lang="ts">
-  import { useClickOutside } from '$lib/utils/useClickOutside';
-  import { fade } from 'svelte/transition';
-  import { tick } from 'svelte';
-  import ValidatedInput from './ValidatedInput.svelte';
-  import { ValidationRules } from '$lib/utils/validation';
-  import type { ValidationRule } from '$lib/utils/validation';
-  import type { Snippet } from 'svelte';
+  import { useClickOutside } from "$lib/utils/useClickOutside";
+  import { fade } from "svelte/transition";
+  import { tick } from "svelte";
+  import ValidatedInput from "./ValidatedInput.svelte";
+  import { ValidationRules } from "$lib/utils/validation";
+  import type { ValidationRule } from "$lib/utils/validation";
+  import type { Snippet } from "svelte";
 
   type Props = {
     isOwner: boolean;
@@ -13,10 +13,16 @@
     onSave: (newValue: string) => boolean | void;
     onCancel?: () => void;
     children: Snippet;
-    as?: 'div' | 'span';
-    inputType?: 'input' | 'textarea';
+    as?: "div" | "span";
+    inputType?: "input" | "textarea";
     startInEditMode?: boolean;
-    validationType?: 'profileLabel' | 'profileValue' | 'qaAnswer' | 'displayName' | 'bio' | 'selfIntroduction';
+    validationType?:
+      | "profileLabel"
+      | "profileValue"
+      | "qaAnswer"
+      | "displayName"
+      | "bio"
+      | "selfIntroduction";
   };
 
   const {
@@ -25,10 +31,10 @@
     onSave,
     onCancel,
     children,
-    as: Element = 'div',
-    inputType = 'textarea',
+    as: Element = "div",
+    inputType = "textarea",
     startInEditMode = false,
-    validationType = 'profileValue'
+    validationType = "profileValue"
   }: Props = $props();
 
   let isEditing = $state(startInEditMode);
@@ -78,29 +84,29 @@
   }
 
   function adjustTextareaHeight(textarea: HTMLTextAreaElement) {
-    textarea.style.height = 'auto';
+    textarea.style.height = "auto";
     textarea.style.height = `${textarea.scrollHeight}px`;
   }
 
   $effect(() => {
     const handleKeydown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
+      if (e.key === "Escape") {
         cancelEdit();
-      } else if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+      } else if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
         e.preventDefault();
         confirmEdit();
       }
     };
 
     if (isEditing) {
-      window.addEventListener('keydown', handleKeydown);
+      window.addEventListener("keydown", handleKeydown);
     }
 
     if (isEditing && containerElement) {
       const cleanupClickOutside = useClickOutside(containerElement, [], confirmEdit);
 
       return () => {
-        window.removeEventListener('keydown', handleKeydown);
+        window.removeEventListener("keydown", handleKeydown);
         cleanupClickOutside();
       };
     }
@@ -173,11 +179,11 @@
 {:else}
   <svelte:element
     this={Element}
-    role={isOwner ? 'button' : 'region'}
+    role={isOwner ? "button" : "region"}
     tabindex={isOwner ? 0 : -1}
     onclick={startEdit}
     onkeydown={(e: KeyboardEvent) => {
-      if (isOwner && (e.key === 'Enter' || e.key === ' ')) {
+      if (isOwner && (e.key === "Enter" || e.key === " ")) {
         e.preventDefault();
         startEdit();
       }

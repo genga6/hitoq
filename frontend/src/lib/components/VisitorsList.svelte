@@ -1,6 +1,5 @@
 <script lang="ts">
-   
-  import { getUserVisits, type Visit } from '$lib/api-client/visits';
+  import { getUserVisits, type Visit } from "$lib/api-client/visits";
 
   interface Props {
     userId: string;
@@ -9,14 +8,14 @@
   let { userId }: Props = $props();
   let visits: Visit[] = $state([]);
   let loading = $state(true);
-  let error = $state('');
+  let error = $state("");
 
   // フィルタリング機能の状態
   let showOnlyLoggedIn = $state(false);
 
   $effect(() => {
     loading = true;
-    error = '';
+    error = "";
 
     // TODO: Replace with real API call after testing
 
@@ -25,7 +24,7 @@
         visits = result;
       })
       .catch((e) => {
-        error = e instanceof Error ? e.message : '訪問者リストの取得に失敗しました';
+        error = e instanceof Error ? e.message : "訪問者リストの取得に失敗しました";
       })
       .finally(() => {
         loading = false;
@@ -40,13 +39,13 @@
     const diffDays = Math.floor(diffHours / 24);
 
     if (diffHours < 1) {
-      return '数分前';
+      return "数分前";
     } else if (diffHours < 24) {
       return `${diffHours}時間前`;
     } else if (diffDays < 7) {
       return `${diffDays}日前`;
     } else {
-      return date.toLocaleDateString('ja-JP');
+      return date.toLocaleDateString("ja-JP");
     }
   };
 
@@ -137,12 +136,12 @@
         </svg>
       </div>
       <h3 class="mb-2 text-lg font-semibold text-gray-700">
-        {showOnlyLoggedIn ? 'ログインユーザーの訪問者はいません' : 'まだ訪問者はいません'}
+        {showOnlyLoggedIn ? "ログインユーザーの訪問者はいません" : "まだ訪問者はいません"}
       </h3>
       <p class="text-gray-500">
         {showOnlyLoggedIn
-          ? 'ログインユーザーがあなたのページを訪問すると、ここに表示されます'
-          : 'あなたのページを誰かが訪問すると、ここに表示されます'}
+          ? "ログインユーザーがあなたのページを訪問すると、ここに表示されます"
+          : "あなたのページを誰かが訪問すると、ここに表示されます"}
       </p>
     </div>
   {:else}
@@ -161,7 +160,7 @@
               <div class="flex-shrink-0">
                 <div class="relative">
                   <img
-                    src={visit.visitor_info.icon_url || '/default-avatar.svg'}
+                    src={visit.visitor_info.icon_url || "/default-avatar.svg"}
                     alt={visit.visitor_info.display_name}
                     class="h-8 w-8 rounded-lg border border-white object-cover shadow-sm sm:h-10 sm:w-10"
                   />

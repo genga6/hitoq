@@ -1,8 +1,7 @@
 <script lang="ts">
-  import Editable from '$lib/components/Editable.svelte';
-  import { sendMessage, getMessageThread } from '$lib/api-client/messages';
-  import type { Message } from '$lib/types';
-
+  import Editable from "$lib/components/Editable.svelte";
+  import { sendMessage, getMessageThread } from "$lib/api-client/messages";
+  import type { Message } from "$lib/types";
 
   const {
     question,
@@ -32,7 +31,7 @@
 
   let showMessagesThread = $state(false);
   let showCommentForm = $state(false);
-  let commentText = $state('');
+  let commentText = $state("");
   let isSubmitting = $state(false);
   let threadMessages = $state<Message[]>([]);
 
@@ -51,7 +50,7 @@
 
   // いいね機能のトグル処理
   async function handleHeartToggle() {
-    console.log('Debug: answerId =', answerId, 'profileUserId =', profileUserId);
+    console.log("Debug: answerId =", answerId, "profileUserId =", profileUserId);
     if (!profileUserId || isLikeSubmitting) return;
 
     // 即座にローカル状態をトグル（UX向上）
@@ -67,19 +66,18 @@
     // バックグラウンドで通知用メッセージを送信
     try {
       isLikeSubmitting = true;
-      
+
       const likeMessageData = {
         toUserId: profileUserId,
-        messageType: 'like' as const,
+        messageType: "like" as const,
         content: `回答「${answer.substring(0, 50)}...」にいいねしました`, // いいね内容を含める
         referenceAnswerId: answerId || undefined // answerIdがない場合はundefinedに
       };
 
       await sendMessage(likeMessageData);
-      
     } catch (error) {
-      console.error('いいね通知の送信に失敗しました:', error);
-      
+      console.error("いいね通知の送信に失敗しました:", error);
+
       // エラー時は状態を戻す
       if (wasLiked) {
         likeCount = likeCount + 1;
@@ -107,7 +105,7 @@
         threadMessages = await getMessageThread(relatedMessages[0].messageId);
       }
     } catch (error) {
-      console.error('Failed to load related messages thread:', error);
+      console.error("Failed to load related messages thread:", error);
     }
   }
 
@@ -119,20 +117,19 @@
       isSubmitting = true;
       const messageData = {
         toUserId: profileUserId,
-        messageType: 'comment' as const,
+        messageType: "comment" as const,
         content: commentText.trim(),
         referenceAnswerId: answerId || undefined
       };
 
       await sendMessage(messageData);
-      
+
       // 成功後の処理
-      commentText = '';
+      commentText = "";
       showCommentForm = false;
-      
     } catch (error) {
-      console.error('コメント送信に失敗しました:', error);
-      alert('コメントの送信に失敗しました');
+      console.error("コメント送信に失敗しました:", error);
+      alert("コメントの送信に失敗しました");
     } finally {
       isSubmitting = false;
     }
@@ -146,7 +143,7 @@
   // コメントフォームをキャンセル
   function cancelComment() {
     showCommentForm = false;
-    commentText = '';
+    commentText = "";
   }
 
   // 個別メッセージのいいね機能
@@ -154,7 +151,7 @@
     if (!messageId || !fromUserId) return;
 
     const current = messageLikes[messageId] || { liked: false, count: 0 };
-    
+
     // 即座にローカル状態を更新
     messageLikes[messageId] = {
       liked: !current.liked,
@@ -165,14 +162,14 @@
     try {
       const likeMessageData = {
         toUserId: fromUserId,
-        messageType: 'like' as const,
-        content: '',
+        messageType: "like" as const,
+        content: "",
         parentMessageId: messageId
       };
 
       await sendMessage(likeMessageData);
     } catch (error) {
-      console.error('コメントいいね通知の送信に失敗しました:', error);
+      console.error("コメントいいね通知の送信に失敗しました:", error);
       // エラー時は状態を戻す
       messageLikes[messageId] = current;
     }
@@ -186,22 +183,20 @@
     try {
       const replyMessageData = {
         toUserId: fromUserId,
-        messageType: 'comment' as const,
+        messageType: "comment" as const,
         content: replyText,
         parentMessageId: messageId
       };
 
       await sendMessage(replyMessageData);
-      
+
       // 成功後にテキストをクリア
-      messageReplyText[messageId] = '';
-      
+      messageReplyText[messageId] = "";
     } catch (error) {
-      console.error('返信の送信に失敗しました:', error);
-      alert('返信の送信に失敗しました');
+      console.error("返信の送信に失敗しました:", error);
+      alert("返信の送信に失敗しました");
     }
   }
-
 </script>
 
 <div
@@ -213,8 +208,8 @@
 >
   <!-- 質問エリア：アクションボタンとの重複を避けるため右側にマージンを確保 -->
   <div class="mb-2 {isOwner ? '' : 'pr-20 sm:pr-16'}">
-    <p class="text-sm font-medium break-words text-gray-600 sm:text-base mb-2">
-      {typeof question === 'string' ? question : question.text}
+    <p class="mb-2 text-sm font-medium break-words text-gray-600 sm:text-base">
+      {typeof question === "string" ? question : question.text}
     </p>
     {#if categoryInfo}
       <span
@@ -246,60 +241,64 @@
 
   <!-- シンプルなアクションバー（ログイン済みかつ他ユーザーのプロフィールでのみ表示） -->
   {#if !isOwner && profileUserId && profileUserName && answer && isLoggedIn && currentUser}
-    <div class="absolute top-3 right-3 z-10 flex flex-col sm:flex-row items-end sm:items-center gap-1 sm:gap-1">
+    <div
+      class="absolute top-3 right-3 z-0 flex flex-col items-end gap-1 sm:flex-row sm:items-center sm:gap-1"
+    >
       <!-- ハートボタン（いいね） -->
       <button
-          onclick={handleHeartToggle}
-          disabled={isLikeSubmitting}
-          class="group flex items-center gap-1 rounded-full px-1.5 py-1 sm:px-2 sm:py-1 text-xs sm:text-sm transition-all duration-200 {isLiked
-            ? 'bg-red-50 text-red-500 hover:bg-red-100'
-            : 'bg-gray-50 text-gray-400 hover:bg-gray-100 hover:text-gray-600'}"
-          title={isLiked ? 'いいねを取り消す' : 'いいね'}
-          aria-label={isLiked ? 'いいねを取り消す' : 'いいね'}
-        >
-          {#if isLiked}
-            <!-- 赤塗りハート -->
-            <svg 
-              class="h-3 w-3 sm:h-4 sm:w-4 transition-all duration-200 text-red-500" 
-              fill="currentColor" 
-              viewBox="0 0 24 24"
-            >
-              <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-            </svg>
-          {:else}
-            <!-- 空のハート -->
-            <svg 
-              class="h-3 w-3 sm:h-4 sm:w-4 transition-all duration-200 group-hover:scale-110" 
-              fill="none" 
-              stroke="currentColor" 
-              viewBox="0 0 24 24"
-            >
-              <path 
-                stroke-linecap="round" 
-                stroke-linejoin="round" 
-                stroke-width="2" 
-                d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-              />
-            </svg>
-          {/if}
-          {#if likeCount > 0}
-            <span class="text-xs font-medium transition-colors duration-200">{likeCount}</span>
-          {/if}
-        </button>
+        onclick={handleHeartToggle}
+        disabled={isLikeSubmitting}
+        class="group flex items-center gap-1 rounded-full px-1.5 py-1 text-xs transition-all duration-200 sm:px-2 sm:py-1 sm:text-sm {isLiked
+          ? 'bg-red-50 text-red-500 hover:bg-red-100'
+          : 'bg-gray-50 text-gray-400 hover:bg-gray-100 hover:text-gray-600'}"
+        title={isLiked ? "いいねを取り消す" : "いいね"}
+        aria-label={isLiked ? "いいねを取り消す" : "いいね"}
+      >
+        {#if isLiked}
+          <!-- 赤塗りハート -->
+          <svg
+            class="h-3 w-3 text-red-500 transition-all duration-200 sm:h-4 sm:w-4"
+            fill="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
+            />
+          </svg>
+        {:else}
+          <!-- 空のハート -->
+          <svg
+            class="h-3 w-3 transition-all duration-200 group-hover:scale-110 sm:h-4 sm:w-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+            />
+          </svg>
+        {/if}
+        {#if likeCount > 0}
+          <span class="text-xs font-medium transition-colors duration-200">{likeCount}</span>
+        {/if}
+      </button>
 
       <!-- コメントボタン -->
       <button
         onclick={showCommentInput}
         disabled={isSubmitting}
-        class="flex items-center gap-1 rounded-full bg-gray-50 px-1.5 py-1 sm:px-2 sm:py-1 text-xs sm:text-sm text-gray-600 transition-all duration-200 hover:bg-gray-100"
+        class="flex items-center gap-1 rounded-full bg-gray-50 px-1.5 py-1 text-xs text-gray-600 transition-all duration-200 hover:bg-gray-100 sm:px-2 sm:py-1 sm:text-sm"
         title="コメント"
         aria-label="コメントを追加"
       >
         <svg class="h-3 w-3 sm:h-4 sm:w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path 
-            stroke-linecap="round" 
-            stroke-linejoin="round" 
-            stroke-width="2" 
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
             d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
           />
         </svg>
@@ -309,7 +308,7 @@
       {#if relatedMessages.length > 0}
         <button
           onclick={toggleMessagesThread}
-          class="relative flex items-center gap-1 rounded-full bg-orange-50 px-1.5 py-1 sm:px-2 sm:py-1 text-xs sm:text-sm text-orange-600 transition-all duration-200 hover:bg-orange-100"
+          class="relative flex items-center gap-1 rounded-full bg-orange-50 px-1.5 py-1 text-xs text-orange-600 transition-all duration-200 hover:bg-orange-100 sm:px-2 sm:py-1 sm:text-sm"
           title="関連メッセージ"
         >
           <svg class="h-3 w-3 sm:h-4 sm:w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -349,7 +348,7 @@
           disabled={isSubmitting || !commentText.trim()}
           class="rounded-md bg-orange-500 px-4 py-1.5 text-sm text-white transition-colors hover:bg-orange-600 focus:ring-1 focus:ring-orange-500 focus:outline-none disabled:cursor-not-allowed disabled:bg-gray-400"
         >
-          {isSubmitting ? '送信中...' : 'コメント送信'}
+          {isSubmitting ? "送信中..." : "コメント送信"}
         </button>
       </div>
     </div>
@@ -383,7 +382,7 @@
           <div class="py-2 {index > 0 ? 'border-t border-gray-200' : ''}">
             <div class="mb-1 flex items-center gap-2">
               <img
-                src={threadMessage.fromUser?.iconUrl || '/default-avatar.svg'}
+                src={threadMessage.fromUser?.iconUrl || "/default-avatar.svg"}
                 alt={threadMessage.fromUser?.displayName}
                 class="h-4 w-4 rounded-full"
               />
@@ -391,11 +390,11 @@
                 {threadMessage.fromUser?.displayName}
               </span>
               <span class="text-xs text-gray-500">
-                {new Date(threadMessage.createdAt).toLocaleString('ja-JP', {
-                  month: 'numeric',
-                  day: 'numeric',
-                  hour: '2-digit',
-                  minute: '2-digit'
+                {new Date(threadMessage.createdAt).toLocaleString("ja-JP", {
+                  month: "numeric",
+                  day: "numeric",
+                  hour: "2-digit",
+                  minute: "2-digit"
                 })}
               </span>
             </div>
@@ -429,19 +428,21 @@
           >
             <div class="flex items-start space-x-2">
               <img
-                src={message.fromUser?.iconUrl || '/default-avatar.svg'}
+                src={message.fromUser?.iconUrl || "/default-avatar.svg"}
                 alt=""
                 class="h-6 w-6 rounded-full"
               />
-              <div class="flex-1 min-w-0">
+              <div class="min-w-0 flex-1">
                 <div class="flex items-center space-x-1">
-                  <span class="font-medium text-gray-900 text-sm">{message.fromUser?.displayName}</span>
+                  <span class="text-sm font-medium text-gray-900"
+                    >{message.fromUser?.displayName}</span
+                  >
                   <span class="text-xs text-gray-500"
                     >{new Date(message.createdAt).toLocaleDateString()}</span
                   >
                 </div>
-                <p class="mt-0.5 text-gray-700 text-sm">{message.content}</p>
-                
+                <p class="mt-0.5 text-sm text-gray-700">{message.content}</p>
+
                 <!-- いいね・返信ボタン（ログイン時のみ表示） -->
                 {#if isLoggedIn && currentUser && fromUserId}
                   <div class="mt-2 flex items-center gap-3">
@@ -455,11 +456,18 @@
                     >
                       {#if likes.liked}
                         <svg class="h-3 w-3" fill="currentColor" viewBox="0 0 24 24">
-                          <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                          <path
+                            d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
+                          />
                         </svg>
                       {:else}
                         <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                          />
                         </svg>
                       {/if}
                       {#if likes.count > 0}
@@ -470,13 +478,18 @@
                     <!-- 返信ボタン -->
                     <button
                       onclick={() => {
-                        if (!messageReplyText[messageId]) messageReplyText[messageId] = '';
+                        if (!messageReplyText[messageId]) messageReplyText[messageId] = "";
                       }}
                       class="flex items-center gap-1 text-xs text-gray-400 transition-colors hover:text-gray-600"
                       title="返信"
                     >
                       <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/>
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"
+                        />
                       </svg>
                       返信
                     </button>
@@ -495,7 +508,9 @@
                       </div>
                       <div class="mt-1 flex justify-end gap-2">
                         <button
-                          onclick={() => { delete messageReplyText[messageId]; }}
+                          onclick={() => {
+                            delete messageReplyText[messageId];
+                          }}
                           class="px-2 py-1 text-xs text-gray-500 hover:text-gray-700"
                         >
                           キャンセル
