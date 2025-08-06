@@ -13,21 +13,22 @@
   import NotificationDropdown from "$lib/components/NotificationDropdown.svelte";
   import type { Snippet } from "svelte";
 
-  import type { UserCandidate, Profile } from "$lib/types";
-  import { themeStore, updateThemeClass, watchSystemTheme } from "$lib/stores/theme";
+  import type { UserCandidate } from "$lib/types";
+  import { themeStore, updateThemeClass, watchSystemTheme, type Theme } from "$lib/stores/theme";
   import "../app.css";
+  import type { LayoutData } from "./$types";
 
-  type Props = {
-    data?: { isLoggedIn?: boolean; user?: Profile; userName?: string };
+  interface Props {
+    data?: LayoutData;
     children?: Snippet;
-  };
+  }
 
   const { data, children }: Props = $props();
   let isLoggedIn = $state(data?.isLoggedIn ?? false);
   let currentUser = $state(data?.user ?? null);
-  let currentTheme = $state("system");
+  let currentTheme = $state<Theme>("system");
 
-  // ブラウザ環境でのテーマ初期化
+  // Initializing themes in a browser environment
   if (browser) {
     const stored = localStorage.getItem("hitoq-theme") as Theme | null;
     if (stored && ["light", "dark", "system"].includes(stored)) {

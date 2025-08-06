@@ -55,3 +55,10 @@ export type {
   ReportCreate,
   ReportUpdate,
 } from "./block";
+
+// 認証関連の型
+export type {
+  AuthState,
+  AuthenticatedState,
+  UnauthenticatedState,
+} from "./auth";

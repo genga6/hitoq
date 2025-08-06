@@ -1,6 +1,5 @@
 <script lang="ts">
   import Editable from "$lib/components/Editable.svelte";
-
   import type { ProfileCardPageData, ProfileItem } from "$lib/types";
 
   type Props = {

@@ -1,8 +1,9 @@
 <script lang="ts">
   import { redirectToTwitterLogin } from "$lib/api-client/auth";
   import { goto } from "$app/navigation";
+  import type { PageData } from "./$types";
 
-  let { data } = $props();
+  let { data }: { data: PageData } = $props();
 
   $effect(() => {
     // If the user is logged in, redirect to the profile page
