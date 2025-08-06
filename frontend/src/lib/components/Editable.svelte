@@ -125,11 +125,11 @@
       rules={validationRule}
       type={inputType}
       onInput={handleValidationChange}
-      class="w-full border-0 border-b-2 border-gray-200 bg-transparent px-1 py-1 text-base font-semibold text-gray-700 transition-colors focus:border-orange-500 focus:ring-0 focus:outline-none sm:text-lg"
+      class="w-full border-0 border-b-2 theme-border bg-transparent px-1 py-1 text-base font-semibold theme-text-primary transition-colors focus:border-orange-500 focus:ring-0 focus:outline-none sm:text-lg"
     />
 
     <!-- キーボードショートカットヒント -->
-    <div class="mt-1 text-xs text-gray-500">Ctrl+Enter で保存、Esc でキャンセル</div>
+    <div class="mt-1 text-xs theme-text-muted">Ctrl+Enter で保存、Esc でキャンセル</div>
 
     <!-- アクションボタン -->
     <div class="mt-2 flex justify-end gap-1 sm:gap-2">
@@ -138,7 +138,7 @@
           e.stopPropagation();
           cancelEdit();
         }}
-        class="touch-manipulation rounded-full p-1.5 text-gray-500 transition-colors hover:bg-gray-100 sm:p-2"
+        class="touch-manipulation rounded-full p-1.5 theme-text-muted transition-colors theme-bg-hover sm:p-2"
         aria-label="Cancel"
       >
         <!-- Cancel Icon (X) -->
@@ -160,7 +160,7 @@
         disabled={!isValid}
         class="touch-manipulation rounded-full p-1.5 transition-colors sm:p-2 {isValid
           ? 'text-green-500 hover:bg-green-50'
-          : 'cursor-not-allowed text-gray-300'}"
+          : 'cursor-not-allowed theme-text-muted opacity-50'}"
         aria-label="Confirm"
       >
         <!-- Confirm Icon (Check) -->

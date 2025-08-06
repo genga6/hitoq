@@ -303,7 +303,7 @@
 </script>
 
 <div
-  class="border-b border-gray-300 p-3 transition-all duration-200 hover:bg-gray-50
+  class="theme-border border-b p-3 theme-visitor-hover
         {message.status === 'unread' ? 'bg-orange-50' : ''}"
   role="button"
   tabindex="0"
@@ -334,7 +334,7 @@
           <!-- 返信アイコン -->
           {#if message.parentMessageId}
             <svg
-              class="h-3 w-3 text-gray-500"
+              class="h-3 w-3 theme-text-muted"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -349,17 +349,17 @@
             </svg>
           {/if}
 
-          <span class="min-w-0 text-sm font-medium text-gray-900">
+          <span class="min-w-0 text-sm font-medium theme-text-primary">
             {message.fromUser?.displayName || "Unknown User"}
           </span>
-          <span class="text-xs text-gray-500">
+          <span class="text-xs theme-text-muted">
             @{message.fromUser?.userName || "unknown"}
           </span>
 
           <!-- 宛先情報を表示 -->
           {#if message.toUser}
-            <span class="text-xs text-gray-400">→</span>
-            <span class="text-xs text-gray-600">
+            <span class="text-xs theme-text-muted">→</span>
+            <span class="text-xs theme-text-secondary">
               {message.toUser.displayName}
             </span>
           {/if}
@@ -368,7 +368,7 @@
             <span class="inline-flex h-1.5 w-1.5 rounded-full bg-orange-500" title="未読"></span>
           {/if}
         </div>
-        <span class="flex-shrink-0 text-xs text-gray-500">
+        <span class="flex-shrink-0 text-xs theme-text-muted">
           {formatDate(message.createdAt)}
         </span>
       </div>
@@ -378,7 +378,7 @@
         <div class="mt-2 rounded-r-lg border-l-2 border-gray-200 bg-gray-50 py-1 pl-3">
           <div class="mb-1 flex items-center gap-2">
             <svg
-              class="h-3 w-3 text-gray-400"
+              class="h-3 w-3 theme-text-muted"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -390,12 +390,12 @@
                 d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"
               ></path>
             </svg>
-            <span class="text-xs text-gray-500">返信先:</span>
-            <span class="text-xs font-medium text-gray-700">
+            <span class="text-xs theme-text-muted">返信先:</span>
+            <span class="text-xs font-medium theme-text-secondary">
               {message.parentMessage.fromUser?.displayName || "Unknown User"}
             </span>
           </div>
-          <p class="line-clamp-2 text-xs text-gray-600">
+          <p class="line-clamp-2 text-xs theme-text-secondary">
             {message.parentMessage.content}
           </p>
         </div>
@@ -429,7 +429,7 @@
           </div>
         {:else}
           <div class="flex items-start justify-between">
-            <p class="flex-1 text-sm break-words whitespace-pre-line text-gray-800">
+            <p class="flex-1 text-sm break-words whitespace-pre-line theme-text-primary">
               {message.content}
             </p>
 
@@ -529,7 +529,7 @@
                 {heartStates[message.messageId]?.count || 0}
               </button>
             {:else}
-              <span class="text-xs text-gray-500">0</span>
+              <span class="text-xs theme-text-muted">0</span>
             {/if}
           </div>
 
@@ -575,7 +575,7 @@
       {#if showThread && threadMessages.length > 0}
         <div class="mt-3 rounded-md bg-gray-50 p-3">
           <div class="mb-2 flex items-center justify-between">
-            <h4 class="text-sm font-medium text-gray-700">スレッド</h4>
+            <h4 class="text-sm font-medium theme-text-secondary">スレッド</h4>
             <button onclick={() => (showThread = false)} class="text-gray-400 hover:text-gray-600">
               ✕
             </button>
@@ -605,10 +605,10 @@
                   <div class="min-w-0 flex-1">
                     <!-- ユーザー情報と時間 -->
                     <div class="mb-1 flex items-center gap-2">
-                      <span class="truncate text-sm font-medium text-gray-700">
+                      <span class="truncate text-sm font-medium theme-text-secondary">
                         {threadMessage.fromUser?.displayName}
                       </span>
-                      <span class="flex-shrink-0 text-sm text-gray-500">
+                      <span class="flex-shrink-0 text-sm theme-text-muted">
                         {formatDate(threadMessage.createdAt)}
                       </span>
 
@@ -647,7 +647,7 @@
                       </div>
                     {:else}
                       <div class="mb-1 flex items-start justify-between">
-                        <p class="flex-1 text-sm break-words whitespace-pre-line text-gray-800">
+                        <p class="flex-1 text-sm break-words whitespace-pre-line theme-text-primary">
                           {threadMessage.content}
                         </p>
 
@@ -717,7 +717,7 @@
                               {heartStates[threadMessage.messageId]?.count || 0}
                             </button>
                           {:else}
-                            <span class="text-xs text-gray-500">0</span>
+                            <span class="text-xs theme-text-muted">0</span>
                           {/if}
                         </div>
                       </div>
@@ -770,7 +770,7 @@
     <!-- svelte-ignore a11y-no-static-element-interactions -->
     <div class="mx-4 w-full max-w-sm rounded-lg bg-white p-4" onclick={(e) => e.stopPropagation()}>
       <div class="mb-3 flex items-center justify-between">
-        <h3 class="text-lg font-semibold text-gray-800">いいね</h3>
+        <h3 class="text-lg font-semibold theme-text-primary">いいね</h3>
         <button onclick={closeLikesModal} class="text-gray-400 hover:text-gray-600">
           <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path

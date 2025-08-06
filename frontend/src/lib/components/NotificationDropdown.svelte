@@ -178,14 +178,14 @@
     <button
       bind:this={toggleButton}
       onclick={toggleDropdown}
-      class="relative flex h-10 w-10 items-center justify-center rounded-full transition hover:bg-gray-100 md:h-12 md:w-12"
+      class="theme-hover-bg relative flex h-10 w-10 items-center justify-center rounded-full transition md:h-12 md:w-12"
       aria-label="通知を開く"
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"
         viewBox="0 0 24 24"
         fill="currentColor"
-        class="h-5 w-5 text-gray-600 md:h-6 md:w-6"
+        class="theme-text-subtle h-5 w-5 md:h-6 md:w-6"
       >
         <path
           fill-rule="evenodd"
@@ -205,19 +205,16 @@
     {#if showDropdown}
       <div
         bind:this={dropdownElement}
-        class="absolute top-full -right-16 z-10 mt-2 w-96 rounded-lg border border-gray-200 bg-white shadow-lg sm:right-0"
+        class="theme-dropdown absolute top-full -right-16 z-10 mt-2 w-96 sm:right-0"
       >
-        <div class="border-b border-gray-100 p-3">
+        <div class="p-3">
           <div class="flex items-center justify-between">
             <div>
-              <h3 class="text-sm font-semibold text-gray-800">通知</h3>
-              <p class="mt-1 text-xs text-gray-500">最新50件まで表示</p>
+              <h3 class="theme-text-secondary text-sm font-semibold">通知</h3>
+              <p class="theme-text-subtle mt-1 text-xs">最新50件まで表示</p>
             </div>
             {#if notifications.some((n) => n.status === "unread")}
-              <button
-                onclick={markAllAsRead}
-                class="text-xs font-medium text-orange-600 hover:text-orange-800"
-              >
+              <button onclick={markAllAsRead} class="theme-text-link text-xs font-medium">
                 すべてを既読にする
               </button>
             {/if}
@@ -225,21 +222,21 @@
         </div>
 
         <!-- タブナビゲーション -->
-        <div class="border-b border-gray-100">
+        <div class="theme-border border-b">
           <nav class="flex">
             <button
               onclick={() => (activeTab = "all")}
-              class="flex-1 px-4 py-2 text-sm font-medium transition-colors {activeTab === 'all'
-                ? 'border-b-2 border-orange-500 text-orange-600'
-                : 'text-gray-500 hover:text-gray-700'}"
+              class="flex-1 px-4 py-2 text-sm font-medium {activeTab === 'all'
+                ? 'theme-tab-active'
+                : 'theme-tab-inactive'}"
             >
               すべて ({notifications.length})
             </button>
             <button
               onclick={() => (activeTab = "likes")}
-              class="flex-1 px-4 py-2 text-sm font-medium transition-colors {activeTab === 'likes'
-                ? 'border-b-2 border-orange-500 text-orange-600'
-                : 'text-gray-500 hover:text-gray-700'}"
+              class="flex-1 px-4 py-2 text-sm font-medium {activeTab === 'likes'
+                ? 'theme-tab-active'
+                : 'theme-tab-inactive'}"
             >
               ❤️ いいね ({notifications.filter(
                 (n) => n.messageType === "like" || n.content?.includes("いいね")
@@ -247,10 +244,9 @@
             </button>
             <button
               onclick={() => (activeTab = "comments")}
-              class="flex-1 px-4 py-2 text-sm font-medium transition-colors {activeTab ===
-              'comments'
-                ? 'border-b-2 border-orange-500 text-orange-600'
-                : 'text-gray-500 hover:text-gray-700'}"
+              class="flex-1 px-4 py-2 text-sm font-medium {activeTab === 'comments'
+                ? 'theme-tab-active'
+                : 'theme-tab-inactive'}"
             >
               💬 コメント ({notifications.filter(
                 (n) => n.messageType === "comment" && !n.content?.includes("いいね")
@@ -265,7 +261,7 @@
               <div class="h-6 w-6 animate-spin rounded-full border-b-2 border-orange-400"></div>
             </div>
           {:else if getFilteredNotifications().length === 0}
-            <div class="p-4 text-center text-sm text-gray-500">
+            <div class="theme-text-subtle p-4 text-center text-sm">
               {activeTab === "all"
                 ? "新しい通知はありません"
                 : activeTab === "likes"
@@ -276,9 +272,9 @@
             {#each getFilteredNotifications() as notification (notification.messageId)}
               <button
                 onclick={() => handleNotificationClick(notification)}
-                class="flex w-full items-start gap-3 p-3 text-left hover:bg-gray-50 {notification.status ===
+                class="theme-hover-bg flex w-full items-start gap-3 p-3 text-left {notification.status ===
                 'unread'
-                  ? 'bg-orange-50'
+                  ? 'bg-orange-50 dark:bg-orange-900/20'
                   : ''}"
               >
                 <div class="flex-shrink-0 text-lg">
@@ -294,26 +290,26 @@
                         class="h-4 w-4 rounded-full"
                       />
                     {/if}
-                    <span class="truncate text-xs font-medium text-gray-700">
+                    <span class="theme-text-muted truncate text-xs font-medium">
                       {notification.fromUser?.displayName || "Unknown"}
                     </span>
-                    <span class="text-xs text-gray-500">
+                    <span class="theme-text-subtle text-xs">
                       {formatTimeAgo(notification.createdAt)}
                     </span>
                   </div>
 
                   <!-- 元のコメント（返信の場合） -->
                   {#if notification.parentMessage}
-                    <div class="mb-2 rounded bg-gray-100 px-2 py-1">
-                      <p class="text-xs text-gray-600">あなたのコメント:</p>
-                      <p class="line-clamp-2 text-xs text-gray-800">
+                    <div class="theme-bg-surface mb-2 rounded px-2 py-1">
+                      <p class="theme-text-subtle text-xs">あなたのコメント:</p>
+                      <p class="theme-text-secondary line-clamp-2 text-xs">
                         {notification.parentMessage.content}
                       </p>
                     </div>
                   {/if}
 
                   <!-- メッセージ内容 -->
-                  <p class="line-clamp-2 text-sm text-gray-800">
+                  <p class="theme-text-secondary line-clamp-2 text-sm">
                     {getNotificationMessage(notification)}
                   </p>
                 </div>
@@ -323,11 +319,11 @@
         </div>
 
         {#if notifications.length > 0}
-          <div class="border-t border-gray-100 p-2">
+          <div class="theme-border border-t p-2">
             <a
               href={currentUserName ? `/${currentUserName}/messages` : "/"}
               onclick={handleViewAllMessages}
-              class="block w-full rounded p-2 text-center text-sm text-orange-600 hover:bg-orange-50"
+              class="theme-text-link block w-full rounded p-2 text-center text-sm hover:bg-orange-50 dark:hover:bg-orange-900/20"
             >
               すべてのメッセージを見る
             </a>

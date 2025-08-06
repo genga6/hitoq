@@ -17,14 +17,12 @@
   ]);
 </script>
 
-<nav class="flex justify-around border-b border-gray-300">
+<nav class="theme-border flex justify-around border-b">
   {#each tabs as { path, label } (path)}
     <a
       href={path}
-      class="min-w-0 flex-1 px-2 py-3 text-center text-xs font-semibold transition hover:text-gray-700 sm:text-sm
-            {page.url.pathname === path
-        ? 'border-b-2 border-orange-400 text-gray-700'
-        : 'text-gray-400'}"
+      class="min-w-0 flex-1 px-2 py-3 text-center text-xs font-semibold sm:text-sm theme-visitor-hover
+            {page.url.pathname === path ? 'theme-tab-active' : 'theme-tab-inactive'}"
     >
       <span class="block truncate">{label}</span>
     </a>

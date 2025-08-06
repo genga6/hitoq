@@ -14,6 +14,7 @@
   import type { Snippet } from "svelte";
 
   import type { UserCandidate, Profile } from "$lib/types";
+  import { themeStore, updateThemeClass, watchSystemTheme } from "$lib/stores/theme";
   import "../app.css";
 
   type Props = {
@@ -24,6 +25,15 @@
   const { data, children }: Props = $props();
   let isLoggedIn = $state(data?.isLoggedIn ?? false);
   let currentUser = $state(data?.user ?? null);
+  let currentTheme = $state("system");
+
+  // ブラウザ環境でのテーマ初期化
+  if (browser) {
+    const stored = localStorage.getItem("hitoq-theme") as Theme | null;
+    if (stored && ["light", "dark", "system"].includes(stored)) {
+      currentTheme = stored;
+    }
+  }
 
   let searchQuery = $state("");
 
@@ -60,6 +70,15 @@
 
   $effect(() => {
     if (!browser) return;
+
+    // テーマストアの購読
+    const unsubscribeTheme = themeStore.subscribe((theme) => {
+      currentTheme = theme;
+      updateThemeClass(theme);
+    });
+
+    // テーマの初期化と監視
+    const unwatchSystemTheme = watchSystemTheme(currentTheme);
 
     const unregisterMenu = useClickOutside(menuElement, [toggleButton], () => {
       showMenu = false;
@@ -104,6 +123,8 @@
     }
 
     return () => {
+      unsubscribeTheme();
+      unwatchSystemTheme?.();
       unregisterMenu();
       unregisterCandidates();
       if (refreshInterval) {
@@ -170,7 +191,7 @@
   let searchInputElement: HTMLInputElement | null = null;
 </script>
 
-<header class="relative z-50 w-full bg-white py-4 shadow-md md:py-6 lg:py-8">
+<header class="theme-bg-surface relative z-50 w-full py-4 shadow-md md:py-6 lg:py-8">
   <div class="container-responsive max-w-4xl">
     <!-- Desktop Layout -->
     <div class="relative hidden items-center justify-between sm:flex">
@@ -217,25 +238,25 @@
         {#if showCandidates || noResults}
           <div
             bind:this={candidatesElement}
-            class="absolute left-1/2 z-[9999] mt-2 w-full -translate-x-1/2 rounded-lg border border-gray-300 bg-white shadow"
+            class="theme-border theme-bg-surface absolute left-1/2 z-[9999] mt-2 w-full -translate-x-1/2 rounded-lg border shadow"
           >
             {#if showCandidates}
               {#each candidates as user (user.userName)}
                 <button
-                  class="flex w-full cursor-pointer items-center gap-3 px-4 py-2 text-left hover:bg-orange-100"
+                  class="theme-hover-bg flex w-full cursor-pointer items-center gap-3 px-4 py-2 text-left"
                   onclick={() => selectCandidate(user.userName)}
                 >
                   {#if user.iconUrl}
                     <img src={user.iconUrl} alt="icon" class="h-6 w-6 rounded-full" />
                   {/if}
                   <div class="flex flex-col">
-                    <span class="text-sm font-medium">{user.displayName}</span>
-                    <span class="text-xs text-gray-500">@{user.userName}</span>
+                    <span class="theme-text-primary text-sm font-medium">{user.displayName}</span>
+                    <span class="theme-text-secondary text-xs">@{user.userName}</span>
                   </div>
                 </button>
               {/each}
             {:else if noResults}
-              <div class="px-4 py-3 text-sm text-gray-500">ユーザーが見つかりませんでした。</div>
+              <div class="theme-text-muted px-4 py-3 text-sm">ユーザーが見つかりませんでした。</div>
             {/if}
           </div>
         {/if}
@@ -277,26 +298,23 @@
             {#if showMenu}
               <div
                 bind:this={menuElement}
-                class="absolute top-full right-0 z-10 mt-2 w-40 rounded-lg border border-gray-200 bg-white shadow-lg"
+                class="theme-border theme-bg-surface absolute top-full right-0 z-10 mt-2 w-40 rounded-lg border shadow-lg"
               >
                 <a
                   href="/{currentUser?.userName}/settings"
-                  class="block px-4 py-2 hover:bg-gray-100"
+                  class="theme-text-primary theme-hover-bg block px-4 py-2"
                   >設定
                 </a>
-                <button onclick={logout} class="w-full px-4 py-2 text-left hover:bg-gray-100"
+                <button
+                  onclick={logout}
+                  class="theme-text-primary theme-hover-bg w-full px-4 py-2 text-left"
                   >ログアウト</button
                 >
               </div>
             {/if}
           </div>
         {:else}
-          <button
-            onclick={login}
-            class="rounded-full bg-orange-400 px-4 py-2 font-semibold text-white transition duration-200 hover:bg-orange-500 active:bg-orange-600"
-          >
-            ログイン
-          </button>
+          <button onclick={login} class="btn-primary rounded-full"> ログイン </button>
         {/if}
       </div>
     </div>
@@ -345,14 +363,16 @@
               {#if showMenu}
                 <div
                   bind:this={menuElement}
-                  class="absolute top-full right-0 z-10 mt-2 w-40 rounded-lg border border-gray-200 bg-white shadow-lg"
+                  class="theme-border theme-bg-surface absolute top-full right-0 z-10 mt-2 w-40 rounded-lg border shadow-lg"
                 >
                   <a
                     href="/{currentUser?.userName}/settings"
-                    class="block px-4 py-2 hover:bg-gray-100"
+                    class="theme-text-primary theme-hover-bg block px-4 py-2"
                     >設定
                   </a>
-                  <button onclick={logout} class="w-full px-4 py-2 text-left hover:bg-gray-100"
+                  <button
+                    onclick={logout}
+                    class="theme-text-primary theme-hover-bg w-full px-4 py-2 text-left"
                     >ログアウト</button
                   >
                 </div>
@@ -360,10 +380,7 @@
             </div>
           </div>
         {:else}
-          <button
-            onclick={login}
-            class="rounded-full bg-orange-400 px-3 py-1.5 text-sm font-semibold text-white transition duration-200 hover:bg-orange-500 active:bg-orange-600"
-          >
+          <button onclick={login} class="btn-primary rounded-full px-3 py-1.5 text-sm">
             ログイン
           </button>
         {/if}
@@ -407,27 +424,24 @@
         {/if}
 
         {#if showCandidates || noResults}
-          <div
-            bind:this={candidatesElement}
-            class="absolute z-[9999] mt-2 w-full rounded-lg border border-gray-300 bg-white shadow"
-          >
+          <div bind:this={candidatesElement} class="theme-dropdown absolute z-[9999] mt-2 w-full">
             {#if showCandidates}
               {#each candidates as user (user.userName)}
                 <button
-                  class="flex w-full cursor-pointer items-center gap-3 px-4 py-2 text-left hover:bg-orange-100"
+                  class="theme-hover-bg flex w-full cursor-pointer items-center gap-3 px-4 py-2 text-left"
                   onclick={() => selectCandidate(user.userName)}
                 >
                   {#if user.iconUrl}
                     <img src={user.iconUrl} alt="icon" class="h-6 w-6 rounded-full" />
                   {/if}
                   <div class="flex flex-col">
-                    <span class="text-sm font-medium">{user.displayName}</span>
-                    <span class="text-xs text-gray-500">@{user.userName}</span>
+                    <span class="theme-text-primary text-sm font-medium">{user.displayName}</span>
+                    <span class="theme-text-secondary text-xs">@{user.userName}</span>
                   </div>
                 </button>
               {/each}
             {:else if noResults}
-              <div class="px-4 py-3 text-sm text-gray-500">ユーザーが見つかりませんでした。</div>
+              <div class="theme-text-muted px-4 py-3 text-sm">ユーザーが見つかりませんでした。</div>
             {/if}
           </div>
         {/if}
@@ -438,7 +452,7 @@
 
 {@render children?.()}
 
-<footer class="mt-auto w-full bg-gray-100 py-6 text-center text-sm text-gray-500">
+<footer class="theme-bg-surface theme-text-muted mt-auto w-full py-6 text-center text-sm">
   <div class="container-responsive max-w-4xl">
     <div class="mb-4 flex flex-wrap items-center justify-center gap-4 md:gap-6">
       <a href="/privacy-policy" class="text-xs transition-colors hover:text-orange-500 md:text-sm"
@@ -451,6 +465,6 @@
         >お問い合わせ</a
       >
     </div>
-    <div class="text-xs text-gray-400 md:text-sm">© 2025 hitoQ</div>
+    <div class="theme-text-subtle text-xs md:text-sm">© 2025 hitoQ</div>
   </div>
 </footer>

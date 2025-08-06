@@ -63,7 +63,7 @@
 
 <div class={`space-y-1 ${className}`}>
   {#if label}
-    <label for="validated-input-{inputId}" class="block text-sm font-medium text-gray-700">
+    <label for="validated-input-{inputId}" class="theme-text-secondary block text-sm font-medium">
       {label}
       {#if rules.required}
         <span class="text-red-500">*</span>
@@ -79,9 +79,7 @@
       {disabled}
       oninput={handleInput}
       onblur={handleBlur}
-      class="input-primary {hasErrors
-        ? 'border-red-300 focus:border-red-500 focus:ring-red-500'
-        : ''} {isValid ? 'border-green-300 focus:border-green-500 focus:ring-green-500' : ''}"
+      class="input-primary {hasErrors ? 'input-error' : ''} {isValid ? 'input-success' : ''}"
       rows="3"
     ></textarea>
   {:else}
@@ -93,9 +91,7 @@
       {disabled}
       oninput={handleInput}
       onblur={handleBlur}
-      class="input-primary {hasErrors
-        ? 'border-red-300 focus:border-red-500 focus:ring-red-500'
-        : ''} {isValid ? 'border-green-300 focus:border-green-500 focus:ring-green-500' : ''}"
+      class="input-primary {hasErrors ? 'input-error' : ''} {isValid ? 'input-success' : ''}"
     />
   {/if}
 
@@ -103,7 +99,9 @@
   {#if rules.maxLength}
     <div class="flex justify-between text-xs">
       <span></span>
-      <span class="text-gray-500 {inputValue.length > rules.maxLength ? 'text-red-500' : ''}">
+      <span
+        class="theme-text-muted {inputValue.length > rules.maxLength ? 'theme-text-error' : ''}"
+      >
         {inputValue.length}/{rules.maxLength}
       </span>
     </div>
@@ -113,7 +111,7 @@
   {#if hasErrors}
     <div class="space-y-1">
       {#each errors as error, index (index)}
-        <p class="text-sm text-red-600">{error}</p>
+        <p class="theme-text-error text-sm">{error}</p>
       {/each}
     </div>
   {/if}
