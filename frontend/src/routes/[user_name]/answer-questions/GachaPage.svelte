@@ -348,14 +348,14 @@
 <!-- 質問ガチャとカテゴリフィルター -->
 <div>
   <!-- 質問ガチャ -->
-  <div class="rounded-2xl bg-white p-6">
-    <h2 class="mb-4 text-lg font-semibold text-gray-800">質問ガチャ</h2>
+  <div class="rounded-2xl theme-bg-surface p-6">
+    <h2 class="mb-4 text-lg font-semibold theme-text-primary">質問ガチャ</h2>
 
     <div class="mb-4 flex items-center gap-4">
-      <span class="text-sm text-gray-700">質問数</span>
+      <span class="text-sm theme-text-secondary">質問数</span>
       <select
         bind:value={gachaQuestionCount}
-        class="rounded border border-gray-300 px-3 py-1 text-sm"
+        class="rounded theme-border theme-bg-surface px-3 py-1 text-sm theme-text-primary"
       >
         {#each [1, 2, 3, 4, 5] as num (num)}
           <option value={num}>{num}問</option>
@@ -393,7 +393,7 @@
   <div class="mt-8 rounded-2xl border border-gray-200 bg-white p-6">
     <div class="flex items-center gap-2 mb-4">
       <h2 class="text-lg font-semibold text-gray-800">受信した質問</h2>
-      <span class="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600">{newQuestions.length}件</span>
+      <span class="rounded-full theme-bg-subtle px-2 py-0.5 text-xs font-medium theme-text-muted">{newQuestions.length}件</span>
     </div>
     
     <div class="space-y-4">
@@ -424,10 +424,10 @@
 
 <!-- 回答待ちの質問 -->
 {#if unansweredQAPairs && unansweredQAPairs.length > 0}
-  <div class="mt-8 rounded-2xl border border-gray-200 bg-white p-6">
+  <div class="mt-8 rounded-2xl theme-border theme-bg-surface p-6">
     <div class="mb-4 flex items-center gap-2">
-      <h2 class="text-lg font-semibold text-gray-800">回答待ちの質問</h2>
-      <span class="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600"
+      <h2 class="text-lg font-semibold theme-text-primary">回答待ちの質問</h2>
+      <span class="rounded-full theme-bg-subtle px-2 py-0.5 text-xs font-medium theme-text-muted"
         >{unansweredQAPairs.length}件</span
       >
     </div>
@@ -438,23 +438,23 @@
         <div data-question-id={pair.groupId}>
           {#if pair.categoryInfo}
             <div class="mb-3">
-              <span class="text-xs text-gray-500">{pair.categoryInfo.label}</span>
+              <span class="text-xs theme-text-muted">{pair.categoryInfo.label}</span>
             </div>
           {/if}
 
-          <p class="mb-3 text-gray-700">{pair.question.text}</p>
+          <p class="mb-3 theme-text-primary">{pair.question.text}</p>
 
           <textarea
             bind:value={questionInputs[questionKey]}
             placeholder="回答を入力..."
-            class="mb-3 w-full rounded-lg border border-gray-300 p-3 text-sm focus:border-orange-400 focus:outline-none"
+            class="mb-3 w-full rounded-lg theme-border theme-bg-surface p-3 text-sm theme-text-primary focus:border-orange-400 focus:outline-none"
             rows="3"
           ></textarea>
 
           <div class="flex items-center justify-end gap-3">
             <button
               onclick={() => handleSkip(pair)}
-              class="px-4 py-2 text-sm text-gray-500 hover:text-gray-700">スキップ</button
+              class="px-4 py-2 text-sm theme-text-muted hover:opacity-80">スキップ</button
             >
             <button
               onclick={() => handleSaveAnswer(pair)}
@@ -465,7 +465,7 @@
           </div>
         </div>
         {#if i < unansweredQAPairs.length - 1}
-          <hr class="border-gray-300" />
+          <hr class="theme-border" />
         {/if}
       {/each}
     </div>

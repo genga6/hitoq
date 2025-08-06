@@ -200,20 +200,20 @@
 </script>
 
 <div
-  class="group relative rounded-xl p-3 transition-colors duration-300 sm:p-4 {isOwner
-    ? 'hover:bg-orange-50/50'
-    : 'hover:bg-gray-50/50'}"
+  class="group theme-bg-card relative rounded-xl p-3 transition-colors duration-300 sm:p-4 {isOwner
+    ? 'hover:bg-orange-50/50 dark:hover:bg-orange-900/20'
+    : 'theme-hover-bg'}"
   role="region"
   aria-label="Q&A項目"
 >
   <!-- 質問エリア：アクションボタンとの重複を避けるため右側にマージンを確保 -->
   <div class="mb-2 {isOwner ? '' : 'pr-20 sm:pr-16'}">
-    <p class="mb-2 text-sm font-medium break-words text-gray-600 sm:text-base">
+    <p class="theme-text-muted mb-2 text-sm font-medium break-words sm:text-base">
       {typeof question === "string" ? question : question.text}
     </p>
     {#if categoryInfo}
       <span
-        class="inline-flex items-center gap-1 rounded-full bg-orange-100 px-2.5 py-1 text-xs font-medium text-orange-700"
+        class="inline-flex items-center gap-1 rounded-full bg-orange-100 px-2.5 py-1 text-xs font-medium text-orange-700 dark:bg-orange-900/30 dark:text-orange-200"
       >
         <svg class="h-3 w-3" fill="currentColor" viewBox="0 0 20 20">
           <path
@@ -229,12 +229,14 @@
 
   <Editable {isOwner} value={answer} onSave={handleSave} inputType="textarea">
     {#if answer}
-      <p class="text-base font-semibold break-words whitespace-pre-wrap text-gray-700 sm:text-lg">
+      <p
+        class="theme-text-primary text-base font-semibold break-words whitespace-pre-wrap sm:text-lg"
+      >
         {answer}
       </p>
     {:else}
       <p class="text-base font-semibold sm:text-lg">
-        <span class="text-sm text-gray-400 italic sm:text-base">ー</span>
+        <span class="theme-text-subtle text-sm italic sm:text-base">ー</span>
       </p>
     {/if}
   </Editable>
@@ -249,8 +251,8 @@
         onclick={handleHeartToggle}
         disabled={isLikeSubmitting}
         class="group flex items-center gap-1 rounded-full px-1.5 py-1 text-xs transition-all duration-200 sm:px-2 sm:py-1 sm:text-sm {isLiked
-          ? 'bg-red-50 text-red-500 hover:bg-red-100'
-          : 'bg-gray-50 text-gray-400 hover:bg-gray-100 hover:text-gray-600'}"
+          ? 'theme-button-like-active'
+          : 'theme-button-secondary'}"
         title={isLiked ? "いいねを取り消す" : "いいね"}
         aria-label={isLiked ? "いいねを取り消す" : "いいね"}
       >
@@ -290,7 +292,7 @@
       <button
         onclick={showCommentInput}
         disabled={isSubmitting}
-        class="flex items-center gap-1 rounded-full bg-gray-50 px-1.5 py-1 text-xs text-gray-600 transition-all duration-200 hover:bg-gray-100 sm:px-2 sm:py-1 sm:text-sm"
+        class="theme-button-action"
         title="コメント"
         aria-label="コメントを追加"
       >
@@ -308,7 +310,7 @@
       {#if relatedMessages.length > 0}
         <button
           onclick={toggleMessagesThread}
-          class="relative flex items-center gap-1 rounded-full bg-orange-50 px-1.5 py-1 text-xs text-orange-600 transition-all duration-200 hover:bg-orange-100 sm:px-2 sm:py-1 sm:text-sm"
+          class="relative flex items-center gap-1 rounded-full bg-orange-50 px-1.5 py-1 text-xs text-orange-600 transition-all duration-200 hover:bg-orange-100 sm:px-2 sm:py-1 sm:text-sm dark:bg-orange-900/20 dark:text-orange-300 dark:hover:bg-orange-900/40"
           title="関連メッセージ"
         >
           <svg class="h-3 w-3 sm:h-4 sm:w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -327,19 +329,19 @@
 
   <!-- コメント入力フォーム -->
   {#if showCommentForm && !isOwner && profileUserId && answer && isLoggedIn && currentUser}
-    <div class="mt-4 rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
+    <div class="theme-bg-card mt-4 rounded-lg p-4 shadow-sm">
       <div class="mb-3">
         <textarea
           bind:value={commentText}
           placeholder="この回答についてコメントを書く..."
           rows="3"
-          class="w-full resize-none rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-orange-500 focus:ring-1 focus:ring-orange-500 focus:outline-none"
+          class="theme-input w-full resize-none rounded-md px-3 py-2 text-sm focus:border-orange-500 focus:ring-1 focus:ring-orange-500 focus:outline-none"
         ></textarea>
       </div>
       <div class="flex items-center justify-end gap-2">
         <button
           onclick={cancelComment}
-          class="px-3 py-1.5 text-sm text-gray-600 transition-colors hover:text-gray-800"
+          class="theme-text-muted hover:theme-text-secondary px-3 py-1.5 text-sm transition-colors"
         >
           キャンセル
         </button>
@@ -356,9 +358,9 @@
 
   <!-- 関連メッセージスレッド -->
   {#if showMessagesThread && threadMessages.length > 0}
-    <div class="mt-4 border-t border-gray-200 pt-4">
+    <div class="theme-border mt-4 border-t pt-4">
       <div class="mb-3 flex items-center justify-between">
-        <h4 class="flex items-center text-sm font-medium text-gray-700">
+        <h4 class="theme-text-secondary flex items-center text-sm font-medium">
           <svg class="mr-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
               stroke-linecap="round"
@@ -371,7 +373,7 @@
         </h4>
         <button
           onclick={() => (showMessagesThread = false)}
-          class="text-gray-400 hover:text-gray-600"
+          class="theme-text-subtle hover:theme-text-muted"
         >
           ✕
         </button>
@@ -379,17 +381,17 @@
 
       <div class="max-h-64 overflow-y-auto">
         {#each threadMessages as threadMessage, index (threadMessage.messageId)}
-          <div class="py-2 {index > 0 ? 'border-t border-gray-200' : ''}">
+          <div class="py-2 {index > 0 ? 'theme-border border-t' : ''}">
             <div class="mb-1 flex items-center gap-2">
               <img
                 src={threadMessage.fromUser?.iconUrl || "/default-avatar.svg"}
                 alt={threadMessage.fromUser?.displayName}
                 class="h-4 w-4 rounded-full"
               />
-              <span class="text-xs font-medium text-gray-700">
+              <span class="theme-text-secondary text-xs font-medium">
                 {threadMessage.fromUser?.displayName}
               </span>
-              <span class="text-xs text-gray-500">
+              <span class="theme-text-subtle text-xs">
                 {new Date(threadMessage.createdAt).toLocaleString("ja-JP", {
                   month: "numeric",
                   day: "numeric",
@@ -398,14 +400,14 @@
                 })}
               </span>
             </div>
-            <p class="text-xs text-gray-800">{threadMessage.content}</p>
+            <p class="theme-text-primary text-xs">{threadMessage.content}</p>
           </div>
         {/each}
       </div>
     </div>
   {:else if showMessagesThread && relatedMessages.length > 0}
-    <div class="mt-4 border-t border-gray-200 pt-4">
-      <h4 class="mb-3 flex items-center text-sm font-medium text-gray-700">
+    <div class="theme-border mt-4 border-t pt-4">
+      <h4 class="theme-text-secondary mb-3 flex items-center text-sm font-medium">
         <svg class="mr-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
             stroke-linecap="round"
@@ -422,8 +424,8 @@
           {@const fromUserId = message.fromUser?.userId}
           {@const likes = messageLikes[messageId] || { liked: false, count: 0 }}
           <div
-            class="group p-2 transition-colors hover:bg-gray-50 {index > 0
-              ? 'border-t border-gray-200'
+            class="group theme-hover-bg p-2 transition-colors {index > 0
+              ? 'theme-border border-t'
               : ''}"
           >
             <div class="flex items-start space-x-2">
@@ -434,14 +436,14 @@
               />
               <div class="min-w-0 flex-1">
                 <div class="flex items-center space-x-1">
-                  <span class="text-sm font-medium text-gray-900"
+                  <span class="theme-text-primary text-sm font-medium"
                     >{message.fromUser?.displayName}</span
                   >
-                  <span class="text-xs text-gray-500"
+                  <span class="theme-text-subtle text-xs"
                     >{new Date(message.createdAt).toLocaleDateString()}</span
                   >
                 </div>
-                <p class="mt-0.5 text-sm text-gray-700">{message.content}</p>
+                <p class="theme-text-primary mt-0.5 text-sm">{message.content}</p>
 
                 <!-- いいね・返信ボタン（ログイン時のみ表示） -->
                 {#if isLoggedIn && currentUser && fromUserId}
@@ -451,7 +453,7 @@
                       onclick={() => handleMessageLike(messageId, fromUserId)}
                       class="group/like flex items-center gap-1 text-xs transition-colors {likes.liked
                         ? 'text-red-500 hover:text-red-600'
-                        : 'text-gray-400 hover:text-red-500'}"
+                        : 'theme-text-subtle hover:text-red-500'}"
                       title="いいね"
                     >
                       {#if likes.liked}
@@ -480,7 +482,7 @@
                       onclick={() => {
                         if (!messageReplyText[messageId]) messageReplyText[messageId] = "";
                       }}
-                      class="flex items-center gap-1 text-xs text-gray-400 transition-colors hover:text-gray-600"
+                      class="theme-text-subtle hover:theme-text-muted flex items-center gap-1 text-xs transition-colors"
                       title="返信"
                     >
                       <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -503,7 +505,7 @@
                           bind:value={messageReplyText[messageId]}
                           placeholder="返信を入力..."
                           rows="2"
-                          class="flex-1 resize-none rounded border border-gray-300 px-2 py-1 text-xs focus:border-orange-500 focus:ring-1 focus:ring-orange-500 focus:outline-none"
+                          class="theme-input flex-1 resize-none rounded px-2 py-1 text-xs focus:border-orange-500 focus:ring-1 focus:ring-orange-500 focus:outline-none"
                         ></textarea>
                       </div>
                       <div class="mt-1 flex justify-end gap-2">
@@ -511,7 +513,7 @@
                           onclick={() => {
                             delete messageReplyText[messageId];
                           }}
-                          class="px-2 py-1 text-xs text-gray-500 hover:text-gray-700"
+                          class="theme-text-subtle hover:theme-text-muted px-2 py-1 text-xs"
                         >
                           キャンセル
                         </button>

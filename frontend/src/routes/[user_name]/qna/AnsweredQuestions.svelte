@@ -53,7 +53,7 @@
     <!-- タイトルとヒント -->
     <div class="mb-4">
       <div class="flex items-center gap-2">
-        <h2 class="text-lg font-semibold text-gray-800">回答済みQ&A</h2>
+        <h2 class="text-lg font-semibold theme-text-primary">回答済みQ&A</h2>
         <span class="rounded-full bg-orange-100 px-2.5 py-1 text-xs font-medium text-orange-700">
           {answeredQAPairs.length}件
         </span>
@@ -83,7 +83,7 @@
   {#if answeredQAPairs && answeredQAPairs.length > 0}
     <div class="space-y-4">
       {#each answeredQAPairs as pair (`answered-${pair.groupId}-${pair.question.questionId}-${pair.questionIndex}`)}
-        <div class="border-b border-gray-300 p-4 transition-colors hover:bg-gray-50">
+        <div class="theme-border border-b p-4 theme-visitor-hover">
           <!-- Q&Aアイテム -->
           <QAItem
             question={pair.question.text}
@@ -103,9 +103,9 @@
       {/each}
     </div>
   {:else}
-    <div class="rounded-3xl bg-gray-50 px-6 py-12 text-center">
+    <div class="rounded-3xl theme-bg-subtle px-6 py-12 text-center">
       {#if selectedCategories.length > 0}
-        <p class="text-lg text-gray-600">選択されたカテゴリーに該当する回答がありません。</p>
+        <p class="text-lg theme-text-secondary">選択されたカテゴリーに該当する回答がありません。</p>
         <button
           onclick={onClearFilters}
           class="mt-3 font-medium text-orange-600 hover:text-orange-700"
@@ -113,11 +113,11 @@
           フィルターをクリアして全て表示
         </button>
       {:else if !isOwner}
-        <p class="text-lg text-gray-600">このユーザーはまだQ&Aに回答していません。</p>
+        <p class="text-lg theme-text-secondary">このユーザーはまだQ&Aに回答していません。</p>
       {:else}
         <div class="space-y-3">
-          <p class="text-lg text-gray-600">まだ回答した質問がありません。</p>
-          <p class="text-sm text-gray-500">
+          <p class="text-lg theme-text-secondary">まだ回答した質問がありません。</p>
+          <p class="text-sm theme-text-muted">
             上の「質問ガチャ」で質問を選んで、回答してみましょう！
           </p>
         </div>

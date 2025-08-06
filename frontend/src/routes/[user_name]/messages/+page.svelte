@@ -38,10 +38,10 @@
     />
   {:else}
     <div class="py-12 text-center">
-      <div class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gray-100">
+      <div class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full theme-bg-subtle">
         <svg
           xmlns="http://www.w3.org/2000/svg"
-          class="h-8 w-8 text-gray-400"
+          class="h-8 w-8 theme-text-muted"
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
@@ -54,8 +54,8 @@
           />
         </svg>
       </div>
-      <h3 class="mb-2 text-lg font-medium text-gray-900">メッセージはまだありません</h3>
-      <p class="text-gray-500">
+      <h3 class="mb-2 text-lg font-medium theme-text-primary">メッセージはまだありません</h3>
+      <p class="theme-text-muted">
         パーソナルQ&Aタブから質問やコメントを送ると、ここに履歴が表示されます。
       </p>
     </div>

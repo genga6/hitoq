@@ -1,5 +1,5 @@
 <script lang="ts">
-  import UserActions from './UserActions.svelte';
+  import UserActions from "./UserActions.svelte";
 
   type Props = {
     displayName: string;
@@ -10,7 +10,15 @@
     isOwner?: boolean;
     onBlockStatusChange?: (blocked: boolean) => void;
   };
-  const { displayName, iconUrl, bio, userName, userId, isOwner = false, onBlockStatusChange }: Props = $props();
+  const {
+    displayName,
+    iconUrl,
+    bio,
+    userName,
+    userId,
+    isOwner = false,
+    onBlockStatusChange
+  }: Props = $props();
 </script>
 
 <div
@@ -19,12 +27,12 @@
   <img
     src={iconUrl}
     alt="User Icon"
-    class="h-16 w-16 flex-shrink-0 rounded-full border border-gray-300 sm:h-20 sm:w-20 md:h-24 md:w-24"
+    class="theme-border-light h-16 w-16 flex-shrink-0 rounded-full border sm:h-20 sm:w-20 md:h-24 md:w-24"
   />
   <div class="min-w-0 flex-1 {isOwner ? 'pr-0 sm:pr-12 md:pr-16 lg:pr-20' : ''}">
     <div class="flex flex-col space-y-2 sm:flex-row sm:items-center sm:space-y-0 sm:space-x-6">
       <!-- ユーザー名 -->
-      <h2 class="text-xl font-bold break-words text-gray-700 sm:text-2xl">
+      <h2 class="theme-text-primary text-xl font-bold break-words sm:text-2xl">
         {displayName}
       </h2>
 
@@ -54,7 +62,9 @@
     </div>
 
     {#if bio}
-      <p class="mt-2 text-sm break-words whitespace-pre-line text-gray-700 md:text-base">{bio}</p>
+      <p class="theme-text-primary mt-2 text-sm break-words whitespace-pre-line md:text-base">
+        {bio}
+      </p>
     {/if}
   </div>
 

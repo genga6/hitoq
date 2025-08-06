@@ -81,20 +81,20 @@
   />
 </svelte:head>
 
-<main class="min-h-screen bg-gray-50 py-6 md:py-12">
+<main class="min-h-screen py-6 md:py-12">
   <div class="container-responsive max-w-2xl">
-    <div class="card p-4 md:p-8">
-      <h1 class="text-responsive-xl mb-4 font-bold text-gray-800">お問い合わせ</h1>
-      <p class="mb-6 text-sm text-gray-600 md:mb-8 md:text-base">
+    <div class="theme-page-container p-4 md:p-8">
+      <h1 class="text-responsive-xl theme-text-primary mb-4 font-bold">お問い合わせ</h1>
+      <p class="theme-text-primary mb-6 text-sm md:mb-8 md:text-base">
         hitoQに関するバグ報告、機能要望、フィードバックなど、お気軽にお寄せください。
         いただいたご意見は、サービス改善の参考にさせていただきます。
       </p>
 
       {#if showSuccess}
-        <div class="mb-8 rounded-lg border border-green-200 bg-green-50 p-6">
+        <div class="theme-alert-primary mb-8">
           <div class="flex items-center">
             <svg
-              class="mr-3 h-6 w-6 text-green-600"
+              class="theme-alert-icon mr-3"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -106,15 +106,12 @@
                 d="M5 13l4 4L19 7"
               ></path>
             </svg>
-            <h3 class="text-lg font-semibold text-green-800">送信完了</h3>
+            <h3 class="theme-alert-title">送信完了</h3>
           </div>
-          <p class="mt-2 text-green-700">
+          <p class="theme-alert-text">
             お問い合わせありがとうございます。内容を確認の上、必要に応じてご連絡いたします。
           </p>
-          <button
-            onclick={() => (showSuccess = false)}
-            class="mt-4 text-sm text-green-600 underline hover:text-green-800"
-          >
+          <button onclick={() => (showSuccess = false)} class="theme-alert-button">
             新しいお問い合わせを送信
           </button>
         </div>
@@ -122,7 +119,7 @@
         <form onsubmit={handleSubmit} class="space-y-6">
           <!-- カテゴリー選択 -->
           <div>
-            <label class="mb-3 block text-sm font-medium text-gray-700">
+            <label class="theme-text-secondary mb-3 block text-sm font-medium">
               お問い合わせ種別 <span class="text-red-500">*</span>
             </label>
             <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -139,15 +136,15 @@
                   <div
                     class="rounded-lg border-2 p-4 transition-all {selectedCategory ===
                     category.value
-                      ? 'border-orange-400 bg-orange-50'
-                      : 'border-gray-200 hover:border-gray-300'}"
+                      ? 'border-orange-400 bg-orange-50 dark:border-orange-500 dark:bg-orange-900/50'
+                      : 'theme-border-light theme-hover-bg'}"
                   >
                     <div class="flex items-start">
                       <div class="mt-1 flex-shrink-0">
                         <div
                           class="h-4 w-4 rounded-full border-2 {selectedCategory === category.value
-                            ? 'border-orange-400 bg-orange-400'
-                            : 'border-gray-300'}"
+                            ? 'border-orange-400 bg-orange-400 dark:border-orange-500 dark:bg-orange-500'
+                            : 'theme-border-light'}"
                         >
                           {#if selectedCategory === category.value}
                             <div class="mx-auto mt-0.5 h-2 w-2 rounded-full bg-white"></div>
@@ -155,8 +152,8 @@
                         </div>
                       </div>
                       <div class="ml-3">
-                        <div class="font-medium text-gray-900">{category.label}</div>
-                        <div class="text-sm text-gray-500">{category.description}</div>
+                        <div class="theme-text-primary font-medium">{category.label}</div>
+                        <div class="theme-text-subtle text-sm">{category.description}</div>
                       </div>
                     </div>
                   </div>
@@ -204,7 +201,7 @@
                   environmentValid = isValid;
                 }}
               />
-              <p class="mt-1 text-sm text-gray-500">
+              <p class="theme-text-subtle mt-1 text-sm">
                 ブラウザ、OS、デバイス情報などをご記載いただけると問題解決に役立ちます。
               </p>
             </div>
@@ -222,7 +219,7 @@
                 contactValid = isValid;
               }}
             />
-            <p class="mt-1 text-sm text-gray-500">
+            <p class="theme-text-subtle mt-1 text-sm">
               回答が必要な場合のみご記載ください。お答えできない場合もございます。
             </p>
           </div>
@@ -265,9 +262,9 @@
           </div>
         </form>
 
-        <div class="mt-8 rounded-lg bg-blue-50 p-4">
-          <h3 class="mb-2 font-semibold text-blue-800">📝 お問い合わせについて</h3>
-          <ul class="space-y-1 text-sm text-blue-700">
+        <div class="theme-bg-elevated mt-8 rounded-lg p-4">
+          <h3 class="theme-text-primary mb-2 font-semibold">📝 お問い合わせについて</h3>
+          <ul class="theme-text-secondary space-y-1 text-sm">
             <li>• 技術的な質問やバグ報告は詳細な情報をご提供ください</li>
             <li>• 回答をお約束するものではありませんが、サービス改善の参考にいたします</li>
             <li>• 緊急性の高い問題については、可能な限り迅速に対応いたします</li>

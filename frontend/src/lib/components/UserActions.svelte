@@ -117,12 +117,12 @@
 
   <!-- Close dropdown when clicking outside -->
   {#if showDropdown}
-    <div 
-      class="fixed inset-0 z-40" 
+    <div
+      class="fixed inset-0 z-40"
       onclick={() => (showDropdown = false)}
       role="button"
       tabindex="-1"
-      onkeydown={(e: KeyboardEvent) => e.key === 'Escape' && (showDropdown = false)}
+      onkeydown={(e: KeyboardEvent) => e.key === "Escape" && (showDropdown = false)}
     ></div>
   {/if}
 
