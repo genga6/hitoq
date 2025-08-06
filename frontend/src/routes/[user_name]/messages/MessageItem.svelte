@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { Message, MessageCreate, MessageLike } from '$lib/types';
+  import type { Message, MessageCreate, MessageLike } from "$lib/types";
   import {
     markMessageAsRead,
     createMessage,
@@ -9,7 +9,7 @@
     toggleHeartReaction,
     getMessageLikes,
     getHeartStates
-  } from '$lib/api-client/messages';
+  } from "$lib/api-client/messages";
 
   type Props = {
     message: Message;
@@ -40,15 +40,15 @@
 
   let showReplyForm = $state(false);
   let showThread = $state(false);
-  let replyContent = $state('');
+  let replyContent = $state("");
   let isSubmittingReply = $state(false);
   let threadMessages = $state<Message[]>([]);
   let threadReplyFormId = $state<string | null>(null);
-  let threadReplyContent = $state('');
+  let threadReplyContent = $state("");
 
   // 編集・削除機能
   let editingMessageId = $state<string | null>(null);
-  let editContent = $state('');
+  let editContent = $state("");
   let isEditingOrDeleting = $state(false);
 
   // ハートリアクション機能
@@ -72,7 +72,7 @@
       const result = await getHeartStates(messageIds);
       heartStates = { ...heartStates, ...result.heart_states };
     } catch (error) {
-      console.error('Failed to load heart states:', error);
+      console.error("Failed to load heart states:", error);
       // フォールバック: 初期値設定
       messageIds.forEach((id) => {
         if (!heartStates[id]) {
@@ -85,23 +85,23 @@
   // 日時フォーマット
   function formatDate(dateString: string) {
     const date = new Date(dateString);
-    return date.toLocaleString('ja-JP', {
-      year: 'numeric',
-      month: 'numeric',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+    return date.toLocaleString("ja-JP", {
+      year: "numeric",
+      month: "numeric",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit"
     });
   }
 
   // メッセージを既読にする
   async function handleMarkAsRead() {
-    if (message.status === 'unread') {
+    if (message.status === "unread") {
       try {
         await markMessageAsRead(message.messageId);
         // UIの更新は親コンポーネントに任せる（リアクティブ更新）
       } catch (error) {
-        console.error('Failed to mark message as read:', error);
+        console.error("Failed to mark message as read:", error);
       }
     }
   }
@@ -116,13 +116,13 @@
 
       const replyMessage: MessageCreate = {
         toUserId: replyToUserId,
-        messageType: 'comment',
+        messageType: "comment",
         content: replyContent.trim(),
         parentMessageId: message.messageId
       };
 
       await createMessage(replyMessage);
-      replyContent = '';
+      replyContent = "";
       showReplyForm = false;
 
       // スレッドが表示されている場合は更新
@@ -133,7 +133,7 @@
       // メッセージリストを更新
       onMessageUpdate?.();
     } catch (error) {
-      console.error('Failed to send reply:', error);
+      console.error("Failed to send reply:", error);
     } finally {
       isSubmittingReply = false;
     }
@@ -144,24 +144,24 @@
       threadMessages = await getMessageThread(message.messageId);
       showThread = true;
     } catch (error) {
-      console.error('Failed to load thread:', error);
+      console.error("Failed to load thread:", error);
     }
   }
 
   function toggleReplyForm() {
     showReplyForm = !showReplyForm;
     if (showReplyForm) {
-      replyContent = '';
+      replyContent = "";
     }
   }
 
   function toggleThreadReplyForm(messageId: string) {
     if (threadReplyFormId === messageId) {
       threadReplyFormId = null;
-      threadReplyContent = '';
+      threadReplyContent = "";
     } else {
       threadReplyFormId = messageId;
-      threadReplyContent = '';
+      threadReplyContent = "";
     }
   }
 
@@ -178,7 +178,7 @@
 
       const replyMessage: MessageCreate = {
         toUserId: replyToUserId,
-        messageType: 'comment',
+        messageType: "comment",
         content: threadReplyContent.trim(),
         parentMessageId: threadMessage.messageId
       };
@@ -187,7 +187,7 @@
 
       // フォームをリセット
       threadReplyFormId = null;
-      threadReplyContent = '';
+      threadReplyContent = "";
 
       // スレッドを更新
       await loadThread();
@@ -195,7 +195,7 @@
       // メッセージリストを更新
       onMessageUpdate?.();
     } catch (error) {
-      console.error('Failed to send thread reply:', error);
+      console.error("Failed to send thread reply:", error);
     } finally {
       isSubmittingReply = false;
     }
@@ -222,7 +222,7 @@
       // メッセージリストを更新
       onMessageUpdate?.();
     } catch (error) {
-      console.error('Failed to toggle heart:', error);
+      console.error("Failed to toggle heart:", error);
     } finally {
       isTogglingHeart = false;
     }
@@ -235,7 +235,7 @@
 
   function cancelEdit() {
     editingMessageId = null;
-    editContent = '';
+    editContent = "";
   }
 
   async function saveEdit(messageId: string) {
@@ -247,7 +247,7 @@
 
       // 編集モードを終了
       editingMessageId = null;
-      editContent = '';
+      editContent = "";
 
       // スレッドが表示されている場合は更新
       if (showThread) {
@@ -257,14 +257,14 @@
       // メッセージリストを更新
       onMessageUpdate?.();
     } catch (error) {
-      console.error('Failed to update message:', error);
+      console.error("Failed to update message:", error);
     } finally {
       isEditingOrDeleting = false;
     }
   }
 
   async function handleDelete(messageId: string) {
-    if (!confirm('このメッセージを削除しますか？（返信も含めて削除されます）')) return;
+    if (!confirm("このメッセージを削除しますか？（返信も含めて削除されます）")) return;
 
     isEditingOrDeleting = true;
     try {
@@ -278,7 +278,7 @@
       // メッセージリストを更新
       onMessageUpdate?.();
     } catch (error) {
-      console.error('Failed to delete message:', error);
+      console.error("Failed to delete message:", error);
     } finally {
       isEditingOrDeleting = false;
     }
@@ -292,7 +292,7 @@
       likesData = result.likes;
       showLikesModal = messageId;
     } catch (error) {
-      console.error('Failed to load likes:', error);
+      console.error("Failed to load likes:", error);
     }
   }
 
@@ -308,13 +308,13 @@
   role="button"
   tabindex="0"
   onclick={handleMarkAsRead}
-  onkeydown={(e) => e.key === 'Enter' && handleMarkAsRead()}
+  onkeydown={(e) => e.key === "Enter" && handleMarkAsRead()}
 >
   <div class="flex min-w-0 items-start space-x-2">
     <!-- 送信者のアイコン -->
     <img
-      src={message.fromUser?.iconUrl || '/default-avatar.svg'}
-      alt={message.fromUser?.displayName || 'Unknown User'}
+      src={message.fromUser?.iconUrl || "/default-avatar.svg"}
+      alt={message.fromUser?.displayName || "Unknown User"}
       class="h-8 w-8 rounded-full border border-gray-300"
     />
 
@@ -333,16 +333,27 @@
 
           <!-- 返信アイコン -->
           {#if message.parentMessageId}
-            <svg class="h-3 w-3 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" title="返信">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"></path>
+            <svg
+              class="h-3 w-3 text-gray-500"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              title="返信"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"
+              ></path>
             </svg>
           {/if}
 
           <span class="min-w-0 text-sm font-medium text-gray-900">
-            {message.fromUser?.displayName || 'Unknown User'}
+            {message.fromUser?.displayName || "Unknown User"}
           </span>
           <span class="text-xs text-gray-500">
-            @{message.fromUser?.userName || 'unknown'}
+            @{message.fromUser?.userName || "unknown"}
           </span>
 
           <!-- 宛先情報を表示 -->
@@ -353,7 +364,7 @@
             </span>
           {/if}
 
-          {#if message.status === 'unread'}
+          {#if message.status === "unread"}
             <span class="inline-flex h-1.5 w-1.5 rounded-full bg-orange-500" title="未読"></span>
           {/if}
         </div>
@@ -364,17 +375,27 @@
 
       <!-- 親メッセージの表示（リプライの場合） -->
       {#if message.parentMessage}
-        <div class="mt-2 border-l-2 border-gray-200 pl-3 py-1 bg-gray-50 rounded-r-lg">
-          <div class="flex items-center gap-2 mb-1">
-            <svg class="h-3 w-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"></path>
+        <div class="mt-2 rounded-r-lg border-l-2 border-gray-200 bg-gray-50 py-1 pl-3">
+          <div class="mb-1 flex items-center gap-2">
+            <svg
+              class="h-3 w-3 text-gray-400"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"
+              ></path>
             </svg>
             <span class="text-xs text-gray-500">返信先:</span>
             <span class="text-xs font-medium text-gray-700">
-              {message.parentMessage.fromUser?.displayName || 'Unknown User'}
+              {message.parentMessage.fromUser?.displayName || "Unknown User"}
             </span>
           </div>
-          <p class="text-xs text-gray-600 line-clamp-2">
+          <p class="line-clamp-2 text-xs text-gray-600">
             {message.parentMessage.content}
           </p>
         </div>
@@ -396,7 +417,7 @@
                 disabled={!editContent.trim() || isEditingOrDeleting}
                 class="rounded-md bg-green-500 px-2 py-1 text-xs text-white hover:bg-green-600 disabled:opacity-50"
               >
-                {isEditingOrDeleting ? '保存中...' : '保存'}
+                {isEditingOrDeleting ? "保存中..." : "保存"}
               </button>
               <button
                 onclick={cancelEdit}
@@ -544,7 +565,7 @@
               disabled={!replyContent.trim() || isSubmittingReply}
               class="rounded-md bg-orange-500 px-3 py-1 text-xs text-white hover:bg-orange-600 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {isSubmittingReply ? '送信中...' : '返信'}
+              {isSubmittingReply ? "送信中..." : "返信"}
             </button>
           </div>
         </div>
@@ -576,7 +597,7 @@
                 <div class="flex items-start gap-2">
                   <!-- アバター -->
                   <img
-                    src={threadMessage.fromUser?.iconUrl || '/default-avatar.svg'}
+                    src={threadMessage.fromUser?.iconUrl || "/default-avatar.svg"}
                     alt={threadMessage.fromUser?.displayName}
                     class="h-6 w-6 flex-shrink-0 rounded-full"
                   />
@@ -614,7 +635,7 @@
                             disabled={!editContent.trim() || isEditingOrDeleting}
                             class="rounded-md bg-green-500 px-3 py-1 text-sm text-white hover:bg-green-600 disabled:opacity-50"
                           >
-                            {isEditingOrDeleting ? '保存中...' : '保存'}
+                            {isEditingOrDeleting ? "保存中..." : "保存"}
                           </button>
                           <button
                             onclick={cancelEdit}
@@ -723,7 +744,7 @@
                             disabled={!threadReplyContent.trim() || isSubmittingReply}
                             class="rounded-md bg-orange-500 px-3 py-1 text-sm text-white hover:bg-orange-600 disabled:cursor-not-allowed disabled:opacity-50"
                           >
-                            {isSubmittingReply ? '送信中...' : '返信'}
+                            {isSubmittingReply ? "送信中..." : "返信"}
                           </button>
                         </div>
                       </div>
@@ -766,7 +787,7 @@
         {#each likesData as like (like.user_id)}
           <div class="flex items-center gap-3 py-2">
             <img
-              src={like.icon_url || '/default-avatar.svg'}
+              src={like.icon_url || "/default-avatar.svg"}
               alt={like.display_name}
               class="h-8 w-8 rounded-full"
             />

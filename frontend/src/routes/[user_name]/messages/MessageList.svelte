@@ -1,6 +1,6 @@
 <script lang="ts">
-  import type { Message } from '$lib/types';
-  import MessageItem from './MessageItem.svelte';
+  import type { Message } from "$lib/types";
+  import MessageItem from "./MessageItem.svelte";
 
   type Props = {
     messages: Message[];

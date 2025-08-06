@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { CategoryInfo } from '$lib/types';
+  import type { CategoryInfo } from "$lib/types";
 
   type Props = {
     categories: Record<string, CategoryInfo>;

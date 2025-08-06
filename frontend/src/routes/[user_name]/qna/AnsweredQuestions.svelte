@@ -1,8 +1,8 @@
 <script lang="ts">
-  import QAItem from './QAItem.svelte';
-  import HintTooltip from '$lib/components/HintTooltip.svelte';
-  import CategoryFilter from '$lib/components/CategoryFilter.svelte';
-  import type { CategoryInfo, Question } from '$lib/types';
+  import QAItem from "./QAItem.svelte";
+  import HintTooltip from "$lib/components/HintTooltip.svelte";
+  import CategoryFilter from "$lib/components/CategoryFilter.svelte";
+  import type { CategoryInfo, Question } from "$lib/types";
 
   interface AnsweredQAPair {
     groupId: string;
@@ -60,7 +60,7 @@
         <!-- 他ユーザーのプロフィールでログイン時にヒントを表示 -->
         {#if !isOwner && isLoggedIn && currentUser}
           <div class="ml-1">
-            <HintTooltip 
+            <HintTooltip
               content="回答をホバー（PC）またはタップ（スマホ）すると、いいねやコメント送れるアクションボタンが表示されます。"
               position="bottom"
               trigger="both"
@@ -69,14 +69,14 @@
         {/if}
       </div>
     </div>
-    
+
     <!-- カテゴリフィルター -->
     <CategoryFilter
       {categories}
       {selectedCategories}
       answeredCount={answeredQAPairs.length}
-      onToggleCategory={onToggleCategory}
-      onClearFilters={onClearFilters}
+      {onToggleCategory}
+      {onClearFilters}
     />
   </div>
 

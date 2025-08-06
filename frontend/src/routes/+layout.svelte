@@ -1,20 +1,20 @@
 <script lang="ts">
-  import { goto } from '$app/navigation';
-  import { browser } from '$app/environment';
-  import { invalidateAll } from '$app/navigation';
-  import { useClickOutside } from '$lib/utils/useClickOutside';
-  import { resolveUsersById, searchUsersByDisplayName } from '$lib/api-client/users';
+  import { goto } from "$app/navigation";
+  import { browser } from "$app/environment";
+  import { invalidateAll } from "$app/navigation";
+  import { useClickOutside } from "$lib/utils/useClickOutside";
+  import { resolveUsersById, searchUsersByDisplayName } from "$lib/api-client/users";
   import {
     redirectToTwitterLogin,
     logout as authLogout,
     refreshAccessToken,
     getCurrentUser
-  } from '$lib/api-client/auth';
-  import NotificationDropdown from '$lib/components/NotificationDropdown.svelte';
-  import type { Snippet } from 'svelte';
+  } from "$lib/api-client/auth";
+  import NotificationDropdown from "$lib/components/NotificationDropdown.svelte";
+  import type { Snippet } from "svelte";
 
-  import type { UserCandidate, Profile } from '$lib/types';
-  import '../app.css';
+  import type { UserCandidate, Profile } from "$lib/types";
+  import "../app.css";
 
   type Props = {
     data?: { isLoggedIn?: boolean; user?: Profile; userName?: string };
@@ -25,7 +25,7 @@
   let isLoggedIn = $state(data?.isLoggedIn ?? false);
   let currentUser = $state(data?.user ?? null);
 
-  let searchQuery = $state('');
+  let searchQuery = $state("");
 
   let candidates = $state<UserCandidate[]>([]);
   let showCandidates = $state(false);
@@ -54,7 +54,7 @@
 
   function selectCandidate(userName: string) {
     goto(`/${userName}`);
-    searchQuery = '';
+    searchQuery = "";
     showCandidates = false;
   }
 
@@ -81,7 +81,7 @@
           currentUser = null;
         }
       } catch (error) {
-        console.error('認証状態の確認に失敗しました:', error);
+        console.error("認証状態の確認に失敗しました:", error);
         isLoggedIn = false;
         currentUser = null;
       }
@@ -95,7 +95,7 @@
         async () => {
           const success = await refreshAccessToken();
           if (!success) {
-            console.warn('トークンの更新に失敗しました。再ログインが必要です。');
+            console.warn("トークンの更新に失敗しました。再ログインが必要です。");
             authLogout();
           }
         },
@@ -122,7 +122,7 @@
     noResults = false;
 
     debounceTimer = setTimeout(() => {
-      if (searchQuery.trim() !== '') {
+      if (searchQuery.trim() !== "") {
         performSearch();
       } else {
         candidates = [];
@@ -135,7 +135,7 @@
   const performSearch = async () => {
     isLoading = true;
     noResults = false;
-    const query = searchQuery.trim().replace(/^@/, '');
+    const query = searchQuery.trim().replace(/^@/, "");
 
     try {
       // Try searching by display name first
@@ -152,7 +152,7 @@
         noResults = true;
       }
     } catch (error) {
-      console.error('Search failed:', error);
+      console.error("Search failed:", error);
       noResults = true;
     } finally {
       isLoading = false;
@@ -160,7 +160,7 @@
   };
 
   const handleKeydown = (e: KeyboardEvent) => {
-    if (e.key === 'Enter' && searchQuery.trim() !== '') {
+    if (e.key === "Enter" && searchQuery.trim() !== "") {
       clearTimeout(debounceTimer);
       performSearch();
     }
@@ -175,7 +175,7 @@
     <!-- Desktop Layout -->
     <div class="relative hidden items-center justify-between sm:flex">
       <a
-        href={isLoggedIn && currentUser ? `/${currentUser.userName}` : '/'}
+        href={isLoggedIn && currentUser ? `/${currentUser.userName}` : "/"}
         class="flex-shrink-0 text-2xl font-bold text-orange-400">hitoQ</a
       >
 
@@ -305,7 +305,7 @@
     <div class="flex flex-col space-y-4 sm:hidden">
       <div class="flex items-center justify-between">
         <a
-          href={isLoggedIn && currentUser ? `/${currentUser.userName}` : '/'}
+          href={isLoggedIn && currentUser ? `/${currentUser.userName}` : "/"}
           class="text-2xl font-bold text-orange-400">hitoQ</a
         >
 

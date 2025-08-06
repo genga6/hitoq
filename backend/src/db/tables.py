@@ -67,6 +67,30 @@ class User(Base):
         back_populates="to_user",
         cascade="all, delete-orphan",
     )
+    blocks_made: Mapped[list["UserBlock"]] = relationship(
+        "UserBlock",
+        foreign_keys="[UserBlock.blocker_user_id]",
+        back_populates="blocker_user",
+        cascade="all, delete-orphan",
+    )
+    blocks_received: Mapped[list["UserBlock"]] = relationship(
+        "UserBlock",
+        foreign_keys="[UserBlock.blocked_user_id]",
+        back_populates="blocked_user",
+        cascade="all, delete-orphan",
+    )
+    reports_made: Mapped[list["UserReport"]] = relationship(
+        "UserReport",
+        foreign_keys="[UserReport.reporter_user_id]",
+        back_populates="reporter_user",
+        cascade="all, delete-orphan",
+    )
+    reports_received: Mapped[list["UserReport"]] = relationship(
+        "UserReport",
+        foreign_keys="[UserReport.reported_user_id]",
+        back_populates="reported_user",
+        cascade="all, delete-orphan",
+    )
 
 
 class ProfileItem(Base):
@@ -143,6 +167,62 @@ class Visit(Base):
     )
     visited_user: Mapped["User"] = relationship(
         "User", foreign_keys=[visited_user_id], back_populates="visits_received"
+    )
+
+
+class ReportTypeEnum(enum.Enum):
+    spam = "spam"
+    harassment = "harassment"
+    inappropriate_content = "inappropriate_content"
+    other = "other"
+
+
+class ReportStatusEnum(enum.Enum):
+    pending = "pending"
+    reviewing = "reviewing"
+    resolved = "resolved"
+    dismissed = "dismissed"
+
+
+class UserBlock(Base):
+    __tablename__ = "user_blocks"
+
+    block_id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
+    blocker_user_id: Mapped[str] = mapped_column(ForeignKey("users.user_id"))
+    blocked_user_id: Mapped[str] = mapped_column(ForeignKey("users.user_id"))
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+
+    blocker_user: Mapped["User"] = relationship(
+        "User", foreign_keys=[blocker_user_id], back_populates="blocks_made"
+    )
+    blocked_user: Mapped["User"] = relationship(
+        "User", foreign_keys=[blocked_user_id], back_populates="blocks_received"
+    )
+
+
+class UserReport(Base):
+    __tablename__ = "user_reports"
+
+    report_id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
+    reporter_user_id: Mapped[str] = mapped_column(ForeignKey("users.user_id"))
+    reported_user_id: Mapped[str] = mapped_column(ForeignKey("users.user_id"))
+    report_type: Mapped[ReportTypeEnum]
+    description: Mapped[str | None] = mapped_column(String(1000), nullable=True)
+    status: Mapped[ReportStatusEnum] = mapped_column(default=ReportStatusEnum.pending)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+    reviewed_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+
+    reporter_user: Mapped["User"] = relationship(
+        "User", foreign_keys=[reporter_user_id], back_populates="reports_made"
+    )
+    reported_user: Mapped["User"] = relationship(
+        "User", foreign_keys=[reported_user_id], back_populates="reports_received"
     )
 
 

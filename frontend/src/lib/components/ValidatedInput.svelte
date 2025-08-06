@@ -1,13 +1,13 @@
 <script lang="ts">
-  import { validateInput, type ValidationRule } from '$lib/utils/validation';
-  import type { Snippet } from 'svelte';
+  import { validateInput, type ValidationRule } from "$lib/utils/validation";
+  import type { Snippet } from "svelte";
 
   type Props = {
     value: string;
     rules: ValidationRule;
     placeholder?: string;
     disabled?: boolean;
-    type?: 'input' | 'textarea';
+    type?: "input" | "textarea";
     label?: string;
     onInput?: (value: string, isValid: boolean) => void;
     children?: Snippet;
@@ -15,15 +15,15 @@
   };
 
   const {
-    value = '',
+    value = "",
     rules,
-    placeholder = '',
+    placeholder = "",
     disabled = false,
-    type = 'input',
+    type = "input",
     label,
     onInput,
     children,
-    class: className = ''
+    class: className = ""
   }: Props = $props();
 
   let touched = $state(false);
@@ -71,7 +71,7 @@
     </label>
   {/if}
 
-  {#if type === 'textarea'}
+  {#if type === "textarea"}
     <textarea
       id="validated-input-{inputId}"
       bind:value={inputValue}

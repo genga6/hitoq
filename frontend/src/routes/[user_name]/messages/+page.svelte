@@ -1,7 +1,7 @@
 <script lang="ts">
-  import type { MessagesPageData } from '$lib/types';
-  import MessageList from './MessageList.svelte';
-  import { invalidateAll } from '$app/navigation';
+  import type { MessagesPageData } from "$lib/types";
+  import MessageList from "./MessageList.svelte";
+  import { invalidateAll } from "$app/navigation";
 
   type Props = {
     data: MessagesPageData & { currentUser: unknown; isLoggedIn: boolean; isOwner: boolean };
@@ -19,9 +19,10 @@
   const { currentUser, isLoggedIn, isOwner } = data;
 
   // いいねメッセージを除外してコメントのみを表示
-  const messages = data.messages && data.messages.length > 0 
-    ? data.messages.filter(msg => msg.messageType !== 'like') 
-    : [];
+  const messages =
+    data.messages && data.messages.length > 0
+      ? data.messages.filter((msg) => msg.messageType !== "like")
+      : [];
   const profile = data.profile;
 </script>
 

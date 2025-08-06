@@ -1,6 +1,6 @@
 <script lang="ts">
-  import QAPage from './QAPage.svelte';
-  import type { PageData } from './$types';
+  import QAPage from "./QAPage.svelte";
+  import type { PageData } from "./$types";
 
   const { data }: { data: PageData } = $props();
 </script>

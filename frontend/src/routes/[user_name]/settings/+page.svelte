@@ -1,9 +1,9 @@
 <script lang="ts">
-  import type { PageData } from './$types';
-  import { deleteUser } from '$lib/api-client/auth';
-  import { getVisitsVisibility, updateVisitsVisibility } from '$lib/api-client/visits';
-  import { updateCurrentUser } from '$lib/api-client/users';
-  import type { NotificationLevel } from '$lib/types';
+  import type { PageData } from "./$types";
+  import { deleteUser } from "$lib/api-client/auth";
+  import { getVisitsVisibility, updateVisitsVisibility } from "$lib/api-client/visits";
+  import { updateCurrentUser } from "$lib/api-client/users";
+  import type { NotificationLevel } from "$lib/types";
 
   type Props = {
     data: PageData;
@@ -12,7 +12,7 @@
   let { data }: Props = $props();
   let showDeleteDialog = $state(false);
   let isDeleting = $state(false);
-  let error = $state('');
+  let error = $state("");
 
   // Visits visibility settings
   let visitsVisible = $state(false);
@@ -20,7 +20,7 @@
   let savingVisibility = $state(false);
 
   // Notification settings
-  let notificationLevel = $state<NotificationLevel>('all');
+  let notificationLevel = $state<NotificationLevel>("all");
   let loadingNotification = $state(true);
   let savingNotification = $state(false);
 
@@ -32,7 +32,7 @@
         visitsVisible = result.visible;
       })
       .catch((e) => {
-        console.error('Failed to load visits visibility:', e);
+        console.error("Failed to load visits visibility:", e);
       })
       .finally(() => {
         loadingVisibility = false;
@@ -48,7 +48,7 @@
     try {
       await updateVisitsVisibility(data.profile.userId, visitsVisible);
     } catch (e) {
-      console.error('Failed to update visits visibility:', e);
+      console.error("Failed to update visits visibility:", e);
       // Revert the change
       visitsVisible = !visitsVisible;
     } finally {
@@ -64,7 +64,7 @@
       notificationLevel = newLevel;
       await updateCurrentUser({ notificationLevel: newLevel });
     } catch (e) {
-      console.error('Failed to update notification level:', e);
+      console.error("Failed to update notification level:", e);
       // Revert the change
       notificationLevel = previousLevel;
     } finally {
@@ -74,14 +74,14 @@
 
   const handleDeleteAccount = async () => {
     isDeleting = true;
-    error = '';
+    error = "";
 
     try {
       await deleteUser(data.profile.userId);
       // 強制的にページ全体をリロードしてサーバーサイドから最新状態を取得
-      window.location.href = '/';
+      window.location.href = "/";
     } catch (e) {
-      error = e instanceof Error ? e.message : 'アカウントの削除に失敗しました';
+      error = e instanceof Error ? e.message : "アカウントの削除に失敗しました";
       isDeleting = false;
     }
   };
@@ -156,8 +156,8 @@
                 type="radio"
                 name="notificationLevel"
                 value="all"
-                checked={notificationLevel === 'all'}
-                onchange={() => handleNotificationLevelChange('all')}
+                checked={notificationLevel === "all"}
+                onchange={() => handleNotificationLevelChange("all")}
                 disabled={savingNotification}
                 class="h-4 w-4 border-gray-300 text-orange-600 focus:ring-orange-500"
               />
@@ -174,8 +174,8 @@
                 type="radio"
                 name="notificationLevel"
                 value="important"
-                checked={notificationLevel === 'important'}
-                onchange={() => handleNotificationLevelChange('important')}
+                checked={notificationLevel === "important"}
+                onchange={() => handleNotificationLevelChange("important")}
                 disabled={savingNotification}
                 class="h-4 w-4 border-gray-300 text-orange-600 focus:ring-orange-500"
               />
@@ -190,8 +190,8 @@
                 type="radio"
                 name="notificationLevel"
                 value="none"
-                checked={notificationLevel === 'none'}
-                onchange={() => handleNotificationLevelChange('none')}
+                checked={notificationLevel === "none"}
+                onchange={() => handleNotificationLevelChange("none")}
                 disabled={savingNotification}
                 class="h-4 w-4 border-gray-300 text-orange-600 focus:ring-orange-500"
               />
@@ -256,7 +256,7 @@
           <button
             onclick={() => {
               showDeleteDialog = false;
-              error = '';
+              error = "";
             }}
             disabled={isDeleting}
             class="btn-secondary flex-1 text-sm md:text-base"
@@ -268,7 +268,7 @@
             disabled={isDeleting}
             class="btn-primary flex-1 border-red-600 bg-red-600 text-sm hover:bg-red-700 focus:ring-red-500 md:text-base"
           >
-            {isDeleting ? '削除中...' : '削除する'}
+            {isDeleting ? "削除中..." : "削除する"}
           </button>
         </div>
       </div>

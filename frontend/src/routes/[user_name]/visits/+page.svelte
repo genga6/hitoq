@@ -1,6 +1,6 @@
 <script lang="ts">
-  import VisitorsList from '$lib/components/VisitorsList.svelte';
-  import type { PageData } from './$types';
+  import VisitorsList from "$lib/components/VisitorsList.svelte";
+  import type { PageData } from "./$types";
 
   type Props = {
     data: PageData;

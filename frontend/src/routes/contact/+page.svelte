@@ -1,14 +1,14 @@
 <script lang="ts">
-  import ValidatedInput from '$lib/components/ValidatedInput.svelte';
-  import { ValidationRules, sanitizeInput } from '$lib/utils/validation';
+  import ValidatedInput from "$lib/components/ValidatedInput.svelte";
+  import { ValidationRules, sanitizeInput } from "$lib/utils/validation";
 
-  let selectedCategory = $state('bug');
+  let selectedCategory = $state("bug");
   let isSubmitting = $state(false);
   let showSuccess = $state(false);
-  let titleValue = $state('');
-  let descriptionValue = $state('');
-  let environmentValue = $state('');
-  let contactValue = $state('');
+  let titleValue = $state("");
+  let descriptionValue = $state("");
+  let environmentValue = $state("");
+  let contactValue = $state("");
 
   let titleValid = $state(false);
   let descriptionValid = $state(false);
@@ -18,21 +18,21 @@
   const formValid = $derived(titleValid && descriptionValid && environmentValid && contactValid);
 
   const GOOGLE_FORM_IDS = {
-    FORM_ID: '1FAIpQLSdlW6SxDm9gCWqdgadFXEt46fKkTWg2raYPqgXSVpMUku903Q',
-    CATEGORY: 'entry.1342089124',
-    TITLE: 'entry.1055742737',
-    DESCRIPTION: 'entry.274276593',
-    ENVIRONMENT: 'entry.133493195',
-    CONTACT: 'entry.1837922336'
+    FORM_ID: "1FAIpQLSdlW6SxDm9gCWqdgadFXEt46fKkTWg2raYPqgXSVpMUku903Q",
+    CATEGORY: "entry.1342089124",
+    TITLE: "entry.1055742737",
+    DESCRIPTION: "entry.274276593",
+    ENVIRONMENT: "entry.133493195",
+    CONTACT: "entry.1837922336"
   };
 
   const GOOGLE_FORMS_URL = `https://docs.google.com/forms/d/e/${GOOGLE_FORM_IDS.FORM_ID}/formResponse`;
 
   const categories = [
-    { value: 'bug', label: 'バグ報告', description: 'サービスの不具合やエラーについて' },
-    { value: 'feature', label: '機能要望', description: '新しい機能や改善の提案' },
-    { value: 'feedback', label: 'フィードバック', description: 'サービスに対する感想や意見' },
-    { value: 'other', label: 'その他', description: '上記以外のお問い合わせ' }
+    { value: "bug", label: "バグ報告", description: "サービスの不具合やエラーについて" },
+    { value: "feature", label: "機能要望", description: "新しい機能や改善の提案" },
+    { value: "feedback", label: "フィードバック", description: "サービスに対する感想や意見" },
+    { value: "other", label: "その他", description: "上記以外のお問い合わせ" }
   ];
 
   function handleSubmit(event: Event) {
@@ -50,22 +50,22 @@
 
     // Google Formsに送信
     fetch(GOOGLE_FORMS_URL, {
-      method: 'POST',
+      method: "POST",
       body: formData,
-      mode: 'no-cors'
+      mode: "no-cors"
     })
       .then(() => {
         showSuccess = true;
         // Reset form values
-        titleValue = '';
-        descriptionValue = '';
-        environmentValue = '';
-        contactValue = '';
-        selectedCategory = 'bug';
+        titleValue = "";
+        descriptionValue = "";
+        environmentValue = "";
+        contactValue = "";
+        selectedCategory = "bug";
       })
       .catch((error) => {
-        console.error('送信エラー:', error);
-        alert('送信に失敗しました。しばらく時間をおいて再度お試しください。');
+        console.error("送信エラー:", error);
+        alert("送信に失敗しました。しばらく時間をおいて再度お試しください。");
       })
       .finally(() => {
         isSubmitting = false;
@@ -191,7 +191,7 @@
           />
 
           <!-- 環境情報（バグ報告の場合のみ表示） -->
-          {#if selectedCategory === 'bug'}
+          {#if selectedCategory === "bug"}
             <div>
               <ValidatedInput
                 value={environmentValue}

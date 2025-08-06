@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { sendMessage } from '$lib/api-client/messages';
+  import { sendMessage } from "$lib/api-client/messages";
 
   type Props = {
     toUserId: string;
@@ -10,19 +10,19 @@
 
   const { toUserId, toUserName, onSuccess, onCancel }: Props = $props();
 
-  let content = $state('');
+  let content = $state("");
   let isSubmitting = $state(false);
-  let error = $state('');
-  let referenceQuestion = $state('');
+  let error = $state("");
+  let referenceQuestion = $state("");
 
   // URLパラメータから初期値を設定
   $effect(() => {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       const params = new URLSearchParams(window.location.search);
-      const composeParam = params.get('compose');
-      const referenceParam = params.get('reference');
+      const composeParam = params.get("compose");
+      const referenceParam = params.get("reference");
 
-      if (composeParam === 'true' && referenceParam) {
+      if (composeParam === "true" && referenceParam) {
         referenceQuestion = decodeURIComponent(referenceParam);
         content = `「${referenceQuestion}」について\n\n`;
       }
@@ -33,31 +33,31 @@
     event.preventDefault();
 
     if (!content.trim()) {
-      error = '質問内容を入力してください';
+      error = "質問内容を入力してください";
       return;
     }
 
     isSubmitting = true;
-    error = '';
+    error = "";
 
     try {
       await sendMessage({
         toUserId,
-        messageType: 'comment',
+        messageType: "comment",
         content: content.trim(),
         referenceAnswerId: referenceQuestion ? 1 : undefined // TODO: 実際のQ&AIDを取得
       });
 
-      content = '';
-      referenceQuestion = '';
+      content = "";
+      referenceQuestion = "";
 
       // URLパラメータをクリア
-      if (typeof window !== 'undefined') {
+      if (typeof window !== "undefined") {
         const url = new URL(window.location.href);
-        url.searchParams.delete('compose');
-        url.searchParams.delete('reference');
-        url.searchParams.delete('type');
-        window.history.replaceState({}, '', url.toString());
+        url.searchParams.delete("compose");
+        url.searchParams.delete("reference");
+        url.searchParams.delete("type");
+        window.history.replaceState({}, "", url.toString());
       }
 
       // onSuccessコールバックが提供されている場合は実行、そうでなければページリロード
@@ -68,7 +68,7 @@
         window.location.reload();
       }
     } catch (err) {
-      error = err instanceof Error ? err.message : '質問の送信に失敗しました';
+      error = err instanceof Error ? err.message : "質問の送信に失敗しました";
     } finally {
       isSubmitting = false;
     }
@@ -143,7 +143,7 @@
           ? 'cursor-not-allowed bg-gray-400 text-gray-600'
           : 'bg-orange-400 text-white hover:bg-orange-500'}"
       >
-        {isSubmitting ? '送信中...' : '質問を送信'}
+        {isSubmitting ? "送信中..." : "質問を送信"}
       </button>
     </div>
   </form>
