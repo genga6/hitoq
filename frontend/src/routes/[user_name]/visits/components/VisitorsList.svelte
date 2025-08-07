@@ -2,7 +2,7 @@
   import { getUserVisits, type Visit } from "$lib/api-client/visits";
   import { formatRelativeTime } from "$lib/utils/dateFormat";
   import VisitorItem from "./VisitorItem.svelte";
-  import EmptyState from "./EmptyState.svelte";
+  import EmptyState from "$lib/components/feedback/EmptyState.svelte";
 
   interface Props {
     userId: string;
@@ -108,7 +108,11 @@
       <p class="theme-text-secondary font-medium">{error}</p>
     </div>
   {:else if filteredVisits.length === 0}
-    <EmptyState {showOnlyLoggedIn} />
+    <EmptyState 
+      title="訪問者はまだいません"
+      description={showOnlyLoggedIn ? "ログインしたユーザーの訪問がまだありません" : "まだ誰も訪問していません"}
+      icon="visit"
+    />
   {:else}
     <div class="space-y-2">
       {#each filteredVisits as visit (visit.visit_id)}

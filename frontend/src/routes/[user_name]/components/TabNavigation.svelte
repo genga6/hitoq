@@ -1,7 +1,7 @@
 <script lang="ts">
   import { page } from "$app/state";
   import type { Profile } from "$lib/types";
-  import TabGroup from "$lib/components/TabGroup.svelte";
+  import TabGroup from "$lib/components/ui/TabGroup.svelte";
 
   type Props = {
     userName: Profile["userName"];

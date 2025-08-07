@@ -1,9 +1,9 @@
 <script lang="ts">
   import type { PageData } from "./$types";
-  import PrivacySettings from "./PrivacySettings.svelte";
-  import NotificationSettings from "./NotificationSettings.svelte";
-  import ThemeSettings from "./ThemeSettings.svelte";
-  import AccountDeletion from "./AccountDeletion.svelte";
+  import PrivacySettings from "./components/PrivacySettings.svelte";
+  import NotificationSettings from "./components/NotificationSettings.svelte";
+  import ThemeSettings from "./components/ThemeSettings.svelte";
+  import AccountDeletion from "./components/AccountDeletion.svelte";
 
   type Props = {
     data: PageData;

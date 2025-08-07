@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { Message } from "$lib/types";
-  import Avatar from "./Avatar.svelte";
+  import Avatar from "../../ui/Avatar.svelte";
   import { formatAbsoluteTime } from "$lib/utils/dateFormat";
 
   type Props = {

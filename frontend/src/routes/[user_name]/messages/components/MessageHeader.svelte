@@ -1,5 +1,5 @@
 <script lang="ts">
-  import Avatar from "$lib/components/Avatar.svelte";
+  import Avatar from "$lib/components/ui/Avatar.svelte";
   import { formatAbsoluteTime } from "$lib/utils/dateFormat";
   import type { Message } from "$lib/types";
 
@@ -101,7 +101,7 @@
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
-            title="返信"
+            aria-label="返信"
           >
             <path
               stroke-linecap="round"
@@ -169,9 +169,9 @@
         messageId={message.messageId}
         replyCount={message.replyCount}
         heartState={heartStates[message.messageId] || { liked: false, count: 0 }}
-        onReplyClick={onToggleReplyForm}
-        onThreadClick={onLoadThread}
-        onHeartToggle={() => onHeartToggle(message.messageId)}
+        onReplyClick={() => Promise.resolve(onToggleReplyForm())}
+        onThreadClick={() => Promise.resolve(onLoadThread())}
+        onHeartToggle={() => Promise.resolve(onHeartToggle(message.messageId))}
         {isTogglingHeart}
       />
     {/if}
@@ -179,9 +179,9 @@
     <!-- 返信フォーム -->
     {#if showReplyForm}
       <ReplyForm
-        onSubmit={onReply}
-        onCancel={() => onToggleReplyForm()}
-        {isSubmittingReply}
+        onSubmit={(content) => Promise.resolve(onReply(content))}
+        onCancel={() => Promise.resolve(onToggleReplyForm())}
+        isSubmitting={isSubmittingReply}
       />
     {/if}
 
@@ -192,12 +192,10 @@
         {heartStates}
         {currentUser}
         onClose={() => {}}
-        onHeartToggle={onHeartToggle}
-        onEdit={(messageId) => {
-          onSaveEdit(messageId);
-        }}
-        onDelete={onDelete}
-        onReply={onThreadReply}
+        onHeartToggle={(messageId) => Promise.resolve(onHeartToggle(messageId))}
+        onEdit={(messageId) => Promise.resolve(onSaveEdit(messageId))}
+        onDelete={(messageId) => Promise.resolve(onDelete(messageId))}
+        onReply={(threadMessage, content) => Promise.resolve(onThreadReply(threadMessage, content))}
         {isEditingOrDeleting}
         {isTogglingHeart}
         {isSubmittingReply}

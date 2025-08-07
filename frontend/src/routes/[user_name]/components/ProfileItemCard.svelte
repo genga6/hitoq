@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { ProfileItem } from "$lib/types";
-  import Editable from "$lib/components/Editable.svelte";
+  import Editable from "$lib/components/form/Editable.svelte";
 
   interface Props {
     item: ProfileItem;

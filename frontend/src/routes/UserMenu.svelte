@@ -1,8 +1,8 @@
 <script lang="ts">
-  import type { User } from "$lib/types";
+  import type { BaseUser } from "$lib/types";
 
   interface Props {
-    currentUser: User | null;
+    currentUser: BaseUser | null;
     showMenu: boolean;
     isMobile?: boolean;
     onLogout: () => void;

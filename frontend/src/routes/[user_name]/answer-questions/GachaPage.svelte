@@ -1,8 +1,8 @@
 <script lang="ts">
   import type { CategoryInfo } from "$lib/types";
   import type { Question } from "$lib/types";
-  import QuestionAnswerCard from "$lib/components/QuestionAnswerCard.svelte";
-  import GachaControls from "./GachaControls.svelte";
+  import QuestionAnswerCard from "$lib/components/domain/qna/QuestionAnswerCard.svelte";
+  import GachaControls from "./components/GachaControls.svelte";
 
   type Props = {
     categories: Record<string, CategoryInfo>;

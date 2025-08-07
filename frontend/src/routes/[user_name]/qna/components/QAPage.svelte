@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { UserAnswerGroup, UserAnswerGroupBackend, CategoryInfo } from "$lib/types/qna";
-  import MessageForm from "$lib/components/MessageForm.svelte";
+  import MessageForm from "$lib/components/domain/messaging/MessageForm.svelte";
   import AnsweredQuestions from "./AnsweredQuestions.svelte";
 
   const {

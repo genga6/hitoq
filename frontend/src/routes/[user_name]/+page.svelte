@@ -1,6 +1,6 @@
 <script lang="ts">
-  import Editable from "$lib/components/Editable.svelte";
-  import ProfileItemCard from "./ProfileItemCard.svelte";
+  import Editable from "$lib/components/form/Editable.svelte";
+  import ProfileItemCard from "./components/ProfileItemCard.svelte";
   import type { ProfileItem } from "$lib/types";
   import type { PageData } from "./$types";
   import { updateProfileItemValue, updateUserSelfIntroduction } from "$lib/utils/profileUpdates";

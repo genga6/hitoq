@@ -1,7 +1,7 @@
 <script lang="ts">
   import { sendMessage } from "$lib/api-client/messages";
   import type { BaseUser, Message } from "$lib/types";
-  import Button from "../../../lib/components/Button.svelte";
+  import Button from "$lib/components/ui/Button.svelte";
 
   const {
     isOwner,

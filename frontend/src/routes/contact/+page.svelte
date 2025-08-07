@@ -1,5 +1,5 @@
 <script lang="ts">
-  import ValidatedInput from "$lib/components/ValidatedInput.svelte";
+  import ValidatedInput from "$lib/components/form/ValidatedInput.svelte";
   import { ValidationRules, sanitizeInput } from "$lib/utils/validation";
 
   let selectedCategory = $state("bug");

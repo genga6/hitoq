@@ -1,7 +1,7 @@
 <script lang="ts">
   import { blocksApi } from "$lib/api-client";
   import type { ReportCreate, ReportType } from "$lib/types";
-  import Modal from "../../lib/components/Modal.svelte";
+  import Modal from "$lib/components/ui/Modal.svelte";
 
   let {
     isOpen = $bindable(false),

@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { Message } from "$lib/types";
-  import Avatar from "$lib/components/Avatar.svelte";
+  import Avatar from "$lib/components/ui/Avatar.svelte";
   import { formatAbsoluteTime } from "$lib/utils/dateFormat";
   import MessageActions from "./MessageActions.svelte";
   import ReplyForm from "./ReplyForm.svelte";

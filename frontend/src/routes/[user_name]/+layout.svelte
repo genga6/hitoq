@@ -1,6 +1,6 @@
 <script lang="ts">
-  import ProfileHeader from "./ProfileHeader.svelte";
-  import TabNavigation from "./TabNavigation.svelte";
+  import ProfileHeader from "./components/ProfileHeader.svelte";
+  import TabNavigation from "./components/TabNavigation.svelte";
   import type { Snippet } from "svelte";
   import { trackUserVisit, checkBlockStatus } from "$lib/utils/userVisitTracking";
   import type { LayoutData } from "./$types";

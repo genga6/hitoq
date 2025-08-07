@@ -1,6 +1,6 @@
 <script lang="ts">
   import { sendMessage } from "$lib/api-client/messages";
-  import TextareaForm from "$lib/components/TextareaForm.svelte";
+  import TextareaForm from "$lib/components/form/TextareaForm.svelte";
 
   const { showCommentForm, profileUserId, answerId, onCancel, onSuccess } = $props<{
     showCommentForm: boolean;

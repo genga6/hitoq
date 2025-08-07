@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { CategoryInfo } from "$lib/types";
-  import Card from "$lib/components/Card.svelte";
+  import Card from "../../ui/Card.svelte";
 
   const {
     question,

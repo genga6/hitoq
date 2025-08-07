@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { MessagesPageData } from "$lib/types";
-  import MessageList from "./MessageList.svelte";
+  import MessageList from "./components/MessageList.svelte";
   import { invalidateAll } from "$app/navigation";
 
   type Props = {

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import QuestionAnswerCard from "$lib/components/QuestionAnswerCard.svelte";
+  import QuestionAnswerCard from "$lib/components/domain/qna/QuestionAnswerCard.svelte";
   import ActionButtons from "./ActionButtons.svelte";
   import CommentForm from "./CommentForm.svelte";
   import MessageThread from "./MessageThread.svelte";

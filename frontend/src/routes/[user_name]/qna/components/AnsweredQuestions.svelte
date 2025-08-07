@@ -1,7 +1,7 @@
 <script lang="ts">
   import QAItem from "./QAItem.svelte";
-  import HintTooltip from "$lib/components/HintTooltip.svelte";
-  import CategoryFilter from "$lib/components/CategoryFilter.svelte";
+  import HintTooltip from "$lib/components/ui/HintTooltip.svelte";
+  import CategoryFilter from "$lib/components/domain/users/CategoryFilter.svelte";
   import type { CategoryInfo, Question } from "$lib/types";
 
   interface AnsweredQAPair {
