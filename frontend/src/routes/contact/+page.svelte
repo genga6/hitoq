@@ -119,6 +119,7 @@
         <form onsubmit={handleSubmit} class="space-y-6">
           <!-- カテゴリー選択 -->
           <div>
+            <!-- svelte-ignore a11y_label_has_associated_control -->
             <label class="theme-text-secondary mb-3 block text-sm font-medium">
               お問い合わせ種別 <span class="text-red-500">*</span>
             </label>

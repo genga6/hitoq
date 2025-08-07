@@ -24,12 +24,12 @@
         <div></div>
         {#if selectedCategories.length > 0}
           <div class="flex items-center gap-3">
-            <span class="text-sm theme-text-muted">
+            <span class="theme-text-muted text-sm">
               {answeredCount}件表示中
             </span>
             <button
               onclick={onClearFilters}
-              class="inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-sm font-medium theme-text-secondary theme-visitor-hover"
+              class="theme-text-secondary theme-visitor-hover inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-sm font-medium"
             >
               <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path
@@ -45,14 +45,14 @@
         {/if}
       </div>
 
-      <div class="rounded-lg border border-gray-300 dark:border-gray-600 theme-bg-surface">
+      <div class="theme-bg-surface rounded-lg border border-gray-300 dark:border-gray-600">
         <button
           onclick={() => (showCategoryFilter = !showCategoryFilter)}
-          class="flex w-full items-center justify-between p-4 text-left theme-visitor-hover"
+          class="theme-visitor-hover flex w-full items-center justify-between p-4 text-left"
         >
           <div class="flex items-center gap-2">
             <svg
-              class="h-4 w-4 theme-text-muted"
+              class="theme-text-muted h-4 w-4"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -64,7 +64,7 @@
                 d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.707A1 1 0 013 7V4z"
               />
             </svg>
-            <span class="text-sm font-medium theme-text-secondary">カテゴリで絞り込み</span>
+            <span class="theme-text-secondary text-sm font-medium">カテゴリで絞り込み</span>
             {#if selectedCategories.length > 0}
               <span
                 class="rounded-full bg-orange-100 px-2 py-0.5 text-xs font-medium text-orange-700"
@@ -74,7 +74,7 @@
             {/if}
           </div>
           <svg
-            class="h-4 w-4 theme-text-muted transition-transform duration-200 {showCategoryFilter
+            class="theme-text-muted h-4 w-4 transition-transform duration-200 {showCategoryFilter
               ? 'rotate-180'
               : ''}"
             fill="none"
@@ -95,14 +95,14 @@
             ? 'max-h-96 opacity-100'
             : 'max-h-0 opacity-0'}"
         >
-          <div class="border-t border-gray-300 dark:border-gray-600 p-4">
+          <div class="border-t border-gray-300 p-4 dark:border-gray-600">
             <div class="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
               {#each availableCategories as categoryId (categoryId)}
                 {@const category = categories[categoryId]}
                 {#if category}
                   <button
                     onclick={() => onToggleCategory(categoryId)}
-                    class="group relative overflow-hidden rounded-lg border border-gray-300 dark:border-gray-600 theme-bg-surface p-3 text-left transition-all duration-200 hover:border-orange-300 hover:shadow-sm {selectedCategories.includes(
+                    class="group theme-bg-surface relative overflow-hidden rounded-lg border border-gray-300 p-3 text-left transition-all duration-200 hover:border-orange-300 hover:shadow-sm dark:border-gray-600 {selectedCategories.includes(
                       categoryId
                     )
                       ? 'border-orange-400 bg-orange-50 ring-2 ring-orange-200'
@@ -134,7 +134,7 @@
                         </div>
                       {/if}
                     </div>
-                    <p class="mt-1 truncate text-xs theme-text-muted" title={category.description}>
+                    <p class="theme-text-muted mt-1 truncate text-xs" title={category.description}>
                       {category.description}
                     </p>
                   </button>

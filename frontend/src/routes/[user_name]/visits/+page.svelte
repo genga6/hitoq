@@ -1,5 +1,5 @@
 <script lang="ts">
-  import VisitorsList from "$lib/components/VisitorsList.svelte";
+  import VisitorsList from "./VisitorsList.svelte";
   import type { PageData } from "./$types";
 
   type Props = {

@@ -1,50 +1,41 @@
 <script lang="ts">
-  import ProfileHeader from "$lib/components/ProfileHeader.svelte";
-  import TabNavigation from "$lib/components/TabNavigation.svelte";
+  import ProfileHeader from "./ProfileHeader.svelte";
+  import TabNavigation from "./TabNavigation.svelte";
   import type { Snippet } from "svelte";
-  import type { BasePageData } from "$lib/types";
-  import { recordVisit } from "$lib/api-client/visits";
-  import { blocksApi } from "$lib/api-client";
+  import { trackUserVisit, checkBlockStatus } from "$lib/utils/userVisitTracking";
+  import type { LayoutData } from "./$types";
 
-  type Props = {
-    data: BasePageData;
+  interface Props {
+    data: LayoutData;
     children?: Snippet;
-  };
+  }
   let { data, children }: Props = $props();
 
   let isBlockedByCurrentUser = $state(false);
 
-  // Record visit and check block status when page loads
+  // Record visit when profile is available
   $effect(() => {
-    if (data.profile) {
-      // Record visit
-      recordVisit(data.profile.userId).catch((error) => {
-        // Silently fail - visit recording is not critical
-        console.debug("Failed to record visit:", error);
-      });
-
-      // Check if current user has blocked this user
-      if (!data.isOwner && data.isLoggedIn) {
-        blocksApi
-          .checkIsBlocked(data.profile.userId)
-          .then((result) => {
-            isBlockedByCurrentUser = result.is_blocked;
-          })
-          .catch((error) => {
-            console.debug("Failed to check block status:", error);
-            isBlockedByCurrentUser = false;
-          });
-      } else {
-        // オーナーまたはログアウト時は必ずfalse
-        isBlockedByCurrentUser = false;
-      }
+    if (data?.profile?.userId) {
+      trackUserVisit(data.profile.userId);
     }
+  });
+
+  // Check block status when needed
+  $effect(() => {
+    if (!data?.profile?.userId || data?.isOwner || !data?.isLoggedIn) {
+      isBlockedByCurrentUser = false;
+      return;
+    }
+
+    checkBlockStatus(data.profile.userId).then((blocked) => {
+      isBlockedByCurrentUser = blocked;
+    });
   });
 </script>
 
 <main class="flex min-h-screen justify-center p-4 md:p-6">
   <div class="card w-full max-w-4xl space-y-3 p-3 sm:space-y-4 sm:p-4 md:space-y-6 md:p-6">
-    {#if data.profile}
+    {#if data?.profile}
       <!-- プロフィールヘッダーは常に表示 -->
       <ProfileHeader
         displayName={data.profile.displayName}
@@ -52,12 +43,11 @@
         bio={data.profile.bio}
         userName={data.profile.userName}
         userId={data.profile.userId}
-        isOwner={data.isOwner}
+        isOwner={data.isOwner ?? false}
         onBlockStatusChange={(blocked) => (isBlockedByCurrentUser = blocked)}
       />
 
       {#if isBlockedByCurrentUser}
-        <!-- ブロック中の表示 (タブ以下のコンテンツ部分のみ) -->
         <div class="py-12 text-center">
           <div
             class="theme-bg-elevated mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full"
@@ -85,6 +75,7 @@
           <button
             onclick={async () => {
               try {
+                const { blocksApi } = await import("$lib/api-client");
                 await blocksApi.removeBlock(data.profile.userId);
                 isBlockedByCurrentUser = false;
               } catch (error) {
@@ -97,11 +88,8 @@
           </button>
         </div>
       {:else}
-        <!-- 通常のタブ・コンテンツ表示 -->
-        <TabNavigation userName={data.profile.userName} isOwner={data.isOwner} />
-        {#if children}
-          {@render children()}
-        {/if}
+        <TabNavigation userName={data.profile.userName} isOwner={data.isOwner ?? false} />
+        {@render children?.()}
       {/if}
     {/if}
   </div>

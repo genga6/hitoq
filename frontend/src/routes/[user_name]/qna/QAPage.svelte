@@ -1,11 +1,6 @@
 <script lang="ts">
-  import type {
-    QATemplate,
-    UserAnswerGroup,
-    UserAnswerGroupBackend,
-    CategoryInfo
-  } from "$lib/types/qna";
-  import MessageForm from "../messages/MessageForm.svelte";
+  import type { UserAnswerGroup, UserAnswerGroupBackend, CategoryInfo } from "$lib/types/qna";
+  import MessageForm from "$lib/components/MessageForm.svelte";
   import AnsweredQuestions from "./AnsweredQuestions.svelte";
 
   const {
@@ -18,7 +13,6 @@
     isLoggedIn = false
   } = $props<{
     initialAnswerGroups?: UserAnswerGroupBackend[];
-    availableTemplates?: QATemplate[];
     categories?: Record<string, CategoryInfo>;
     isOwner: boolean;
     userId: string;

@@ -297,7 +297,7 @@ body {
 }
 
 .theme-button-action {
-  @apply flex items-center gap-1 rounded-full px-1.5 py-1 text-xs transition-all duration-200 sm:px-2 sm:py-1 sm:text-sm bg-gray-50 text-gray-700 hover:bg-gray-100 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700;
+  @apply flex items-center gap-1 rounded-full bg-gray-50 px-1.5 py-1 text-xs text-gray-700 transition-all duration-200 hover:bg-gray-100 sm:px-2 sm:py-1 sm:text-sm dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700;
 }
 
 /* Dropdown Components */

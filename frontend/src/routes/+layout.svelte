@@ -10,7 +10,9 @@
     refreshAccessToken,
     getCurrentUser
   } from "$lib/api-client/auth";
-  import NotificationDropdown from "$lib/components/NotificationDropdown.svelte";
+  import NotificationDropdown from "./NotificationDropdown.svelte";
+  import SearchInput from "./SearchInput.svelte";
+  import UserMenu from "./UserMenu.svelte";
   import type { Snippet } from "svelte";
 
   import type { UserCandidate } from "$lib/types";
@@ -42,8 +44,8 @@
   let showCandidates = $state(false);
   let showMenu = $state(false);
 
-  let menuElement: HTMLDivElement | null = null;
-  let toggleButton: HTMLButtonElement | null = null;
+  let menuElement = $state<HTMLDivElement | null>(null);
+  let toggleButton = $state<HTMLButtonElement | null>(null);
 
   const login = () => {
     redirectToTwitterLogin();
@@ -69,17 +71,26 @@
     showCandidates = false;
   }
 
+  // テーマ管理のeffect
   $effect(() => {
     if (!browser) return;
 
-    // テーマストアの購読
     const unsubscribeTheme = themeStore.subscribe((theme) => {
       currentTheme = theme;
       updateThemeClass(theme);
     });
 
-    // テーマの初期化と監視
     const unwatchSystemTheme = watchSystemTheme(currentTheme);
+
+    return () => {
+      unsubscribeTheme();
+      unwatchSystemTheme?.();
+    };
+  });
+
+  // クリックアウトサイド管理のeffect
+  $effect(() => {
+    if (!browser) return;
 
     const unregisterMenu = useClickOutside(menuElement, [toggleButton], () => {
       showMenu = false;
@@ -89,6 +100,26 @@
       showCandidates = false;
       noResults = false;
     });
+
+    const unregisterMobileCandidates = useClickOutside(
+      mobileCandidatesElement,
+      [mobileSearchInputElement],
+      () => {
+        showCandidates = false;
+        noResults = false;
+      }
+    );
+
+    return () => {
+      unregisterMenu();
+      unregisterCandidates();
+      unregisterMobileCandidates();
+    };
+  });
+
+  // 初期認証チェック
+  $effect(() => {
+    if (!browser) return;
 
     const checkAuthInitially = async () => {
       try {
@@ -108,38 +139,35 @@
     };
 
     checkAuthInitially();
+  });
 
-    let refreshInterval: number;
-    if (isLoggedIn) {
-      refreshInterval = setInterval(
-        async () => {
-          const success = await refreshAccessToken();
-          if (!success) {
-            console.warn("トークンの更新に失敗しました。再ログインが必要です。");
-            authLogout();
-          }
-        },
-        13 * 60 * 1000
-      ); // 13分間隔
-    }
+  // トークンリフレッシュ管理のeffect（ログイン状態に依存）
+  $effect(() => {
+    if (!browser || !isLoggedIn) return;
+
+    const refreshInterval = setInterval(
+      async () => {
+        const success = await refreshAccessToken();
+        if (!success) {
+          console.warn("トークンの更新に失敗しました。再ログインが必要です。");
+          authLogout();
+        }
+      },
+      13 * 60 * 1000
+    );
 
     return () => {
-      unsubscribeTheme();
-      unwatchSystemTheme?.();
-      unregisterMenu();
-      unregisterCandidates();
-      if (refreshInterval) {
-        clearInterval(refreshInterval);
-      }
+      clearInterval(refreshInterval);
     };
   });
 
+  // Search state
   let isLoading = $state(false);
   let noResults = $state(false);
-  let debounceTimer: number;
+  let debounceTimer: ReturnType<typeof setTimeout> | undefined;
 
   const handleInput = () => {
-    clearTimeout(debounceTimer);
+    if (debounceTimer) clearTimeout(debounceTimer);
     showCandidates = false;
     noResults = false;
 
@@ -183,13 +211,15 @@
 
   const handleKeydown = (e: KeyboardEvent) => {
     if (e.key === "Enter" && searchQuery.trim() !== "") {
-      clearTimeout(debounceTimer);
+      if (debounceTimer) clearTimeout(debounceTimer);
       performSearch();
     }
   };
 
-  let candidatesElement: HTMLDivElement | null = null;
-  let searchInputElement: HTMLInputElement | null = null;
+  let candidatesElement = $state<HTMLDivElement | null>(null);
+  let searchInputElement = $state<HTMLInputElement | null>(null);
+  let mobileCandidatesElement = $state<HTMLDivElement | null>(null);
+  let mobileSearchInputElement = $state<HTMLInputElement | null>(null);
 </script>
 
 <header class="theme-bg-surface relative z-50 w-full py-4 shadow-md md:py-6 lg:py-8">
@@ -201,119 +231,33 @@
         class="flex-shrink-0 text-2xl font-bold text-orange-400">hitoQ</a
       >
 
-      <div class="absolute left-1/2 w-full max-w-sm -translate-x-1/2 md:max-w-md">
-        <input
-          type="text"
-          bind:value={searchQuery}
-          oninput={handleInput}
-          onkeydown={handleKeydown}
-          placeholder="ユーザー検索"
-          class="input-primary rounded-full text-sm"
+      <div class="absolute left-1/2 w-full max-w-md -translate-x-1/2 lg:max-w-lg">
+        <SearchInput
+          bind:searchQuery
+          bind:candidatesElement
+          bind:searchInputElement
+          {isLoading}
+          {candidates}
+          {showCandidates}
+          {noResults}
+          onInput={handleInput}
+          onKeydown={handleKeydown}
+          onSelectCandidate={selectCandidate}
         />
-
-        {#if isLoading}
-          <div class="absolute top-1/2 right-3 -translate-y-1/2">
-            <svg
-              class="h-5 w-5 animate-spin text-gray-500"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-            >
-              <circle
-                class="opacity-25"
-                cx="12"
-                cy="12"
-                r="10"
-                stroke="currentColor"
-                stroke-width="4"
-              ></circle>
-              <path
-                class="opacity-75"
-                fill="currentColor"
-                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-              ></path>
-            </svg>
-          </div>
-        {/if}
-
-        {#if showCandidates || noResults}
-          <div
-            bind:this={candidatesElement}
-            class="theme-border theme-bg-surface absolute left-1/2 z-[9999] mt-2 w-full -translate-x-1/2 rounded-lg border shadow"
-          >
-            {#if showCandidates}
-              {#each candidates as user (user.userName)}
-                <button
-                  class="theme-hover-bg flex w-full cursor-pointer items-center gap-3 px-4 py-2 text-left"
-                  onclick={() => selectCandidate(user.userName)}
-                >
-                  {#if user.iconUrl}
-                    <img src={user.iconUrl} alt="icon" class="h-6 w-6 rounded-full" />
-                  {/if}
-                  <div class="flex flex-col">
-                    <span class="theme-text-primary text-sm font-medium">{user.displayName}</span>
-                    <span class="theme-text-secondary text-xs">@{user.userName}</span>
-                  </div>
-                </button>
-              {/each}
-            {:else if noResults}
-              <div class="theme-text-muted px-4 py-3 text-sm">ユーザーが見つかりませんでした。</div>
-            {/if}
-          </div>
-        {/if}
       </div>
 
       <div class="absolute right-0 flex items-center gap-2">
         {#if isLoggedIn}
           <NotificationDropdown {isLoggedIn} currentUserName={currentUser?.userName} />
 
-          <div class="relative">
-            <button
-              bind:this={toggleButton}
-              onclick={() => (showMenu = !showMenu)}
-              class="flex h-12 w-12 items-center justify-center overflow-hidden rounded-full border border-gray-300 ring-orange-400 transition hover:ring-2"
-              aria-label="ユーザーメニューを開く"
-            >
-              {#if currentUser?.iconUrl}
-                <img
-                  src={currentUser.iconUrl}
-                  alt="ユーザーアイコン"
-                  class="h-full w-full rounded-full object-cover"
-                />
-              {:else}
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                  class="h-6 w-6 text-gray-600"
-                >
-                  <path
-                    fill-rule="evenodd"
-                    d="M7.5 6a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM3.751 20.105a8.25 8.25 0 0116.498 0 .75.75 0 01-.437.695A18.683 18.683 0 0112 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 01-.437-.695z"
-                    clip-rule="evenodd"
-                  />
-                </svg>
-              {/if}
-            </button>
-
-            {#if showMenu}
-              <div
-                bind:this={menuElement}
-                class="theme-border theme-bg-surface absolute top-full right-0 z-10 mt-2 w-40 rounded-lg border shadow-lg"
-              >
-                <a
-                  href="/{currentUser?.userName}/settings"
-                  class="theme-text-primary theme-hover-bg block px-4 py-2"
-                  >設定
-                </a>
-                <button
-                  onclick={logout}
-                  class="theme-text-primary theme-hover-bg w-full px-4 py-2 text-left"
-                  >ログアウト</button
-                >
-              </div>
-            {/if}
-          </div>
+          <UserMenu
+            {currentUser}
+            {showMenu}
+            bind:toggleButton
+            bind:menuElement
+            onLogout={logout}
+            onToggleMenu={() => (showMenu = !showMenu)}
+          />
         {:else}
           <button onclick={login} class="btn-primary rounded-full"> ログイン </button>
         {/if}
@@ -332,53 +276,15 @@
           <div class="flex items-center gap-2">
             <NotificationDropdown {isLoggedIn} currentUserName={currentUser?.userName} />
 
-            <div class="relative">
-              <button
-                bind:this={toggleButton}
-                onclick={() => (showMenu = !showMenu)}
-                class="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border border-gray-300 ring-orange-400 transition hover:ring-2"
-                aria-label="ユーザーメニューを開く"
-              >
-                {#if currentUser?.iconUrl}
-                  <img
-                    src={currentUser.iconUrl}
-                    alt="ユーザーアイコン"
-                    class="h-full w-full rounded-full object-cover"
-                  />
-                {:else}
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
-                    class="h-5 w-5 text-gray-600"
-                  >
-                    <path
-                      fill-rule="evenodd"
-                      d="M7.5 6a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM3.751 20.105a8.25 8.25 0 0116.498 0 .75.75 0 01-.437.695A18.683 18.683 0 0112 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 01-.437-.695z"
-                      clip-rule="evenodd"
-                    />
-                  </svg>
-                {/if}
-              </button>
-
-              {#if showMenu}
-                <div
-                  bind:this={menuElement}
-                  class="theme-border theme-bg-surface absolute top-full right-0 z-10 mt-2 w-40 rounded-lg border shadow-lg"
-                >
-                  <a
-                    href="/{currentUser?.userName}/settings"
-                    class="theme-text-primary theme-hover-bg block px-4 py-2"
-                    >設定
-                  </a>
-                  <button
-                    onclick={logout}
-                    class="theme-text-primary theme-hover-bg w-full px-4 py-2 text-left"
-                    >ログアウト</button
-                  >
-                </div>
-              {/if}
-            </div>
+            <UserMenu
+              {currentUser}
+              {showMenu}
+              bind:toggleButton
+              bind:menuElement
+              onLogout={logout}
+              onToggleMenu={() => (showMenu = !showMenu)}
+              isMobile={true}
+            />
           </div>
         {:else}
           <button onclick={login} class="btn-primary rounded-full px-3 py-1.5 text-sm">
@@ -387,66 +293,19 @@
         {/if}
       </div>
 
-      <!-- Mobile Search -->
-      <div class="relative">
-        <input
-          type="text"
-          bind:value={searchQuery}
-          bind:this={searchInputElement}
-          oninput={handleInput}
-          onkeydown={handleKeydown}
-          placeholder="ユーザー検索"
-          class="input-primary rounded-full text-sm"
-        />
-
-        {#if isLoading}
-          <div class="absolute top-1/2 right-3 -translate-y-1/2">
-            <svg
-              class="h-5 w-5 animate-spin text-gray-500"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-            >
-              <circle
-                class="opacity-25"
-                cx="12"
-                cy="12"
-                r="10"
-                stroke="currentColor"
-                stroke-width="4"
-              ></circle>
-              <path
-                class="opacity-75"
-                fill="currentColor"
-                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-              ></path>
-            </svg>
-          </div>
-        {/if}
-
-        {#if showCandidates || noResults}
-          <div bind:this={candidatesElement} class="theme-dropdown absolute z-[9999] mt-2 w-full">
-            {#if showCandidates}
-              {#each candidates as user (user.userName)}
-                <button
-                  class="theme-hover-bg flex w-full cursor-pointer items-center gap-3 px-4 py-2 text-left"
-                  onclick={() => selectCandidate(user.userName)}
-                >
-                  {#if user.iconUrl}
-                    <img src={user.iconUrl} alt="icon" class="h-6 w-6 rounded-full" />
-                  {/if}
-                  <div class="flex flex-col">
-                    <span class="theme-text-primary text-sm font-medium">{user.displayName}</span>
-                    <span class="theme-text-secondary text-xs">@{user.userName}</span>
-                  </div>
-                </button>
-              {/each}
-            {:else if noResults}
-              <div class="theme-text-muted px-4 py-3 text-sm">ユーザーが見つかりませんでした。</div>
-            {/if}
-          </div>
-        {/if}
-      </div>
+      <SearchInput
+        bind:searchQuery
+        bind:candidatesElement={mobileCandidatesElement}
+        bind:searchInputElement={mobileSearchInputElement}
+        {isLoading}
+        {candidates}
+        {showCandidates}
+        {noResults}
+        isMobile={true}
+        onInput={handleInput}
+        onKeydown={handleKeydown}
+        onSelectCandidate={selectCandidate}
+      />
     </div>
   </div>
 </header>

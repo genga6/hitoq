@@ -6,11 +6,14 @@
     markMessageAsRead
   } from "$lib/api-client/messages";
   import type { Message } from "$lib/types";
+  import TabGroup from "../lib/components/TabGroup.svelte";
 
   type Props = {
     isLoggedIn: boolean;
     currentUserName?: string;
   };
+
+  type NotificationTabId = "all" | "likes" | "comments";
 
   let { isLoggedIn, currentUserName }: Props = $props();
 
@@ -18,10 +21,12 @@
   let notifications = $state<Message[]>([]);
   let showDropdown = $state(false);
   let isLoading = $state(false);
-  let activeTab = $state<"all" | "likes" | "comments">("all");
+  let activeTab = $state<NotificationTabId>("all");
 
-  let dropdownElement: HTMLDivElement | null = null;
-  let toggleButton: HTMLButtonElement | null = null;
+  // svelte-ignore non_reactive_update
+    let dropdownElement: HTMLDivElement | null = null;
+  // svelte-ignore non_reactive_update
+    let toggleButton: HTMLButtonElement | null = null;
 
   const loadNotifications = async () => {
     if (!isLoggedIn) return;
@@ -134,6 +139,24 @@
     return "今";
   };
 
+  const notificationTabs = $derived([
+    { 
+      id: "all", 
+      label: "すべて", 
+      count: notifications.length 
+    },
+    { 
+      id: "likes", 
+      label: "❤️ いいね", 
+      count: notifications.filter(n => n.messageType === "like" || n.content?.includes("いいね")).length 
+    },
+    { 
+      id: "comments", 
+      label: "💬 コメント", 
+      count: notifications.filter(n => n.messageType === "comment" && !n.content?.includes("いいね")).length 
+    }
+  ]);
+
   // Load initial notification count immediately
   $effect(() => {
     console.log("🔔 NotificationDropdown effect - isLoggedIn:", isLoggedIn);
@@ -222,38 +245,13 @@
         </div>
 
         <!-- タブナビゲーション -->
-        <div class="theme-border border-b">
-          <nav class="flex">
-            <button
-              onclick={() => (activeTab = "all")}
-              class="flex-1 px-4 py-2 text-sm font-medium {activeTab === 'all'
-                ? 'theme-tab-active'
-                : 'theme-tab-inactive'}"
-            >
-              すべて ({notifications.length})
-            </button>
-            <button
-              onclick={() => (activeTab = "likes")}
-              class="flex-1 px-4 py-2 text-sm font-medium {activeTab === 'likes'
-                ? 'theme-tab-active'
-                : 'theme-tab-inactive'}"
-            >
-              ❤️ いいね ({notifications.filter(
-                (n) => n.messageType === "like" || n.content?.includes("いいね")
-              ).length})
-            </button>
-            <button
-              onclick={() => (activeTab = "comments")}
-              class="flex-1 px-4 py-2 text-sm font-medium {activeTab === 'comments'
-                ? 'theme-tab-active'
-                : 'theme-tab-inactive'}"
-            >
-              💬 コメント ({notifications.filter(
-                (n) => n.messageType === "comment" && !n.content?.includes("いいね")
-              ).length})
-            </button>
-          </nav>
-        </div>
+        <TabGroup 
+          tabs={notificationTabs} 
+          activeTab={activeTab} 
+          onTabChange={(tabId) => activeTab = tabId as NotificationTabId}
+          variant="filter" 
+          size="sm" 
+        />
 
         <div class="max-h-80 overflow-y-auto">
           {#if isLoading}

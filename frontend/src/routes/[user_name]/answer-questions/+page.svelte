@@ -5,4 +5,4 @@
   const { data }: { data: PageData } = $props();
 </script>
 
-<GachaPage categories={data.categories} isOwner={data.isOwner} userId={data.profile.userId} />
+<GachaPage categories={data.categories} userId={data.profile.userId} />

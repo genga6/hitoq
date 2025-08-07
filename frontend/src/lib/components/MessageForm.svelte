@@ -81,7 +81,6 @@
   </h3>
 
   <form onsubmit={handleSubmit} class="space-y-4">
-    <!-- 質問内容 -->
     <div>
       <label for="content" class="mb-2 block text-sm font-medium text-gray-700"> 質問内容 </label>
       <textarea
@@ -94,7 +93,6 @@
       ></textarea>
     </div>
 
-    <!-- 参照している質問がある場合 -->
     {#if referenceQuestion}
       <div class="rounded-md border border-orange-200 bg-orange-50 p-3">
         <div class="flex items-start space-x-2">
@@ -119,14 +117,12 @@
       </div>
     {/if}
 
-    <!-- エラーメッセージ -->
     {#if error}
       <div class="rounded-md bg-red-50 p-3">
         <p class="text-sm text-red-700">{error}</p>
       </div>
     {/if}
 
-    <!-- ボタン -->
     <div class="flex justify-end gap-3">
       <button
         type="button"
