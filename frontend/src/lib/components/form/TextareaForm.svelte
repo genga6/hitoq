@@ -1,5 +1,4 @@
 <script lang="ts">
-
   type Props = {
     value?: string;
     placeholder?: string;
@@ -121,7 +120,7 @@
       <button
         type="button"
         onclick={handleCancel}
-        class="px-3 py-1 text-xs text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-md transition-colors"
+        class="rounded-md px-3 py-1 text-xs text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-800"
       >
         {cancelLabel}
       </button>
@@ -130,14 +129,15 @@
       type="submit"
       disabled={!content.trim() || isOverLimit || isSubmitting || loading}
       onclick={handleSubmit}
-      class="rounded-md px-4 py-2 text-sm font-medium transition-colors focus:ring-2 focus:ring-orange-400 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed 
-            {isSubmitting || loading || !content.trim() || isOverLimit 
-              ? 'bg-gray-400 text-gray-600' 
-              : 'bg-orange-500 text-white hover:bg-orange-600'}"
+      class="rounded-md px-4 py-2 text-sm font-medium transition-colors focus:ring-2 focus:ring-orange-400 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed
+            {isSubmitting || loading || !content.trim() || isOverLimit
+        ? 'bg-gray-400 text-gray-600'
+        : 'bg-orange-500 text-white hover:bg-orange-600'}"
     >
       {#if isSubmitting || loading}
         <svg class="mr-2 inline h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
-          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"
+          ></circle>
           <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 0116 0 8 8 0 01-16 0z"></path>
         </svg>
       {/if}

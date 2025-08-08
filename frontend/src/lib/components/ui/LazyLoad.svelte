@@ -10,13 +10,7 @@
     onLoad?: () => void;
   };
 
-  const {
-    threshold = 0.1,
-    rootMargin = "50px",
-    placeholder,
-    children,
-    onLoad
-  }: Props = $props();
+  const { threshold = 0.1, rootMargin = "50px", placeholder, children, onLoad }: Props = $props();
 
   let loaded = $state(false);
   let containerElement: HTMLDivElement | null = $state(null);

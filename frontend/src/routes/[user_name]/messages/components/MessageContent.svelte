@@ -51,10 +51,7 @@
         >
           {isEditingOrDeleting ? "保存中..." : "保存"}
         </button>
-        <button
-          onclick={onCancelEdit}
-          class="px-2 py-1 text-xs text-gray-600 hover:text-gray-800"
-        >
+        <button onclick={onCancelEdit} class="px-2 py-1 text-xs text-gray-600 hover:text-gray-800">
           キャンセル
         </button>
       </div>

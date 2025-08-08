@@ -10,23 +10,17 @@
     isLoggedIn: boolean;
     currentUser?: {
       userId: string;
-      userName: string; 
+      userName: string;
       displayName: string;
     } | null;
     onLogin: () => void;
     onLogout: () => Promise<void>;
-    onThemeChange: (theme: 'light' | 'dark' | 'system') => void;
-    currentTheme: 'light' | 'dark' | 'system';
+    onThemeChange: (theme: "light" | "dark" | "system") => void;
+    currentTheme: "light" | "dark" | "system";
   };
 
-  const { 
-    isLoggedIn, 
-    currentUser, 
-    onLogin, 
-    onLogout, 
-    onThemeChange,
-    currentTheme 
-  }: Props = $props();
+  const { isLoggedIn, currentUser, onLogin, onLogout, onThemeChange, currentTheme }: Props =
+    $props();
 
   let searchQuery = $state("");
   let candidates = $state<UserCandidate[]>([]);

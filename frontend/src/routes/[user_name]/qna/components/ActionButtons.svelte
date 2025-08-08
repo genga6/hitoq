@@ -112,7 +112,7 @@
         </svg>
       {/if}
       {#if likeCount > 0}
-        <span class="text-xs font-medium transition-colors duration-200 ml-1">{likeCount}</span>
+        <span class="ml-1 text-xs font-medium transition-colors duration-200">{likeCount}</span>
       {/if}
     </Button>
 
@@ -152,7 +152,7 @@
             d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
           />
         </svg>
-        <span class="text-xs font-medium ml-1">{relatedMessages.length}</span>
+        <span class="ml-1 text-xs font-medium">{relatedMessages.length}</span>
       </Button>
     {/if}
   </div>

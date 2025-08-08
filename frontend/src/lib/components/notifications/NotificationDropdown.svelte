@@ -64,16 +64,15 @@
     return await withLoading(loadingOperations.API_CALL, async () => {
       try {
         await markMessageAsRead(messageId);
-        
+
         // Update local state
-        notifications = notifications.map(n => 
+        notifications = notifications.map((n) =>
           n.messageId === messageId ? { ...n, status: "read" as const } : n
         );
-        
+
         // Update notification count
-        const unreadCount = notifications.filter(n => n.status === "unread").length;
+        const unreadCount = notifications.filter((n) => n.status === "unread").length;
         notificationCount = unreadCount;
-        
       } catch (error) {
         console.error("Failed to mark message as read:", error);
         errorUtils.networkError("既読マークに失敗しました");
@@ -113,7 +112,7 @@
   <button
     bind:this={toggleButton}
     onclick={toggleDropdown}
-    class="relative rounded-full bg-white p-1 text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 dark:bg-gray-800 dark:text-gray-300 dark:hover:text-gray-200"
+    class="relative rounded-full bg-white p-1 text-gray-400 hover:text-gray-500 focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 focus:outline-none dark:bg-gray-800 dark:text-gray-300 dark:hover:text-gray-200"
     aria-label="通知"
   >
     <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -126,9 +125,9 @@
     </svg>
     {#if notificationCount > 0}
       <span
-        class="absolute -right-1 -top-1 inline-flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs font-medium text-white"
+        class="absolute -top-1 -right-1 inline-flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs font-medium text-white"
       >
-        {notificationCount > 99 ? '99+' : notificationCount}
+        {notificationCount > 99 ? "99+" : notificationCount}
       </span>
     {/if}
   </button>
@@ -137,21 +136,17 @@
   {#if showDropdown}
     <div
       bind:this={dropdownElement}
-      class="absolute right-0 z-50 mt-2 w-80 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 dark:bg-gray-800 dark:ring-gray-600"
+      class="ring-opacity-5 absolute right-0 z-50 mt-2 w-80 rounded-md bg-white shadow-lg ring-1 ring-black dark:bg-gray-800 dark:ring-gray-600"
       role="menu"
       aria-orientation="vertical"
     >
-      <div class="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
-        <h3 class="text-lg font-medium theme-text-primary">通知</h3>
+      <div class="border-b border-gray-200 px-4 py-3 dark:border-gray-700">
+        <h3 class="theme-text-primary text-lg font-medium">通知</h3>
       </div>
-      
+
       {#if isLoggedIn}
-        <NotificationTabs 
-          {notifications}
-          {activeTab}
-          onTabChange={handleTabChange}
-        />
-        
+        <NotificationTabs {notifications} {activeTab} onTabChange={handleTabChange} />
+
         <NotificationList
           notifications={filteredNotifications}
           {currentUserName}
@@ -160,7 +155,7 @@
         />
       {:else}
         <div class="p-4 text-center">
-          <p class="text-sm theme-text-secondary">ログインして通知を確認してください</p>
+          <p class="theme-text-secondary text-sm">ログインして通知を確認してください</p>
         </div>
       {/if}
     </div>

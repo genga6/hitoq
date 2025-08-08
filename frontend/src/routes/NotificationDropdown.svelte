@@ -24,9 +24,9 @@
   let activeTab = $state<NotificationTabId>("all");
 
   // svelte-ignore non_reactive_update
-    let dropdownElement: HTMLDivElement | null = null;
+  let dropdownElement: HTMLDivElement | null = null;
   // svelte-ignore non_reactive_update
-    let toggleButton: HTMLButtonElement | null = null;
+  let toggleButton: HTMLButtonElement | null = null;
 
   const loadNotifications = async () => {
     if (!isLoggedIn) return;
@@ -140,20 +140,23 @@
   };
 
   const notificationTabs = $derived([
-    { 
-      id: "all", 
-      label: "すべて", 
-      count: notifications.length 
+    {
+      id: "all",
+      label: "すべて",
+      count: notifications.length
     },
-    { 
-      id: "likes", 
-      label: "❤️ いいね", 
-      count: notifications.filter(n => n.messageType === "like" || n.content?.includes("いいね")).length 
+    {
+      id: "likes",
+      label: "❤️ いいね",
+      count: notifications.filter((n) => n.messageType === "like" || n.content?.includes("いいね"))
+        .length
     },
-    { 
-      id: "comments", 
-      label: "💬 コメント", 
-      count: notifications.filter(n => n.messageType === "comment" && !n.content?.includes("いいね")).length 
+    {
+      id: "comments",
+      label: "💬 コメント",
+      count: notifications.filter(
+        (n) => n.messageType === "comment" && !n.content?.includes("いいね")
+      ).length
     }
   ]);
 
@@ -245,12 +248,12 @@
         </div>
 
         <!-- タブナビゲーション -->
-        <TabGroup 
-          tabs={notificationTabs} 
-          activeTab={activeTab} 
-          onTabChange={(tabId) => activeTab = tabId as NotificationTabId}
-          variant="filter" 
-          size="sm" 
+        <TabGroup
+          tabs={notificationTabs}
+          {activeTab}
+          onTabChange={(tabId) => (activeTab = tabId as NotificationTabId)}
+          variant="filter"
+          size="sm"
         />
 
         <div class="max-h-80 overflow-y-auto">

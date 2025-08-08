@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { Message } from "$lib/types";
-  
+
   type Props = {
     notification: Message;
     onMarkAsRead: (messageId: string) => Promise<void>;
@@ -10,7 +10,7 @@
 
   const getNotificationIcon = (notification: Message) => {
     const isReply = notification.parentMessageId !== null;
-    
+
     switch (notification.messageType) {
       case "comment":
         return isReply ? "↩️" : "💬";
@@ -45,12 +45,12 @@
     if (notification.status === "unread") {
       await onMarkAsRead(notification.messageId);
     }
-    
+
     // Navigate to the message
     const targetUrl = notification.parentMessageId
       ? `/${notification.toUser?.userName}/messages`
       : `/${notification.fromUser?.userName}/messages`;
-    
+
     window.location.href = targetUrl;
   };
 </script>
@@ -72,20 +72,20 @@
     <div class="min-w-0 flex-1">
       <div class="flex items-center space-x-1">
         <span class="text-lg">{getNotificationIcon(notification)}</span>
-        <span class="text-sm font-medium theme-text-primary">
+        <span class="theme-text-primary text-sm font-medium">
           {notification.fromUser?.displayName || "Unknown User"}
         </span>
-        <span class="text-sm theme-text-secondary">
+        <span class="theme-text-secondary text-sm">
           {getNotificationMessage(notification)}
         </span>
       </div>
       {#if notification.content && notification.messageType !== "like"}
-        <p class="mt-1 text-sm theme-text-secondary line-clamp-2">
+        <p class="theme-text-secondary mt-1 line-clamp-2 text-sm">
           {notification.content}
         </p>
       {/if}
       <div class="mt-1 flex items-center justify-between">
-        <span class="text-xs theme-text-muted">
+        <span class="theme-text-muted text-xs">
           {formatTimeAgo(notification.createdAt)}
         </span>
         {#if notification.status === "unread"}

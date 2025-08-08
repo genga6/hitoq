@@ -4,9 +4,13 @@
   import { invalidateAll } from "$app/navigation";
 
   import type { BaseUser } from "$lib/types";
-  
+
   type Props = {
-    data: MessagesPageData & { currentUser: BaseUser | null; isLoggedIn: boolean; isOwner: boolean };
+    data: MessagesPageData & {
+      currentUser: BaseUser | null;
+      isLoggedIn: boolean;
+      isOwner: boolean;
+    };
   };
 
   const { data }: Props = $props();

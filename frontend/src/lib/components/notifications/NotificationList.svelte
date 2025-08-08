@@ -28,21 +28,25 @@
     </div>
   {:else if notifications.length === 0}
     <div class="flex flex-col items-center justify-center py-12 text-center">
-      <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800">
-        <svg class="h-6 w-6 theme-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-5 5-5-5h5v-5a7.5 7.5 0 000-15H9.5a7.5 7.5 0 000 15v5z" />
+      <div
+        class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800"
+      >
+        <svg class="theme-text-muted h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M15 17h5l-5 5-5-5h5v-5a7.5 7.5 0 000-15H9.5a7.5 7.5 0 000 15v5z"
+          />
         </svg>
       </div>
-      <h3 class="mt-2 text-sm font-medium theme-text-primary">通知はありません</h3>
-      <p class="mt-1 text-sm theme-text-secondary">新しい通知があるとここに表示されます</p>
+      <h3 class="theme-text-primary mt-2 text-sm font-medium">通知はありません</h3>
+      <p class="theme-text-secondary mt-1 text-sm">新しい通知があるとここに表示されます</p>
     </div>
   {:else}
     <div class="divide-y divide-gray-100 dark:divide-gray-700">
       {#each notifications as notification (notification.messageId)}
-        <NotificationItem 
-          {notification}
-          {onMarkAsRead}
-        />
+        <NotificationItem {notification} {onMarkAsRead} />
       {/each}
     </div>
   {/if}

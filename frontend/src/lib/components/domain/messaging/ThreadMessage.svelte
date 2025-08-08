@@ -44,15 +44,13 @@
 <div class="py-2" style={indentStyle}>
   <!-- 親メッセージへの接続線 -->
   {#if depth > 1}
-    <div class="absolute -mt-2 -ml-3 h-4 w-3 rounded-bl-md border-b-2 border-l-2 border-gray-300"></div>
+    <div
+      class="absolute -mt-2 -ml-3 h-4 w-3 rounded-bl-md border-b-2 border-l-2 border-gray-300"
+    ></div>
   {/if}
 
   <div class="flex items-start gap-2">
-    <Avatar
-      src={message.fromUser?.iconUrl}
-      alt={message.fromUser?.displayName}
-      size="sm"
-    />
+    <Avatar src={message.fromUser?.iconUrl} alt={message.fromUser?.displayName} size="sm" />
 
     <div class="min-w-0 flex-1">
       <!-- ユーザー情報と時間 -->

@@ -88,9 +88,8 @@
       </div>
 
       <div class="mb-4">
-        <label
-          for="report-description"
-          class="theme-text-secondary mb-2 block text-sm font-medium">詳細説明（任意）</label
+        <label for="report-description" class="theme-text-secondary mb-2 block text-sm font-medium"
+          >詳細説明（任意）</label
         >
         <textarea
           id="report-description"

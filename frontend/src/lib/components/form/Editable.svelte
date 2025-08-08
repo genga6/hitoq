@@ -48,7 +48,7 @@
 
   // バリデーションルールを取得
   const validationRule: ValidationRule = ValidationRules[validationType];
-  
+
   // バリデーション結果
   const errors = $derived(() => {
     if (!touched) return [];
@@ -91,13 +91,13 @@
   function handleInput(event: Event) {
     const target = event.target as HTMLInputElement | HTMLTextAreaElement;
     tempValue = target.value;
-    
+
     if (touched) {
       const result = validateInput(tempValue, validationRule);
       isValid = result.isValid;
     }
   }
-  
+
   function handleBlur() {
     touched = true;
     const result = validateInput(tempValue, validationRule);
@@ -155,7 +155,9 @@
         {placeholder}
         oninput={handleInput}
         onblur={handleBlur}
-        class="theme-border theme-text-primary w-full resize-none border-0 border-b-2 bg-transparent px-1 py-1 text-base font-semibold transition-colors focus:border-orange-500 focus:ring-0 focus:outline-none sm:text-lg {hasErrors ? 'border-red-500 focus:border-red-500' : ''}"
+        class="theme-border theme-text-primary w-full resize-none border-0 border-b-2 bg-transparent px-1 py-1 text-base font-semibold transition-colors focus:border-orange-500 focus:ring-0 focus:outline-none sm:text-lg {hasErrors
+          ? 'border-red-500 focus:border-red-500'
+          : ''}"
         rows="3"
       ></textarea>
     {:else}
@@ -166,14 +168,20 @@
         {placeholder}
         oninput={handleInput}
         onblur={handleBlur}
-        class="theme-border theme-text-primary w-full border-0 border-b-2 bg-transparent px-1 py-1 text-base font-semibold transition-colors focus:border-orange-500 focus:ring-0 focus:outline-none sm:text-lg {hasErrors ? 'border-red-500 focus:border-red-500' : ''}"
+        class="theme-border theme-text-primary w-full border-0 border-b-2 bg-transparent px-1 py-1 text-base font-semibold transition-colors focus:border-orange-500 focus:ring-0 focus:outline-none sm:text-lg {hasErrors
+          ? 'border-red-500 focus:border-red-500'
+          : ''}"
       />
     {/if}
 
     <!-- 文字数カウンター -->
     {#if validationRule.maxLength}
       <div class="flex justify-end">
-        <span class="text-xs {tempValue.length > validationRule.maxLength ? 'text-red-500' : 'theme-text-muted'}">
+        <span
+          class="text-xs {tempValue.length > validationRule.maxLength
+            ? 'text-red-500'
+            : 'theme-text-muted'}"
+        >
           {tempValue.length}/{validationRule.maxLength}
         </span>
       </div>

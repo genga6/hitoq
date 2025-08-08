@@ -93,12 +93,15 @@
 
 <svelte:head>
   <title>hitoQ - 人とつながる質問プラットフォーム</title>
-  <meta name="description" content="hitoQは人々がお互いに質問し、答え合うコミュニティプラットフォームです。" />
+  <meta
+    name="description"
+    content="hitoQは人々がお互いに質問し、答え合うコミュニティプラットフォームです。"
+  />
 </svelte:head>
 
 <div class="theme-bg-primary min-h-screen">
   <ErrorBoundary>
-    <Header 
+    <Header
       {isLoggedIn}
       {currentUser}
       {currentTheme}

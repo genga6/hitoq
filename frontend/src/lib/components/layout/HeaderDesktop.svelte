@@ -52,7 +52,7 @@
 
   <div class="absolute left-1/2 w-full max-w-md -translate-x-1/2 lg:max-w-lg">
     <SearchInput
-      bind:searchQuery={searchQuery}
+      bind:searchQuery
       bind:candidatesElement
       bind:searchInputElement
       {isLoading}
@@ -68,14 +68,11 @@
   <div class="absolute right-0 flex items-center gap-2">
     {#if isLoggedIn}
       <NotificationDropdown {isLoggedIn} currentUserName={currentUser?.userName} />
-      <UserMenu
-        currentUser={currentUser || null}
-        onLogout={onLogout}
-      />
+      <UserMenu currentUser={currentUser || null} {onLogout} />
     {:else}
       <button
         onclick={onLogin}
-        class="rounded-md bg-orange-500 px-4 py-2 text-sm font-medium text-white hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2"
+        class="rounded-md bg-orange-500 px-4 py-2 text-sm font-medium text-white hover:bg-orange-600 focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 focus:outline-none"
       >
         ログイン
       </button>

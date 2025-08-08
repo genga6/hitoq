@@ -73,19 +73,23 @@
     tabindex="0"
     class="bg-opacity-50 fixed inset-0 z-50 flex items-center justify-center bg-black"
     onclick={closeLikesModal}
-    onkeydown={(e) => e.key === 'Escape' && closeLikesModal()}
+    onkeydown={(e) => e.key === "Escape" && closeLikesModal()}
     aria-label="モーダルを閉じる"
   >
-    <div 
-      role="dialog" 
+    <div
+      role="dialog"
       aria-modal="true"
       tabindex="-1"
-      class="mx-4 w-full max-w-sm rounded-lg bg-white p-4" 
+      class="mx-4 w-full max-w-sm rounded-lg bg-white p-4"
       onclick={(e) => e.stopPropagation()}
     >
       <div class="mb-3 flex items-center justify-between">
         <h3 class="theme-text-primary text-lg font-semibold">いいね</h3>
-        <button onclick={closeLikesModal} class="text-gray-400 hover:text-gray-600" aria-label="閉じる">
+        <button
+          onclick={closeLikesModal}
+          class="text-gray-400 hover:text-gray-600"
+          aria-label="閉じる"
+        >
           <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
               stroke-linecap="round"

@@ -64,7 +64,11 @@
     </div>
 
     <!-- フィルタリングボタン -->
-    <div class="theme-bg-subtle flex items-center space-x-1 rounded-lg p-1" role="group" aria-label="訪問者フィルター">
+    <div
+      class="theme-bg-subtle flex items-center space-x-1 rounded-lg p-1"
+      role="group"
+      aria-label="訪問者フィルター"
+    >
       <button
         class="rounded-md px-2 py-1.5 text-xs font-medium transition-all duration-200 sm:px-3 sm:text-sm {!showOnlyLoggedIn
           ? 'theme-bg-surface theme-text-primary shadow-sm'
@@ -106,9 +110,11 @@
       <p class="theme-text-secondary font-medium">{error}</p>
     </div>
   {:else if filteredVisits.length === 0}
-    <EmptyState 
+    <EmptyState
       title="訪問者はまだいません"
-      description={showOnlyLoggedIn ? "ログインしたユーザーの訪問がまだありません" : "まだ誰も訪問していません"}
+      description={showOnlyLoggedIn
+        ? "ログインしたユーザーの訪問がまだありません"
+        : "まだ誰も訪問していません"}
       icon="visit"
     />
   {:else}

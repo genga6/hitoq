@@ -47,8 +47,8 @@
     onThreadReply: (threadMessage: Message, content: string) => void;
   };
 
-  const { 
-    message, 
+  const {
+    message,
     isSentByCurrentUser,
     currentUser,
     isLoggedIn,
@@ -157,10 +157,7 @@
 
     <!-- 参照している回答がある場合 -->
     {#if message.referenceAnswerId}
-      <ReferenceAnswer
-        referenceAnswerId={message.referenceAnswerId}
-        {profileUserName}
-      />
+      <ReferenceAnswer referenceAnswerId={message.referenceAnswerId} {profileUserName} />
     {/if}
 
     <!-- アクションボタン -->

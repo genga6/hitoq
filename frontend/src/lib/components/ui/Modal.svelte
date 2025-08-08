@@ -43,7 +43,7 @@
     if (isOpen && modalElement) {
       // Focus the modal when opened
       modalElement.focus();
-      
+
       // Trap focus within modal
       const focusableElements = modalElement.querySelectorAll(
         'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
@@ -52,7 +52,7 @@
       const lastElement = focusableElements[focusableElements.length - 1] as HTMLElement;
 
       const handleTabKey = (e: KeyboardEvent) => {
-        if (e.key === 'Tab') {
+        if (e.key === "Tab") {
           if (e.shiftKey) {
             if (document.activeElement === firstElement) {
               e.preventDefault();
@@ -67,9 +67,9 @@
         }
       };
 
-      modalElement.addEventListener('keydown', handleTabKey);
+      modalElement.addEventListener("keydown", handleTabKey);
       return () => {
-        modalElement?.removeEventListener('keydown', handleTabKey);
+        modalElement?.removeEventListener("keydown", handleTabKey);
       };
     }
   });
@@ -80,15 +80,13 @@
     bind:this={modalElement}
     role="dialog"
     aria-modal="true"
-    aria-labelledby={title ? 'modal-title' : undefined}
+    aria-labelledby={title ? "modal-title" : undefined}
     class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
     onclick={handleBackdropClick}
     onkeydown={handleKeydown}
     tabindex="-1"
   >
-    <div
-      class="w-full {sizeClasses[size]} rounded-lg bg-white shadow-xl"
-    >
+    <div class="w-full {sizeClasses[size]} rounded-lg bg-white shadow-xl">
       {#if title || closable}
         <div class="flex items-center justify-between border-b border-gray-200 p-4">
           {#if title}
@@ -101,7 +99,7 @@
             <button
               type="button"
               onclick={handleClose}
-              class="inline-flex h-8 w-8 items-center justify-center rounded-md text-gray-400 hover:bg-gray-100 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-300 transition-colors"
+              class="inline-flex h-8 w-8 items-center justify-center rounded-md text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 focus:ring-2 focus:ring-gray-300 focus:outline-none"
               aria-label="閉じる"
             >
               <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

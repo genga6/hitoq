@@ -9,10 +9,10 @@
     fallback?: string;
   };
 
-  const { 
-    src, 
-    alt, 
-    class: className = "", 
+  const {
+    src,
+    alt,
+    class: className = "",
     placeholder = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24'%3E%3Cpath stroke='%23d1d5db' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M12 6v6m0 0v6m0-6h6m-6 0H6'/%3E%3C/svg%3E",
     fallback = "/default-avatar.svg"
   }: Props = $props();

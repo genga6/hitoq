@@ -246,8 +246,8 @@
   onclick={handleMarkAsRead}
   onkeydown={(e) => e.key === "Enter" && handleMarkAsRead()}
 >
-  <MessageHeader 
-    {message} 
+  <MessageHeader
+    {message}
     {isSentByCurrentUser}
     {profile}
     {currentUser}
@@ -268,72 +268,72 @@
     onToggleHeart={toggleHeartReaction}
     {onMessageUpdate}
   />
-    <!-- 親メッセージの表示（リプライの場合） -->
-    {#if message.parentMessage}
-      <ParentMessagePreview parentMessage={message.parentMessage} />
-    {/if}
+  <!-- 親メッセージの表示（リプライの場合） -->
+  {#if message.parentMessage}
+    <ParentMessagePreview parentMessage={message.parentMessage} />
+  {/if}
 
-    <!-- メッセージ内容 -->
-    <MessageContent
-      {message}
-      {currentUser}
-      {editingMessageId}
-      {editContent}
-      {isEditingOrDeleting}
-      onStartEdit={startEdit}
-      onSaveEdit={saveEdit}
-      onCancelEdit={cancelEdit}
-      onDelete={handleDelete}
-      onEditContentChange={handleEditContentChange}
+  <!-- メッセージ内容 -->
+  <MessageContent
+    {message}
+    {currentUser}
+    {editingMessageId}
+    {editContent}
+    {isEditingOrDeleting}
+    onStartEdit={startEdit}
+    onSaveEdit={saveEdit}
+    onCancelEdit={cancelEdit}
+    onDelete={handleDelete}
+    onEditContentChange={handleEditContentChange}
+  />
+
+  <!-- 参照している回答がある場合 -->
+  {#if message.referenceAnswerId}
+    <ReferenceAnswer
+      referenceAnswerId={message.referenceAnswerId}
+      profileUserName={profile.userName}
     />
+  {/if}
 
-    <!-- 参照している回答がある場合 -->
-    {#if message.referenceAnswerId}
-      <ReferenceAnswer
-        referenceAnswerId={message.referenceAnswerId}
-        profileUserName={profile.userName}
-      />
-    {/if}
+  <!-- アクションボタン -->
+  {#if isLoggedIn && currentUser}
+    <MessageActions
+      messageId={message.messageId}
+      replyCount={message.replyCount}
+      heartState={heartStates[message.messageId] || { liked: false, count: 0 }}
+      onReplyClick={toggleReplyForm}
+      onThreadClick={loadThread}
+      onHeartToggle={() => handleHeartToggle(message.messageId)}
+      {isTogglingHeart}
+    />
+  {/if}
 
-    <!-- アクションボタン -->
-    {#if isLoggedIn && currentUser}
-      <MessageActions
-        messageId={message.messageId}
-        replyCount={message.replyCount}
-        heartState={heartStates[message.messageId] || { liked: false, count: 0 }}
-        onReplyClick={toggleReplyForm}
-        onThreadClick={loadThread}
-        onHeartToggle={() => handleHeartToggle(message.messageId)}
-        {isTogglingHeart}
-      />
-    {/if}
+  <!-- 返信フォーム -->
+  {#if showReplyForm}
+    <ReplyForm
+      onSubmit={handleReply}
+      onCancel={() => (showReplyForm = false)}
+      isSubmitting={isSubmittingReply}
+    />
+  {/if}
 
-    <!-- 返信フォーム -->
-    {#if showReplyForm}
-      <ReplyForm
-        onSubmit={handleReply}
-        onCancel={() => (showReplyForm = false)}
-        isSubmitting={isSubmittingReply}
-      />
-    {/if}
-
-    <!-- スレッド表示 -->
-    {#if showThread && threadMessages.length > 0}
-      <ThreadView
-        {threadMessages}
-        {heartStates}
-        {currentUser}
-        onClose={() => (showThread = false)}
-        onHeartToggle={handleHeartToggle}
-        onEdit={(messageId, content) => {
-          updateMessageContent(messageId, content);
-          loadThread();
-          onMessageUpdate?.();
-        }}
-        onDelete={handleDelete}
-        onReply={handleThreadReply}
-        {isEditingOrDeleting}
-        {isTogglingHeart}
-      />
-    {/if}
+  <!-- スレッド表示 -->
+  {#if showThread && threadMessages.length > 0}
+    <ThreadView
+      {threadMessages}
+      {heartStates}
+      {currentUser}
+      onClose={() => (showThread = false)}
+      onHeartToggle={handleHeartToggle}
+      onEdit={(messageId, content) => {
+        updateMessageContent(messageId, content);
+        loadThread();
+        onMessageUpdate?.();
+      }}
+      onDelete={handleDelete}
+      onReply={handleThreadReply}
+      {isEditingOrDeleting}
+      {isTogglingHeart}
+    />
+  {/if}
 </div>

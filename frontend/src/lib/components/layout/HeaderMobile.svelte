@@ -46,7 +46,7 @@
   let mobileSearchInputElement = $state<HTMLInputElement | null>(null);
 
   // Click outside detection for mobile menu
-  useClickOutside(menuElement, [toggleButton], () => showMenu = false);
+  useClickOutside(menuElement, [toggleButton], () => (showMenu = false));
 </script>
 
 <div class="relative flex items-center justify-between">
@@ -54,16 +54,21 @@
   <div class="flex items-center">
     <button
       bind:this={toggleButton}
-      onclick={() => showMenu = !showMenu}
-      class="mr-2 inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-orange-500 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-gray-200"
+      onclick={() => (showMenu = !showMenu)}
+      class="mr-2 inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-500 focus:ring-2 focus:ring-orange-500 focus:outline-none focus:ring-inset dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-gray-200"
       aria-expanded={showMenu}
     >
       <span class="sr-only">メニューを開く</span>
       <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M4 6h16M4 12h16M4 18h16"
+        />
       </svg>
     </button>
-    
+
     <a
       href={isLoggedIn && currentUser ? `/${currentUser.userName}` : "/"}
       class="text-2xl font-bold text-orange-400"
@@ -84,13 +89,13 @@
 {#if showMenu}
   <div
     bind:this={menuElement}
-    class="absolute left-0 right-0 top-full z-50 mt-2 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 dark:bg-gray-800 dark:ring-gray-600"
+    class="ring-opacity-5 absolute top-full right-0 left-0 z-50 mt-2 rounded-md bg-white shadow-lg ring-1 ring-black dark:bg-gray-800 dark:ring-gray-600"
   >
     <div class="p-4">
       <!-- Search Section -->
       <div class="mb-4">
         <SearchInput
-          bind:searchQuery={searchQuery}
+          bind:searchQuery
           bind:candidatesElement={mobileCandidatesElement}
           bind:searchInputElement={mobileSearchInputElement}
           {isLoading}
@@ -106,15 +111,11 @@
 
       <!-- User Menu or Login -->
       {#if isLoggedIn && currentUser}
-        <UserMenu
-          {currentUser}
-          onLogout={onLogout}
-          isMobile={true}
-        />
+        <UserMenu {currentUser} {onLogout} isMobile={true} />
       {:else}
         <button
           onclick={onLogin}
-          class="w-full rounded-md bg-orange-500 px-4 py-2 text-center text-sm font-medium text-white hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2"
+          class="w-full rounded-md bg-orange-500 px-4 py-2 text-center text-sm font-medium text-white hover:bg-orange-600 focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 focus:outline-none"
         >
           ログイン
         </button>
