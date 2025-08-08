@@ -9,6 +9,7 @@
     getCurrentUser
   } from "$lib/api-client/auth";
   import Header from "$lib/components/layout/Header.svelte";
+  import Footer from "$lib/components/layout/Footer.svelte";
   import ErrorBoundary from "$lib/components/feedback/ErrorBoundary.svelte";
   import ErrorToast from "$lib/components/feedback/ErrorToast.svelte";
   import type { Snippet } from "svelte";
@@ -115,6 +116,8 @@
         {@render children()}
       {/if}
     </main>
+
+    <Footer />
 
     <ErrorToast />
   </ErrorBoundary>

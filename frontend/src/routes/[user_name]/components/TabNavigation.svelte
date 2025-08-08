@@ -21,7 +21,7 @@
         ]
       : []),
     { id: `/${userName}/qna`, label: "Q&A", href: `/${userName}/qna` },
-    { id: `/${userName}/messages`, label: "メッセージ", href: `/${userName}/messages` }
+    { id: `/${userName}/talk`, label: "トーク", href: `/${userName}/talk` }
   ]);
 </script>
 

@@ -4,7 +4,6 @@
     markMessageAsRead,
     createMessage,
     getMessageThread,
-    updateMessageContent,
     deleteMessage,
     toggleHeartReaction,
     getHeartStates
@@ -33,9 +32,10 @@
     };
     isLoggedIn?: boolean;
     onMessageUpdate?: () => void;
+    onMessageDelete?: (messageId: string) => void;
   };
 
-  const { message, profile, currentUser, isLoggedIn, onMessageUpdate }: Props = $props();
+  const { message, profile, currentUser, isLoggedIn, onMessageUpdate, onMessageDelete }: Props = $props();
 
   // プロフィール情報を明示的に使用（将来の拡張で使用予定）
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -43,15 +43,16 @@
 
   // メッセージの送受信関係を判定
   const isSentByCurrentUser = currentUser?.userId === message.fromUserId;
+  
+  // 送信者から見た時は自分のメッセージは常に既読扱い
+  const shouldShowAsUnread = message.status === 'unread' && !isSentByCurrentUser;
 
   let showReplyForm = $state(false);
   let showThread = $state(false);
   let isSubmittingReply = $state(false);
   let threadMessages = $state<Message[]>([]);
 
-  // 編集・削除機能
-  let editingMessageId = $state<string | null>(null);
-  let editContent = $state("");
+  // 削除機能
   let isEditingOrDeleting = $state(false);
 
   // ハートリアクション機能
@@ -85,7 +86,8 @@
 
   // メッセージを既読にする
   async function handleMarkAsRead() {
-    if (message.status === "unread") {
+    // 送信者は自分のメッセージを既読にする必要がない
+    if (message.status === "unread" && !isSentByCurrentUser) {
       try {
         await markMessageAsRead(message.messageId);
         // UIの更新は親コンポーネントに任せる（リアクティブ更新）
@@ -177,44 +179,6 @@
     }
   }
 
-  function startEdit(messageId: string, currentContent: string) {
-    editingMessageId = messageId;
-    editContent = currentContent;
-  }
-
-  function cancelEdit() {
-    editingMessageId = null;
-    editContent = "";
-  }
-
-  function handleEditContentChange(content: string) {
-    editContent = content;
-  }
-
-  async function saveEdit(messageId: string) {
-    if (!editContent.trim() || isEditingOrDeleting) return;
-
-    isEditingOrDeleting = true;
-    try {
-      await updateMessageContent(messageId, editContent.trim());
-
-      // 編集モードを終了
-      editingMessageId = null;
-      editContent = "";
-
-      // スレッドが表示されている場合は更新
-      if (showThread) {
-        await loadThread();
-      }
-
-      // メッセージリストを更新
-      onMessageUpdate?.();
-    } catch (error) {
-      console.error("Failed to update message:", error);
-    } finally {
-      isEditingOrDeleting = false;
-    }
-  }
 
   async function handleDelete(messageId: string) {
     if (!confirm("このメッセージを削除しますか？（返信も含めて削除されます）")) return;
@@ -222,6 +186,9 @@
     isEditingOrDeleting = true;
     try {
       await deleteMessage(messageId);
+
+      // 即座にローカル状態から削除
+      onMessageDelete?.(messageId);
 
       // スレッドが表示されている場合は更新
       if (showThread) {
@@ -239,34 +206,23 @@
 </script>
 
 <div
-  class="theme-border theme-visitor-hover border-b p-3
-        {message.status === 'unread' ? 'bg-orange-50' : ''}"
+  class="theme-border theme-visitor-hover border-b p-4 mx-2
+        {shouldShowAsUnread ? 'bg-orange-50' : ''}"
   role="button"
   tabindex="0"
   onclick={handleMarkAsRead}
   onkeydown={(e) => e.key === "Enter" && handleMarkAsRead()}
 >
-  <MessageHeader
-    {message}
-    {isSentByCurrentUser}
-    {profile}
+  <MessageHeader 
+    {message} 
+    {isSentByCurrentUser} 
     {currentUser}
-    {isLoggedIn}
-    {editingMessageId}
-    {editContent}
-    {isEditingOrDeleting}
-    {heartStates}
-    {isTogglingHeart}
-    {showReplyForm}
-    {showThread}
-    {threadMessages}
-    {isSubmittingReply}
-    onStartEdit={startEdit}
-    onSaveEdit={saveEdit}
-    onCancelEdit={cancelEdit}
-    onToggleReplyForm={toggleReplyForm}
-    onToggleHeart={toggleHeartReaction}
-    {onMessageUpdate}
+    profileUser={{
+      userId: profile.userId,
+      userName: profile.userName,
+      displayName: profile.displayName,
+      iconUrl: profile.iconUrl
+    }}
   />
   <!-- 親メッセージの表示（リプライの場合） -->
   {#if message.parentMessage}
@@ -277,14 +233,8 @@
   <MessageContent
     {message}
     {currentUser}
-    {editingMessageId}
-    {editContent}
     {isEditingOrDeleting}
-    onStartEdit={startEdit}
-    onSaveEdit={saveEdit}
-    onCancelEdit={cancelEdit}
     onDelete={handleDelete}
-    onEditContentChange={handleEditContentChange}
   />
 
   <!-- 参照している回答がある場合 -->

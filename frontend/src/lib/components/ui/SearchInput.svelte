@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { useClickOutside } from "$lib/utils/useClickOutside";
   import type { UserCandidate } from "$lib/types";
 
   interface Props {
@@ -6,7 +7,6 @@
     isLoading: boolean;
     candidates: UserCandidate[];
     showCandidates: boolean;
-    noResults: boolean;
     placeholder?: string;
     isMobile?: boolean;
     onInput: (event: Event) => void;
@@ -21,7 +21,6 @@
     isLoading,
     candidates,
     showCandidates,
-    noResults,
     placeholder = "ユーザーを検索...",
     isMobile = false,
     onInput,
@@ -30,9 +29,30 @@
     candidatesElement = $bindable(),
     searchInputElement = $bindable()
   }: Props = $props();
+
+  let containerElement = $state<HTMLDivElement | null>(null);
+
+  const handleClickOutside = () => {
+    if (showCandidates) {
+      // Clear search results when clicking outside
+      if (searchInputElement) {
+        searchInputElement.value = "";
+        searchQuery = "";
+        const event = new Event('input', { bubbles: true });
+        searchInputElement.dispatchEvent(event);
+      }
+    }
+  };
+
+  $effect(() => {
+    if (showCandidates && containerElement) {
+      const cleanup = useClickOutside(containerElement, [], handleClickOutside);
+      return cleanup;
+    }
+  });
 </script>
 
-<div class="relative">
+<div class="relative" bind:this={containerElement}>
   <div class="relative">
     <input
       bind:this={searchInputElement}
@@ -70,7 +90,7 @@
   </div>
 
   <!-- Search Results -->
-  {#if showCandidates && (candidates.length > 0 || noResults)}
+  {#if showCandidates}
     <div
       bind:this={candidatesElement}
       class="ring-opacity-5 absolute top-full right-0 left-0 z-50 mt-2 rounded-md bg-white shadow-lg ring-1 ring-black dark:bg-gray-800 dark:ring-gray-600"
@@ -95,7 +115,7 @@
             </button>
           {/each}
         </div>
-      {:else if noResults}
+      {:else}
         <div class="px-4 py-3 text-center text-sm text-gray-500 dark:text-gray-400">
           ユーザーが見つかりませんでした
         </div>

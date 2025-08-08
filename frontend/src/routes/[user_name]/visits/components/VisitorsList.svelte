@@ -5,6 +5,7 @@
   import EmptyState from "$lib/components/feedback/EmptyState.svelte";
   import LoadingSpinner from "$lib/components/feedback/LoadingSpinner.svelte";
   import LazyLoad from "$lib/components/ui/LazyLoad.svelte";
+  import ToggleGroup from "$lib/components/ui/ToggleGroup.svelte";
 
   interface Props {
     userId: string;
@@ -14,7 +15,7 @@
   let visits: Visit[] = $state([]);
   let loading = $state(true);
   let error = $state("");
-  let showOnlyLoggedIn = $state(false);
+  let activeFilter = $state("all");
 
   $effect(() => {
     loading = true;
@@ -33,18 +34,44 @@
   });
 
   // フィルタリングされた訪問者リスト
-  let filteredVisits = $state<Visit[]>([]);
-
-  $effect(() => {
-    if (!showOnlyLoggedIn) {
-      filteredVisits = visits;
+  const filteredVisits = $derived(() => {
+    if (activeFilter === "all") {
+      return visits;
     } else {
-      filteredVisits = visits.filter(
+      return visits.filter(
         (visit) =>
           visit.visitor_info && !visit.visitor_info.is_anonymous && visit.visitor_info.user_name
       );
     }
   });
+
+  // トグルオプションの設定
+  const allCount = $derived(visits.length);
+  const loggedInCount = $derived(
+    visits.filter(
+      (visit) =>
+        visit.visitor_info && !visit.visitor_info.is_anonymous && visit.visitor_info.user_name
+    ).length
+  );
+
+  const filterOptions = $derived([
+    {
+      id: "all",
+      label: "すべての訪問者",
+      shortLabel: "すべて",
+      count: allCount
+    },
+    {
+      id: "loggedIn",
+      label: "ログインユーザーのみ",
+      shortLabel: "ログイン済み",
+      count: loggedInCount
+    }
+  ]);
+
+  function handleFilterChange(filterId: string) {
+    activeFilter = filterId;
+  }
 </script>
 
 <div class="space-y-3">
@@ -63,34 +90,13 @@
       <h2 class="text-md theme-text-secondary font-medium">最近の訪問者</h2>
     </div>
 
-    <!-- フィルタリングボタン -->
-    <div
-      class="theme-bg-subtle flex items-center space-x-1 rounded-lg p-1"
-      role="group"
-      aria-label="訪問者フィルター"
-    >
-      <button
-        class="rounded-md px-2 py-1.5 text-xs font-medium transition-all duration-200 sm:px-3 sm:text-sm {!showOnlyLoggedIn
-          ? 'theme-bg-surface theme-text-primary shadow-sm'
-          : 'theme-text-muted hover:opacity-80'}"
-        onclick={() => (showOnlyLoggedIn = false)}
-        aria-pressed={!showOnlyLoggedIn}
-        aria-label="すべての訪問者を表示"
-      >
-        すべて
-      </button>
-      <button
-        class="rounded-md px-2 py-1.5 text-xs font-medium transition-all duration-200 sm:px-3 sm:text-sm {showOnlyLoggedIn
-          ? 'theme-bg-surface theme-text-primary shadow-sm'
-          : 'theme-text-muted hover:opacity-80'}"
-        onclick={() => (showOnlyLoggedIn = true)}
-        aria-pressed={showOnlyLoggedIn}
-        aria-label="ログインユーザーのみ表示"
-      >
-        <span class="hidden sm:inline">ログインユーザーのみ</span>
-        <span class="sm:hidden">ログイン済み</span>
-      </button>
-    </div>
+    <!-- フィルタリング -->
+    <ToggleGroup 
+      options={filterOptions} 
+      activeOption={activeFilter} 
+      onOptionChange={handleFilterChange}
+      ariaLabel="訪問者フィルター"
+    />
   </div>
 
   {#if loading}
@@ -112,7 +118,7 @@
   {:else if filteredVisits.length === 0}
     <EmptyState
       title="訪問者はまだいません"
-      description={showOnlyLoggedIn
+      description={activeFilter === "loggedIn"
         ? "ログインしたユーザーの訪問がまだありません"
         : "まだ誰も訪問していません"}
       icon="visit"

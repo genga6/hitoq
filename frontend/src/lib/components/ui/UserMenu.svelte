@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { useClickOutside } from "$lib/utils/useClickOutside";
   import type { BaseUser } from "$lib/types";
 
   interface Props {
@@ -26,6 +27,19 @@
     : "flex h-12 w-12 items-center justify-center overflow-hidden rounded-full border border-gray-300 ring-orange-400 transition hover:ring-2";
 
   const iconClasses = isMobile ? "h-5 w-5 text-gray-600" : "h-6 w-6 text-gray-600";
+
+  const handleClickOutside = () => {
+    if (showMenu) {
+      onToggleMenu();
+    }
+  };
+
+  $effect(() => {
+    if (showMenu && menuElement && toggleButton) {
+      const cleanup = useClickOutside(menuElement, [toggleButton], handleClickOutside);
+      return cleanup;
+    }
+  });
 </script>
 
 <div class="relative">
@@ -64,11 +78,15 @@
     >
       <a
         href="/{currentUser?.userName}/settings"
+        onclick={onToggleMenu}
         class="theme-text-primary theme-hover-bg block px-4 py-2"
         >設定
       </a>
       <button
-        onclick={onLogout}
+        onclick={() => {
+          onToggleMenu();
+          onLogout();
+        }}
         class="theme-text-primary theme-hover-bg w-full px-4 py-2 text-left">ログアウト</button
       >
     </div>

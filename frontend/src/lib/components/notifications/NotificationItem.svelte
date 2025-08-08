@@ -19,13 +19,6 @@
     }
   };
 
-  const getNotificationMessage = (notification: Message) => {
-    const isLike = notification.messageType === "like";
-    if (isLike) {
-      return "❤️をしました";
-    }
-    return notification.content;
-  };
 
   const formatTimeAgo = (dateString: string) => {
     const date = new Date(dateString);
@@ -76,7 +69,7 @@
           {notification.fromUser?.displayName || "Unknown User"}
         </span>
         <span class="theme-text-secondary text-sm">
-          {getNotificationMessage(notification)}
+          {notification.messageType === "like" ? "❤️をしました" : ""}
         </span>
       </div>
       {#if notification.content && notification.messageType !== "like"}

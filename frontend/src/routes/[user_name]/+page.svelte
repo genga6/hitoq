@@ -11,16 +11,18 @@
 
   const { data }: Props = $props();
 
-  const isOwner = data.isOwner;
-  const initialProfileItems = data.profileItems;
+  const isOwner = $derived(data.isOwner);
 
-  let profileItems = $state<ProfileItem[]>(
-    Array.isArray(initialProfileItems)
-      ? [...initialProfileItems].sort((a, b) => a.displayOrder - b.displayOrder)
-      : []
-  );
+  let profileItems = $state<ProfileItem[]>([]);
+  let selfIntroduction = $state("");
 
-  let selfIntroduction = $state(data.profile.selfIntroduction || "");
+  // データが変更されたときに状態をリセット
+  $effect(() => {
+    profileItems = Array.isArray(data.profileItems)
+      ? [...data.profileItems].sort((a, b) => a.displayOrder - b.displayOrder)
+      : [];
+    selfIntroduction = data.profile.selfIntroduction || "";
+  });
 
   const createItemSaveHandler =
     (index: number) =>
@@ -60,42 +62,53 @@
 <!-- 自己紹介セクション -->
 <div class="mt-8">
   <div
-    class="group theme-bg-surface relative rounded-2xl border border-gray-300 p-6 transition-all duration-300 dark:border-gray-600 {isOwner
-      ? 'theme-visitor-hover cursor-pointer hover:border-orange-300'
+    class="group theme-bg-surface relative rounded-2xl p-6 transition-all duration-300 md:border md:border-gray-300 md:dark:border-gray-600 {isOwner
+      ? 'theme-visitor-hover cursor-pointer'
       : ''}"
   >
     <div class="mb-4">
-      <p class="theme-text-secondary mb-1 text-sm font-medium tracking-wide">自己紹介</p>
+      <p class="theme-text-secondary mb-1 text-sm font-semibold tracking-wide">自己紹介</p>
     </div>
 
-    <Editable
-      {isOwner}
-      value={selfIntroduction}
-      onSave={handleSelfIntroductionSave}
-      inputType="textarea"
-      validationType="selfIntroduction"
-      placeholder="自己紹介を書いてみましょう..."
-    >
+    {#if isOwner}
+      <Editable
+        value={selfIntroduction}
+        onSave={handleSelfIntroductionSave}
+        inputType="textarea"
+        validationType="selfIntroduction"
+        placeholder="自己紹介を書いてみましょう..."
+      >
+        <div class="relative">
+          {#if selfIntroduction}
+            <p
+              class="theme-text-primary text-base leading-relaxed break-words whitespace-pre-wrap"
+            >
+              {selfIntroduction}
+            </p>
+          {:else}
+            <p
+              class="theme-text-muted text-base leading-relaxed whitespace-pre-wrap italic opacity-50"
+            >
+例： hito Q太郎です！普段は会社員をしています。
+趣味はゲームと料理です。最近は〇〇というゲームにハマッています！
+気軽に話しかけてください！よろしくお願いします！
+            </p>
+          {/if}
+        </div>
+      </Editable>
+    {:else}
       <div class="relative">
         {#if selfIntroduction}
           <p
-            class="theme-text-primary text-base leading-relaxed font-semibold break-words whitespace-pre-wrap"
+            class="theme-text-primary text-base leading-relaxed break-words whitespace-pre-wrap"
           >
             {selfIntroduction}
-          </p>
-        {:else if isOwner}
-          <p
-            class="theme-text-muted text-base leading-relaxed font-semibold whitespace-pre-wrap italic"
-          >
-            {`例： hito Q太郎です！普段は会社員をしています。
-        趣味はゲームと料理です。最近は〇〇というゲームにハマっています！
-        気軽に話しかけてください！よろしくお願いします！`}
           </p>
         {:else}
           <p class="theme-text-muted italic">まだ自己紹介が登録されていません</p>
         {/if}
       </div>
-    </Editable>
+    {/if}
 
     {#if isOwner}
       <div
@@ -117,10 +130,13 @@
       </div>
     {/if}
   </div>
+  
+  <!-- モバイルでの区切り線 -->
+  <hr class="theme-border mt-6 md:hidden" />
 </div>
 
 <!-- プロフィール項目 -->
-<div class="mt-8 grid grid-cols-1 md:grid-cols-2 md:gap-8">
+<div class="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-8">
   {#if profileItems && profileItems.length > 0}
     {#each profileItems as item, index (item.profileItemId)}
       <ProfileItemCard

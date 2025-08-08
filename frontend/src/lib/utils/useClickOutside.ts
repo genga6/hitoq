@@ -3,18 +3,43 @@ export function useClickOutside(
   ignoredElements: (HTMLElement | null)[],
   callback: () => void,
 ) {
-  const handler = (event: MouseEvent) => {
-    const target = event.target as Node;
+  // Skip setup during server-side rendering
+  if (typeof window === "undefined") {
+    return () => {};
+  }
+
+  let mouseDownTarget: Node | null = null;
+
+  const handleMouseDown = (event: MouseEvent) => {
+    mouseDownTarget = event.target as Node;
+  };
+
+  const handleMouseUp = (event: MouseEvent) => {
+    const mouseUpTarget = event.target as Node;
+
+    // マウスダウンとマウスアップが同じ要素でない場合はドラッグとみなす
+    if (mouseDownTarget !== mouseUpTarget) {
+      mouseDownTarget = null;
+      return;
+    }
+
+    // 通常のクリック処理
     const isInside =
-      (mainElement && mainElement.contains(target)) ||
-      ignoredElements.some((el) => el && el.contains(target));
+      (mainElement && mainElement.contains(mouseUpTarget)) ||
+      ignoredElements.some((el) => el && el.contains(mouseUpTarget));
+
     if (!isInside) {
       callback();
     }
+
+    mouseDownTarget = null;
   };
 
-  window.addEventListener("click", handler, true);
+  window.addEventListener("mousedown", handleMouseDown, true);
+  window.addEventListener("mouseup", handleMouseUp, true);
+
   return () => {
-    window.removeEventListener("click", handler, true);
+    window.removeEventListener("mousedown", handleMouseDown, true);
+    window.removeEventListener("mouseup", handleMouseUp, true);
   };
 }

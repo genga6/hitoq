@@ -3,7 +3,7 @@
   import HeaderMobile from "./HeaderMobile.svelte";
   import type { UserCandidate } from "$lib/types";
   import { searchUsersByDisplayName } from "$lib/api-client/users";
-  import { goto } from "$app/navigation";
+  import { goto, invalidate } from "$app/navigation";
   import { errorUtils } from "$lib/stores/errorStore";
 
   type Props = {
@@ -15,32 +15,28 @@
     } | null;
     onLogin: () => void;
     onLogout: () => Promise<void>;
-    onThemeChange: (theme: "light" | "dark" | "system") => void;
-    currentTheme: "light" | "dark" | "system";
   };
 
-  const { isLoggedIn, currentUser, onLogin, onLogout, onThemeChange, currentTheme }: Props =
+  const { isLoggedIn, currentUser, onLogin, onLogout }: Props =
     $props();
 
   let searchQuery = $state("");
   let candidates = $state<UserCandidate[]>([]);
   let showCandidates = $state(false);
   let isLoading = $state(false);
-  let noResults = $state(false);
   let debounceTimer: ReturnType<typeof setTimeout> | null = null;
 
   const showCandidateList = (candidatesData: UserCandidate[]) => {
     candidates = candidatesData;
     showCandidates = true;
-    noResults = false;
   };
 
-  const selectCandidate = (candidate: UserCandidate) => {
+  const selectCandidate = async (candidate: UserCandidate) => {
     searchQuery = "";
     showCandidates = false;
     candidates = [];
-    noResults = false;
-    goto(`/${candidate.userName}`);
+    await invalidate(() => true);
+    await goto(`/${candidate.userName}`);
   };
 
   const performSearch = async () => {
@@ -50,19 +46,20 @@
     }
 
     isLoading = true;
-    noResults = false;
 
     try {
       const candidatesData = await searchUsersByDisplayName(searchQuery);
       if (candidatesData.length > 0) {
         showCandidateList(candidatesData);
       } else {
-        noResults = true;
+        candidates = [];
+        showCandidates = true;
       }
     } catch (error) {
       console.error("Search failed:", error);
       errorUtils.networkError("検索に失敗しました");
-      noResults = true;
+      candidates = [];
+      showCandidates = true;
     } finally {
       isLoading = false;
     }
@@ -76,7 +73,6 @@
 
     if (searchQuery.trim() === "") {
       showCandidates = false;
-      noResults = false;
       return;
     }
 
@@ -104,11 +100,8 @@
         {candidates}
         {showCandidates}
         {isLoading}
-        {noResults}
-        {currentTheme}
         {onLogin}
         {onLogout}
-        {onThemeChange}
         {handleInput}
         {handleKeydown}
         {selectCandidate}
@@ -124,11 +117,8 @@
         {candidates}
         {showCandidates}
         {isLoading}
-        {noResults}
-        {currentTheme}
         {onLogin}
         {onLogout}
-        {onThemeChange}
         {handleInput}
         {handleKeydown}
         {selectCandidate}

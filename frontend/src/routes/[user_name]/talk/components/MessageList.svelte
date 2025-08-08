@@ -18,19 +18,16 @@
     };
     isLoggedIn?: boolean;
     onMessageUpdate?: () => void;
+    onMessageDelete?: (messageId: string) => void;
   };
 
-  const { messages, profile, currentUser, isLoggedIn, onMessageUpdate }: Props = $props();
+  const { messages, profile, currentUser, isLoggedIn, onMessageUpdate, onMessageDelete }: Props = $props();
+
 </script>
 
-<div class="space-y-4">
-  <div class="flex flex-col space-y-3 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
-    <h2 class="text-lg font-semibold text-gray-800">受信メッセージ ({messages.length}件)</h2>
-  </div>
-
-  <div class="space-y-2">
+<div class="space-y-2">
     {#each messages as message (message.messageId)}
-      <MessageItem {message} {profile} {currentUser} {isLoggedIn} {onMessageUpdate} />
+      <MessageItem {message} {profile} {currentUser} {isLoggedIn} {onMessageUpdate} {onMessageDelete} />
     {:else}
       <div class="py-8 text-center">
         <div
@@ -48,5 +45,4 @@
         <p class="text-sm text-gray-500">メッセージがありません</p>
       </div>
     {/each}
-  </div>
 </div>

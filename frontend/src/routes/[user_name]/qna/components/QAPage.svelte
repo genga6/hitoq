@@ -1,6 +1,5 @@
 <script lang="ts">
   import type { UserAnswerGroup, UserAnswerGroupBackend, CategoryInfo } from "$lib/types/qna";
-  import MessageForm from "$lib/components/domain/messaging/MessageForm.svelte";
   import AnsweredQuestions from "./AnsweredQuestions.svelte";
 
   const {
@@ -113,7 +112,6 @@
   ]);
 
   let selectedCategories = $state<string[]>([]);
-  let showNewQuestionForm = $state(false);
 
   // Derived values
   const allDisplayGroups = $derived([...answerGroups]);
@@ -150,10 +148,6 @@
   });
 
   // Event handlers
-  function toggleNewQuestionForm() {
-    showNewQuestionForm = !showNewQuestionForm;
-  }
-
   function toggleCategory(category: string) {
     if (selectedCategories.includes(category)) {
       selectedCategories = selectedCategories.filter((c) => c !== category);
@@ -199,41 +193,6 @@
 </script>
 
 <div>
-  <!-- 新規質問ボタン（他人のプロフィールでログイン時のみ表示） -->
-  {#if !isOwner && isLoggedIn && currentUser}
-    <div class="mb-6">
-      <button
-        onclick={toggleNewQuestionForm}
-        class="inline-flex items-center gap-2 rounded-lg bg-orange-400 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-orange-500 focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 focus:outline-none"
-      >
-        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-          />
-        </svg>
-        💬 新しい質問をする
-      </button>
-    </div>
-
-    <!-- 新規質問フォーム -->
-    {#if showNewQuestionForm}
-      <div class="mb-6">
-        <MessageForm
-          toUserId={userId}
-          toUserName={profile?.userName || ""}
-          onSuccess={() => {
-            showNewQuestionForm = false;
-          }}
-          onCancel={() => {
-            showNewQuestionForm = false;
-          }}
-        />
-      </div>
-    {/if}
-  {/if}
 
   <!-- 回答済みQ&Aエリア -->
   <AnsweredQuestions

@@ -13,18 +13,30 @@
 </script>
 
 <div
-  class="group theme-bg-surface relative rounded-2xl border border-gray-300 transition-all duration-300 md:border md:p-6 dark:border-gray-600 {isOwner
-    ? 'theme-visitor-hover cursor-pointer hover:border-orange-300'
+  class="group theme-bg-surface relative rounded-2xl transition-all duration-300 md:border md:border-gray-300 md:p-6 md:dark:border-gray-600 {isOwner
+    ? 'theme-visitor-hover cursor-pointer'
     : ''}"
 >
   <div class="p-6 md:p-0">
     <div class="relative">
-      <p class="theme-text-secondary mb-2 text-sm font-medium tracking-wide">{item.label}</p>
+      <p class="theme-text-secondary mb-2 text-sm font-semibold tracking-wide">{item.label}</p>
     </div>
 
-    <Editable {isOwner} value={item.value} {onSave} inputType="input" validationType="profileValue">
+    {#if isOwner}
+      <Editable value={item.value} {onSave} inputType="input" validationType="profileValue">
+        <div class="relative">
+          <p class="theme-text-primary text-base break-words">
+            {#if item.value}
+              {item.value}
+            {:else}
+              <span class="theme-text-muted text-base italic">ー</span>
+            {/if}
+          </p>
+        </div>
+      </Editable>
+    {:else}
       <div class="relative">
-        <p class="theme-text-primary text-base font-semibold break-words">
+        <p class="theme-text-primary text-base break-words">
           {#if item.value}
             {item.value}
           {:else}
@@ -32,7 +44,7 @@
           {/if}
         </p>
       </div>
-    </Editable>
+    {/if}
 
     {#if isOwner}
       <div

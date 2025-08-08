@@ -1,10 +1,12 @@
 <script lang="ts">
   import { sendMessage } from "$lib/api-client/messages";
 
+  import type { Message } from "$lib/types";
+
   type Props = {
     toUserId: string;
     toUserName: string;
-    onSuccess?: () => void;
+    onSuccess?: (newMessage: Message) => void;
     onCancel?: () => void;
   };
 
@@ -41,7 +43,7 @@
     error = "";
 
     try {
-      await sendMessage({
+      const newMessage = await sendMessage({
         toUserId,
         messageType: "comment",
         content: content.trim(),
@@ -60,9 +62,9 @@
         window.history.replaceState({}, "", url.toString());
       }
 
-      // onSuccessコールバックが提供されている場合は実行、そうでなければページリロード
+      // onSuccessコールバックが提供されている場合は新しいメッセージを渡して実行
       if (onSuccess) {
-        onSuccess();
+        onSuccess(newMessage);
       } else {
         // ページをリロードして新しいメッセージを表示
         window.location.reload();

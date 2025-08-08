@@ -27,14 +27,6 @@
     <PrivacySettings userId={data.profile.userId} />
     <NotificationSettings initialLevel={data.profile.notificationLevel} />
     <ThemeSettings />
-
-    <div class="theme-border border-b py-6 text-center md:py-8">
-      <p class="text-responsive theme-text-subtle">その他の設定は現在開発中です</p>
-      <p class="mt-2 text-xs text-gray-500 md:text-sm dark:text-gray-400">
-        近日中に機能を追加予定です
-      </p>
-    </div>
-
     <AccountDeletion userId={data.profile.userId} />
   </div>
 </div>

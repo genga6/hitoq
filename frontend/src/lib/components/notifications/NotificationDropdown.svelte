@@ -2,7 +2,6 @@
   import { useClickOutside } from "$lib/utils/useClickOutside";
   import {
     getNotifications,
-    getNotificationCount,
     markMessageAsRead
   } from "$lib/api-client/messages";
   import type { Message } from "$lib/types";
@@ -11,14 +10,6 @@
   import { errorUtils } from "$lib/stores/errorStore";
   import { withLoading, loadingOperations } from "$lib/stores/loadingStore";
 
-  type Props = {
-    isLoggedIn: boolean;
-    currentUserName?: string;
-  };
-
-  const { isLoggedIn, currentUserName }: Props = $props();
-
-  let notificationCount = $state(0);
   let notifications = $state<Message[]>([]);
   let showDropdown = $state(false);
   let isLoading = $state(false);
@@ -28,22 +19,13 @@
   let toggleButton = $state<HTMLButtonElement | null>(null);
 
   const loadNotifications = async () => {
-    if (!isLoggedIn) return;
-
     try {
       isLoading = true;
-      const [countResult, notificationsResult] = await Promise.all([
-        getNotificationCount(),
-        getNotifications()
-      ]);
-
-      notificationCount = countResult.notification_count;
-      notifications = notificationsResult;
+      notifications = await getNotifications();
     } catch (error) {
       console.error("Failed to load notifications:", error);
       errorUtils.networkError("通知の読み込みに失敗しました");
       notifications = [];
-      notificationCount = 0;
     } finally {
       isLoading = false;
     }
@@ -51,9 +33,6 @@
 
   const toggleDropdown = () => {
     showDropdown = !showDropdown;
-    if (showDropdown && isLoggedIn) {
-      loadNotifications();
-    }
   };
 
   const closeDropdown = () => {
@@ -70,9 +49,6 @@
           n.messageId === messageId ? { ...n, status: "read" as const } : n
         );
 
-        // Update notification count
-        const unreadCount = notifications.filter((n) => n.status === "unread").length;
-        notificationCount = unreadCount;
       } catch (error) {
         console.error("Failed to mark message as read:", error);
         errorUtils.networkError("既読マークに失敗しました");
@@ -98,36 +74,46 @@
   };
 
   const filteredNotifications = $derived(getFilteredNotifications());
+  const unreadCount = $derived(notifications.filter((n) => n.status === "unread").length);
 
   // Click outside detection
   $effect(() => {
-    if (dropdownElement && toggleButton) {
-      useClickOutside(dropdownElement, [toggleButton], closeDropdown);
+    if (dropdownElement && toggleButton && showDropdown) {
+      const cleanup = useClickOutside(dropdownElement, [toggleButton], closeDropdown);
+      return cleanup;
     }
+  });
+
+  // 初期化時に通知を読み込む
+  $effect(() => {
+    loadNotifications();
   });
 </script>
 
-<div class="relative">
+<div class="relative -ml-2">
   <!-- Notification Button -->
   <button
     bind:this={toggleButton}
     onclick={toggleDropdown}
-    class="relative rounded-full bg-white p-1 text-gray-400 hover:text-gray-500 focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 focus:outline-none dark:bg-gray-800 dark:text-gray-300 dark:hover:text-gray-200"
-    aria-label="通知"
+    class="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full ring-orange-400 transition hover:ring-2 focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 focus:outline-none md:h-12 md:w-12"
+    aria-label="通知を開く"
   >
-    <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      class="h-5 w-5 theme-text-secondary md:h-6 md:w-6"
+    >
       <path
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        stroke-width="2"
-        d="M15 17h5l-5 5-5-5h5v-5a7.5 7.5 0 000-15H9.5a7.5 7.5 0 000 15v5z"
+        fill-rule="evenodd"
+        d="M5.25 9a6.75 6.75 0 0113.5 0v.75c0 2.123.8 4.057 2.118 5.52a.75.75 0 01-.297 1.206c-1.544.57-3.16.99-4.831 1.243a3.75 3.75 0 11-7.48 0 24.585 24.585 0 01-4.831-1.243.75.75 0 01-.298-1.205A8.217 8.217 0 005.25 9.75V9zm4.502 8.9a2.25 2.25 0 104.496 0 25.057 25.057 0 01-4.496 0z"
+        clip-rule="evenodd"
       />
     </svg>
-    {#if notificationCount > 0}
+    {#if unreadCount > 0}
       <span
-        class="absolute -top-1 -right-1 inline-flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs font-medium text-white"
+        class="absolute -top-0 -right-0 h-3 w-3 rounded-full bg-orange-500"
       >
-        {notificationCount > 99 ? "99+" : notificationCount}
       </span>
     {/if}
   </button>
@@ -140,24 +126,18 @@
       role="menu"
       aria-orientation="vertical"
     >
-      <div class="border-b border-gray-200 px-4 py-3 dark:border-gray-700">
+      <div class="px-4 py-3 dark:border-gray-700">
         <h3 class="theme-text-primary text-lg font-medium">通知</h3>
       </div>
 
-      {#if isLoggedIn}
-        <NotificationTabs {notifications} {activeTab} onTabChange={handleTabChange} />
+      <NotificationTabs {notifications} {activeTab} onTabChange={handleTabChange} />
 
-        <NotificationList
-          notifications={filteredNotifications}
-          {currentUserName}
-          {isLoading}
-          onMarkAsRead={handleMarkAsRead}
-        />
-      {:else}
-        <div class="p-4 text-center">
-          <p class="theme-text-secondary text-sm">ログインして通知を確認してください</p>
-        </div>
-      {/if}
+      <NotificationList
+        notifications={filteredNotifications}
+        {isLoading}
+        onMarkAsRead={handleMarkAsRead}
+      />
+
     </div>
   {/if}
 </div>

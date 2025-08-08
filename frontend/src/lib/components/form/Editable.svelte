@@ -7,7 +7,6 @@
   import type { Snippet } from "svelte";
 
   type Props = {
-    isOwner: boolean;
     value: string;
     onSave: (newValue: string) => boolean | void | Promise<boolean>;
     onCancel?: () => void;
@@ -26,7 +25,6 @@
   };
 
   const {
-    isOwner,
     value,
     onSave,
     onCancel,
@@ -58,7 +56,7 @@
   const hasErrors = $derived(errors().length > 0 && touched);
 
   async function startEdit() {
-    if (!isOwner || isEditing) return;
+    if (isEditing) return;
 
     tempValue = value;
     isEditing = true;
@@ -131,7 +129,11 @@
     }
 
     if (isEditing && containerElement) {
-      const cleanupClickOutside = useClickOutside(containerElement, [], confirmEdit);
+      const handleClickOutside = () => {
+        confirmEdit();
+      };
+      
+      const cleanupClickOutside = useClickOutside(containerElement, [], handleClickOutside);
 
       return () => {
         window.removeEventListener("keydown", handleKeydown);
@@ -141,7 +143,7 @@
   });
 </script>
 
-{#if isOwner && isEditing}
+{#if isEditing}
   <svelte:element
     this={Element}
     bind:this={containerElement}
@@ -247,17 +249,16 @@
 {:else}
   <svelte:element
     this={Element}
-    role={isOwner ? "button" : "region"}
-    tabindex={isOwner ? 0 : -1}
+    role="button"
+    tabindex="0"
     onclick={startEdit}
     onkeydown={(e: KeyboardEvent) => {
-      if (isOwner && (e.key === "Enter" || e.key === " ")) {
+      if (e.key === "Enter" || e.key === " ") {
         e.preventDefault();
         startEdit();
       }
     }}
-    class="relative transition-all duration-300"
-    class:cursor-pointer={isOwner}
+    class="relative transition-all duration-300 cursor-pointer"
   >
     {@render children()}
   </svelte:element>

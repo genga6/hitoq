@@ -1,5 +1,7 @@
 <script lang="ts">
   import ValidatedInput from "$lib/components/form/ValidatedInput.svelte";
+  import CategorySelector from "./components/CategorySelector.svelte";
+  import SuccessMessage from "./components/SuccessMessage.svelte";
   import { ValidationRules, sanitizeInput } from "$lib/utils/validation";
 
   let selectedCategory = $state("bug");
@@ -91,77 +93,16 @@
       </p>
 
       {#if showSuccess}
-        <div class="theme-alert-primary mb-8">
-          <div class="flex items-center">
-            <svg
-              class="theme-alert-icon mr-3"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M5 13l4 4L19 7"
-              ></path>
-            </svg>
-            <h3 class="theme-alert-title">送信完了</h3>
-          </div>
-          <p class="theme-alert-text">
-            お問い合わせありがとうございます。内容を確認の上、必要に応じてご連絡いたします。
-          </p>
-          <button onclick={() => (showSuccess = false)} class="theme-alert-button">
-            新しいお問い合わせを送信
-          </button>
-        </div>
+        <SuccessMessage onNewContact={() => (showSuccess = false)} />
       {:else}
         <form onsubmit={handleSubmit} class="space-y-6">
           <!-- カテゴリー選択 -->
-          <div>
-            <!-- svelte-ignore a11y_label_has_associated_control -->
-            <label class="theme-text-secondary mb-3 block text-sm font-medium">
-              お問い合わせ種別 <span class="text-red-500">*</span>
-            </label>
-            <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              {#each categories as category (category.value)}
-                <label class="relative cursor-pointer">
-                  <input
-                    type="radio"
-                    name={GOOGLE_FORM_IDS.CATEGORY}
-                    value={category.value}
-                    bind:group={selectedCategory}
-                    class="sr-only"
-                    required
-                  />
-                  <div
-                    class="rounded-lg border-2 p-4 transition-all {selectedCategory ===
-                    category.value
-                      ? 'border-orange-400 bg-orange-50 dark:border-orange-500 dark:bg-orange-900/50'
-                      : 'theme-border-light theme-hover-bg'}"
-                  >
-                    <div class="flex items-start">
-                      <div class="mt-1 flex-shrink-0">
-                        <div
-                          class="h-4 w-4 rounded-full border-2 {selectedCategory === category.value
-                            ? 'border-orange-400 bg-orange-400 dark:border-orange-500 dark:bg-orange-500'
-                            : 'theme-border-light'}"
-                        >
-                          {#if selectedCategory === category.value}
-                            <div class="mx-auto mt-0.5 h-2 w-2 rounded-full bg-white"></div>
-                          {/if}
-                        </div>
-                      </div>
-                      <div class="ml-3">
-                        <div class="theme-text-primary font-medium">{category.label}</div>
-                        <div class="theme-text-subtle text-sm">{category.description}</div>
-                      </div>
-                    </div>
-                  </div>
-                </label>
-              {/each}
-            </div>
-          </div>
+          <CategorySelector
+            {selectedCategory}
+            {categories}
+            fieldName={GOOGLE_FORM_IDS.CATEGORY}
+            onSelect={(value) => (selectedCategory = value)}
+          />
 
           <!-- タイトル -->
           <ValidatedInput

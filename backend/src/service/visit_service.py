@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 from typing import Optional
 
+from sqlalchemy import func
 from sqlalchemy.orm import Session, joinedload
 
 from src.db.tables import User, Visit
@@ -58,16 +59,29 @@ def get_user_visits(db: Session, user_id: str, limit: int = 50) -> list[Visit]:
     """
     Get visits to a user's page, ordered by most recent.
     Only returns visits if the user has made their visits visible.
+    Returns only the latest visit per visitor to avoid duplicates.
     """
     # Check if user exists and has visits visible
     user = db.query(User).filter(User.user_id == user_id).first()
     if not user or not user.visits_visible:
         return []
 
+    # Subquery to get the latest visit_id for each visitor
+    latest_visits_subquery = (
+        db.query(func.max(Visit.visit_id).label("max_visit_id"), Visit.visitor_user_id)
+        .filter(Visit.visited_user_id == user_id)
+        .group_by(Visit.visitor_user_id)
+        .subquery()
+    )
+
+    # Main query to get the actual visit records
     visits = (
         db.query(Visit)
         .options(joinedload(Visit.visitor_user))
-        .filter(Visit.visited_user_id == user_id)
+        .join(
+            latest_visits_subquery,
+            Visit.visit_id == latest_visits_subquery.c.max_visit_id,
+        )
         .order_by(Visit.visited_at.desc())
         .limit(limit)
         .all()

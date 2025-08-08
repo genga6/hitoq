@@ -1,7 +1,7 @@
 <script lang="ts">
   import SearchInput from "../ui/SearchInput.svelte";
   import NotificationDropdown from "../notifications/NotificationDropdown.svelte";
-  import UserMenu from "../../../routes/UserMenu.svelte";
+  import UserMenu from "../ui/UserMenu.svelte";
   import type { UserCandidate } from "$lib/types";
 
   type Props = {
@@ -15,7 +15,6 @@
     candidates: UserCandidate[];
     showCandidates: boolean;
     isLoading: boolean;
-    noResults: boolean;
     onLogin: () => void;
     onLogout: () => Promise<void>;
     handleInput: (event: Event) => void;
@@ -30,7 +29,6 @@
     candidates,
     showCandidates,
     isLoading,
-    noResults,
     onLogin,
     onLogout,
     handleInput,
@@ -40,25 +38,38 @@
 
   let candidatesElement = $state<HTMLDivElement | null>(null);
   let searchInputElement = $state<HTMLInputElement | null>(null);
+  
+  // UserMenu state
+  let showUserMenu = $state(false);
+  let userMenuToggleButton = $state<HTMLButtonElement | null>(null);
+  let userMenuElement = $state<HTMLDivElement | null>(null);
+  
+  const toggleUserMenu = () => {
+    showUserMenu = !showUserMenu;
+  };
 </script>
 
 <div class="relative flex items-center justify-between">
-  <a
-    href={isLoggedIn && currentUser ? `/${currentUser.userName}` : "/"}
-    class="flex-shrink-0 text-2xl font-bold text-orange-400"
+  <!-- @ts-ignore: Svelte 5 onclick is not yet recognized by TypeScript -->
+  <button
+    onclick={async () => {
+      const { goto, invalidateAll } = await import('$app/navigation');
+      await invalidateAll();
+      await goto(isLoggedIn && currentUser ? `/${currentUser.userName}` : "/");
+    }}
+    class="flex-shrink-0 text-2xl font-bold text-orange-400 border-none bg-transparent p-0 cursor-pointer"
   >
     hitoQ
-  </a>
+  </button>
 
   <div class="absolute left-1/2 w-full max-w-md -translate-x-1/2 lg:max-w-lg">
     <SearchInput
-      bind:searchQuery
+      {searchQuery}
       bind:candidatesElement
       bind:searchInputElement
       {isLoading}
       {candidates}
       {showCandidates}
-      {noResults}
       onInput={handleInput}
       onKeydown={handleKeydown}
       onSelectCandidate={selectCandidate}
@@ -67,12 +78,21 @@
 
   <div class="absolute right-0 flex items-center gap-2">
     {#if isLoggedIn}
-      <NotificationDropdown {isLoggedIn} currentUserName={currentUser?.userName} />
-      <UserMenu currentUser={currentUser || null} {onLogout} />
+      <NotificationDropdown />
+      <UserMenu 
+        currentUser={currentUser || null} 
+        showMenu={showUserMenu}
+        onLogout={onLogout}
+        onToggleMenu={toggleUserMenu}
+        bind:toggleButton={userMenuToggleButton}
+        bind:menuElement={userMenuElement}
+      />
     {:else}
+      <!-- @ts-ignore: Svelte 5 onclick is not yet recognized by TypeScript -->
       <button
         onclick={onLogin}
         class="rounded-md bg-orange-500 px-4 py-2 text-sm font-medium text-white hover:bg-orange-600 focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 focus:outline-none"
+        type="button"
       >
         ログイン
       </button>
