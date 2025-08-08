@@ -16,10 +16,8 @@
     showCandidates: boolean;
     isLoading: boolean;
     noResults: boolean;
-    currentTheme: 'light' | 'dark' | 'system';
     onLogin: () => void;
     onLogout: () => Promise<void>;
-    onThemeChange: (theme: 'light' | 'dark' | 'system') => void;
     handleInput: (event: Event) => void;
     handleKeydown: (e: KeyboardEvent) => void;
     selectCandidate: (candidate: UserCandidate) => void;
@@ -33,10 +31,8 @@
     showCandidates,
     isLoading,
     noResults,
-    currentTheme,
     onLogin,
     onLogout,
-    onThemeChange,
     handleInput,
     handleKeydown,
     selectCandidate
@@ -73,10 +69,8 @@
     {#if isLoggedIn}
       <NotificationDropdown {isLoggedIn} currentUserName={currentUser?.userName} />
       <UserMenu
-        user={currentUser}
-        {currentTheme}
+        currentUser={currentUser || null}
         onLogout={onLogout}
-        onThemeChange={onThemeChange}
       />
     {:else}
       <button

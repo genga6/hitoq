@@ -55,7 +55,7 @@
     return validateInput(tempValue, validationRule).errors;
   });
 
-  const hasErrors = $derived(errors.length > 0 && touched);
+  const hasErrors = $derived(errors().length > 0 && touched);
 
   async function startEdit() {
     if (!isOwner || isEditing) return;
@@ -182,7 +182,7 @@
     <!-- エラーメッセージ -->
     {#if hasErrors}
       <div class="space-y-1">
-        {#each errors as error, index (index)}
+        {#each errors() as error, index (index)}
           <p class="text-sm text-red-500">{error}</p>
         {/each}
       </div>

@@ -36,10 +36,48 @@
       handleClose();
     }
   }
+
+  let modalElement: HTMLDivElement | null = $state(null);
+
+  $effect(() => {
+    if (isOpen && modalElement) {
+      // Focus the modal when opened
+      modalElement.focus();
+      
+      // Trap focus within modal
+      const focusableElements = modalElement.querySelectorAll(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      );
+      const firstElement = focusableElements[0] as HTMLElement;
+      const lastElement = focusableElements[focusableElements.length - 1] as HTMLElement;
+
+      const handleTabKey = (e: KeyboardEvent) => {
+        if (e.key === 'Tab') {
+          if (e.shiftKey) {
+            if (document.activeElement === firstElement) {
+              e.preventDefault();
+              lastElement?.focus();
+            }
+          } else {
+            if (document.activeElement === lastElement) {
+              e.preventDefault();
+              firstElement?.focus();
+            }
+          }
+        }
+      };
+
+      modalElement.addEventListener('keydown', handleTabKey);
+      return () => {
+        modalElement?.removeEventListener('keydown', handleTabKey);
+      };
+    }
+  });
 </script>
 
 {#if isOpen}
   <div
+    bind:this={modalElement}
     role="dialog"
     aria-modal="true"
     aria-labelledby={title ? 'modal-title' : undefined}
@@ -54,7 +92,7 @@
       {#if title || closable}
         <div class="flex items-center justify-between border-b border-gray-200 p-4">
           {#if title}
-            <h3 class="theme-text-primary text-lg font-semibold">{title}</h3>
+            <h3 id="modal-title" class="theme-text-primary text-lg font-semibold">{title}</h3>
           {:else}
             <div></div>
           {/if}

@@ -12,6 +12,10 @@
 
   const { notifications, activeTab, onTabChange }: Props = $props();
 
+  function handleTabChange(tabId: string) {
+    onTabChange(tabId as NotificationTabId);
+  }
+
   const tabs = $derived([
     { 
       id: "all" as const, 
@@ -35,7 +39,6 @@
   <TabGroup
     {tabs}
     activeTab={activeTab}
-    onTabChange={onTabChange}
-    showCounts={true}
+    onTabChange={handleTabChange}
   />
 </div>

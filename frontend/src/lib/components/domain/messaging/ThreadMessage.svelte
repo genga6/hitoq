@@ -83,7 +83,7 @@
           <div class="flex items-center gap-2">
             <button
               onclick={() => {
-                onEdit?.(editValue);
+                onEdit?.(message.messageId, editValue);
                 onSaveEdit?.(message.messageId);
               }}
               disabled={!editValue.trim()}

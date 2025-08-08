@@ -103,7 +103,7 @@
   // Click outside detection
   $effect(() => {
     if (dropdownElement && toggleButton) {
-      useClickOutside(dropdownElement, closeDropdown, toggleButton);
+      useClickOutside(dropdownElement, [toggleButton], closeDropdown);
     }
   });
 </script>

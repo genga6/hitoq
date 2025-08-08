@@ -38,7 +38,7 @@
     onclick={onToggle}
     disabled={isToggling}
     class="flex items-center gap-1 text-gray-500 transition-colors hover:text-red-500 disabled:opacity-50"
-    title="いいね"
+    aria-label={liked ? "いいねを取り消す" : "いいねする"}
   >
     <svg
       class="h-4 w-4 {liked ? 'fill-red-500 text-red-500' : 'fill-none'}"
@@ -69,15 +69,23 @@
 <!-- いいね一覧モーダル -->
 {#if showLikesModal}
   <div
+    role="button"
+    tabindex="0"
     class="bg-opacity-50 fixed inset-0 z-50 flex items-center justify-center bg-black"
     onclick={closeLikesModal}
+    onkeydown={(e) => e.key === 'Escape' && closeLikesModal()}
+    aria-label="モーダルを閉じる"
   >
-    <!-- svelte-ignore a11y-click-events-have-key-events -->
-    <!-- svelte-ignore a11y-no-static-element-interactions -->
-    <div class="mx-4 w-full max-w-sm rounded-lg bg-white p-4" onclick={(e) => e.stopPropagation()}>
+    <div 
+      role="dialog" 
+      aria-modal="true"
+      tabindex="-1"
+      class="mx-4 w-full max-w-sm rounded-lg bg-white p-4" 
+      onclick={(e) => e.stopPropagation()}
+    >
       <div class="mb-3 flex items-center justify-between">
         <h3 class="theme-text-primary text-lg font-semibold">いいね</h3>
-        <button onclick={closeLikesModal} class="text-gray-400 hover:text-gray-600">
+        <button onclick={closeLikesModal} class="text-gray-400 hover:text-gray-600" aria-label="閉じる">
           <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
               stroke-linecap="round"
@@ -90,16 +98,16 @@
       </div>
 
       <div class="max-h-64 overflow-y-auto">
-        {#each likesData as like (like.user_id)}
+        {#each likesData as like (like.userId)}
           <div class="flex items-center gap-3 py-2">
             <img
-              src={like.icon_url || "/default-avatar.svg"}
-              alt={like.display_name}
+              src={like.iconUrl || "/default-avatar.svg"}
+              alt={like.displayName}
               class="h-8 w-8 rounded-full"
             />
             <div class="flex-1">
-              <div class="text-sm font-medium text-gray-900">{like.display_name}</div>
-              <div class="text-xs text-gray-500">@{like.user_name}</div>
+              <div class="text-sm font-medium text-gray-900">{like.displayName}</div>
+              <div class="text-xs text-gray-500">@{like.userName}</div>
             </div>
           </div>
         {:else}

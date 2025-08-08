@@ -2,7 +2,7 @@
   import QAItem from "./QAItem.svelte";
   import HintTooltip from "$lib/components/ui/HintTooltip.svelte";
   import CategoryFilter from "$lib/components/domain/users/CategoryFilter.svelte";
-  import type { CategoryInfo, Question } from "$lib/types";
+  import type { CategoryInfo, Question, BaseUser } from "$lib/types";
 
   interface AnsweredQAPair {
     groupId: string;
@@ -26,7 +26,7 @@
       bio?: string;
       iconUrl?: string;
     };
-    currentUser?: unknown;
+    currentUser?: BaseUser | null;
     isLoggedIn?: boolean;
     onAnswerUpdate: (groupIndex: number, questionIndex: number, newAnswer: string) => void;
     onClearFilters: () => void;
@@ -96,7 +96,7 @@
             }}
             profileUserId={profile?.userId}
             profileUserName={profile?.userName}
-            {currentUser}
+            currentUser={currentUser || undefined}
             {isLoggedIn}
           />
         </div>

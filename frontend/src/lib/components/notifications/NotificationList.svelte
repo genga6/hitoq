@@ -5,12 +5,11 @@
 
   type Props = {
     notifications: Message[];
-    currentUserName?: string;
     isLoading: boolean;
     onMarkAsRead: (messageId: string) => Promise<void>;
   };
 
-  const { notifications, currentUserName, isLoading, onMarkAsRead }: Props = $props();
+  const { notifications, isLoading, onMarkAsRead }: Props = $props();
 </script>
 
 <div class="max-h-96 overflow-y-auto">
@@ -42,7 +41,6 @@
       {#each notifications as notification (notification.messageId)}
         <NotificationItem 
           {notification}
-          {currentUserName}
           {onMarkAsRead}
         />
       {/each}

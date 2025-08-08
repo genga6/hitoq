@@ -246,7 +246,28 @@
   onclick={handleMarkAsRead}
   onkeydown={(e) => e.key === "Enter" && handleMarkAsRead()}
 >
-  <MessageHeader {message} {isSentByCurrentUser} />
+  <MessageHeader 
+    {message} 
+    {isSentByCurrentUser}
+    {profile}
+    {currentUser}
+    {isLoggedIn}
+    {editingMessageId}
+    {editContent}
+    {isEditingOrDeleting}
+    {heartStates}
+    {isTogglingHeart}
+    {showReplyForm}
+    {showThread}
+    {threadMessages}
+    {isSubmittingReply}
+    onStartEdit={startEdit}
+    onSaveEdit={saveEdit}
+    onCancelEdit={cancelEdit}
+    onToggleReplyForm={toggleReplyForm}
+    onToggleHeart={toggleHeartReaction}
+    {onMessageUpdate}
+  />
     <!-- 親メッセージの表示（リプライの場合） -->
     {#if message.parentMessage}
       <ParentMessagePreview parentMessage={message.parentMessage} />
@@ -292,7 +313,7 @@
       <ReplyForm
         onSubmit={handleReply}
         onCancel={() => (showReplyForm = false)}
-        {isSubmittingReply}
+        isSubmitting={isSubmittingReply}
       />
     {/if}
 
@@ -313,7 +334,6 @@
         onReply={handleThreadReply}
         {isEditingOrDeleting}
         {isTogglingHeart}
-        {isSubmittingReply}
       />
     {/if}
 </div>

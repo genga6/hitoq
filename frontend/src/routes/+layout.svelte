@@ -64,7 +64,7 @@
     if (browser) {
       updateThemeClass(currentTheme);
       if (currentTheme === "system") {
-        watchSystemTheme();
+        watchSystemTheme(currentTheme);
       }
     }
   });

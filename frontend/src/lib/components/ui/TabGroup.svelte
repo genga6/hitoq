@@ -40,7 +40,7 @@
   };
 </script>
 
-<div class={containerClasses[variant]}>
+<div class={containerClasses[variant]} role="tablist" aria-label="タブナビゲーション">
   {#each tabs as tab (tab.id)}
     {#if variant === "navigation" && tab.href}
       <a
@@ -48,6 +48,9 @@
         class="{tabClasses[variant][size]} {activeTab === tab.id
           ? 'theme-tab-active'
           : 'theme-tab-inactive'}"
+        role="tab"
+        aria-selected={activeTab === tab.id}
+        aria-controls="tabpanel-{tab.id}"
       >
         <span class="block truncate">
           {tab.icon ? `${tab.icon} ` : ""}{tab.label}
@@ -60,6 +63,9 @@
         class="{tabClasses[variant][size]} {activeTab === tab.id
           ? 'theme-tab-active'
           : 'theme-tab-inactive'}"
+        role="tab"
+        aria-selected={activeTab === tab.id}
+        aria-controls="tabpanel-{tab.id}"
       >
         {tab.icon ? `${tab.icon} ` : ""}{tab.label}
         {tab.count !== undefined ? ` (${tab.count})` : ""}

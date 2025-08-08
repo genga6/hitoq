@@ -3,6 +3,8 @@
   import { formatRelativeTime } from "$lib/utils/dateFormat";
   import VisitorItem from "./VisitorItem.svelte";
   import EmptyState from "$lib/components/feedback/EmptyState.svelte";
+  import LoadingSpinner from "$lib/components/feedback/LoadingSpinner.svelte";
+  import LazyLoad from "$lib/components/ui/LazyLoad.svelte";
 
   interface Props {
     userId: string;
@@ -62,12 +64,14 @@
     </div>
 
     <!-- フィルタリングボタン -->
-    <div class="theme-bg-subtle flex items-center space-x-1 rounded-lg p-1">
+    <div class="theme-bg-subtle flex items-center space-x-1 rounded-lg p-1" role="group" aria-label="訪問者フィルター">
       <button
         class="rounded-md px-2 py-1.5 text-xs font-medium transition-all duration-200 sm:px-3 sm:text-sm {!showOnlyLoggedIn
           ? 'theme-bg-surface theme-text-primary shadow-sm'
           : 'theme-text-muted hover:opacity-80'}"
         onclick={() => (showOnlyLoggedIn = false)}
+        aria-pressed={!showOnlyLoggedIn}
+        aria-label="すべての訪問者を表示"
       >
         すべて
       </button>
@@ -76,6 +80,8 @@
           ? 'theme-bg-surface theme-text-primary shadow-sm'
           : 'theme-text-muted hover:opacity-80'}"
         onclick={() => (showOnlyLoggedIn = true)}
+        aria-pressed={showOnlyLoggedIn}
+        aria-label="ログインユーザーのみ表示"
       >
         <span class="hidden sm:inline">ログインユーザーのみ</span>
         <span class="sm:hidden">ログイン済み</span>
@@ -84,15 +90,7 @@
   </div>
 
   {#if loading}
-    <div class="flex flex-col items-center justify-center space-y-4 py-12">
-      <div class="relative">
-        <div class="h-12 w-12 animate-spin rounded-full border-4 border-orange-200"></div>
-        <div
-          class="absolute top-0 left-0 h-12 w-12 animate-spin rounded-full border-4 border-orange-500 border-t-transparent"
-        ></div>
-      </div>
-      <p class="theme-text-muted text-sm">読み込み中...</p>
-    </div>
+    <LoadingSpinner size="large" text="訪問者を読み込んでいます..." />
   {:else if error}
     <div class="py-12 text-center">
       <div class="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-full bg-red-100">
@@ -115,8 +113,16 @@
     />
   {:else}
     <div class="space-y-2">
-      {#each filteredVisits as visit (visit.visit_id)}
-        <VisitorItem {visit} formatDate={formatRelativeTime} />
+      {#each filteredVisits as visit, index (visit.visit_id)}
+        {#if index < 10}
+          <!-- Load first 10 items immediately -->
+          <VisitorItem {visit} formatDate={formatRelativeTime} />
+        {:else}
+          <!-- Lazy load remaining items -->
+          <LazyLoad>
+            <VisitorItem {visit} formatDate={formatRelativeTime} />
+          </LazyLoad>
+        {/if}
       {/each}
     </div>
 

@@ -17,10 +17,8 @@
     showCandidates: boolean;
     isLoading: boolean;
     noResults: boolean;
-    currentTheme: 'light' | 'dark' | 'system';
     onLogin: () => void;
     onLogout: () => Promise<void>;
-    onThemeChange: (theme: 'light' | 'dark' | 'system') => void;
     handleInput: (event: Event) => void;
     handleKeydown: (e: KeyboardEvent) => void;
     selectCandidate: (candidate: UserCandidate) => void;
@@ -34,10 +32,8 @@
     showCandidates,
     isLoading,
     noResults,
-    currentTheme,
     onLogin,
     onLogout,
-    onThemeChange,
     handleInput,
     handleKeydown,
     selectCandidate
@@ -50,7 +46,7 @@
   let mobileSearchInputElement = $state<HTMLInputElement | null>(null);
 
   // Click outside detection for mobile menu
-  useClickOutside(menuElement, () => showMenu = false, toggleButton);
+  useClickOutside(menuElement, [toggleButton], () => showMenu = false);
 </script>
 
 <div class="relative flex items-center justify-between">
@@ -111,10 +107,8 @@
       <!-- User Menu or Login -->
       {#if isLoggedIn && currentUser}
         <UserMenu
-          user={currentUser}
-          {currentTheme}
+          {currentUser}
           onLogout={onLogout}
-          onThemeChange={onThemeChange}
           isMobile={true}
         />
       {:else}

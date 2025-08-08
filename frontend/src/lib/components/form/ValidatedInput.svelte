@@ -30,8 +30,8 @@
 
   const inputId = Math.random().toString(36).substr(2, 9);
 
-  // 入力値を管理する$derived（writable）
-  let inputValue = $derived.by(() => value);
+  // 入力値を管理
+  let inputValue = $state(value);
 
   // 入力時のバリデーション
   function handleInput(event: Event) {
@@ -57,7 +57,7 @@
     return validateInput(inputValue, rules).errors;
   });
 
-  const hasErrors = $derived(errors.length > 0 && touched);
+  const hasErrors = $derived(errors().length > 0 && touched);
   const isValid = $derived(!hasErrors && touched);
 </script>
 
@@ -110,7 +110,7 @@
   <!-- エラーメッセージ -->
   {#if hasErrors}
     <div class="space-y-1">
-      {#each errors as error, index (index)}
+      {#each errors() as error, index (index)}
         <p class="theme-text-error text-sm">{error}</p>
       {/each}
     </div>

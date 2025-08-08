@@ -3,8 +3,10 @@
   import MessageList from "./components/MessageList.svelte";
   import { invalidateAll } from "$app/navigation";
 
+  import type { BaseUser } from "$lib/types";
+  
   type Props = {
-    data: MessagesPageData & { currentUser: unknown; isLoggedIn: boolean; isOwner: boolean };
+    data: MessagesPageData & { currentUser: BaseUser | null; isLoggedIn: boolean; isOwner: boolean };
   };
 
   const { data }: Props = $props();
@@ -32,7 +34,7 @@
     <MessageList
       {messages}
       {profile}
-      currentUser={data.currentUser}
+      currentUser={data.currentUser || undefined}
       isLoggedIn={data.isLoggedIn}
       onMessageUpdate={handleMessageUpdate}
     />

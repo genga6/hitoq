@@ -182,7 +182,7 @@
                 placeholder="返信を入力..."
                 onSubmit={(content) => handleThreadReply(threadMessage, content)}
                 onCancel={() => toggleThreadReplyForm(threadMessage.messageId)}
-                {isSubmittingReply}
+                isSubmitting={isSubmittingReply}
               />
             {/if}
           </div>
