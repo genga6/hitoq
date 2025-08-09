@@ -61,3 +61,15 @@ export const getQuestionsByCategory = async (
 export const getCategories = async (): Promise<CategoryInfo[]> => {
   return fetchApi<CategoryInfo[]>(`/questions/categories`);
 };
+
+// Q&A詳細取得（トークのリファレンス表示用）
+export interface QAWithDetails {
+  question: Question;
+  answer: Answer;
+}
+
+export const getAnswerWithQuestion = async (
+  answerId: number,
+): Promise<QAWithDetails> => {
+  return fetchApi<QAWithDetails>(`/answers/${answerId}/with-question`);
+};

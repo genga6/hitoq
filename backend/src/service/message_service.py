@@ -10,6 +10,7 @@ from src.db.tables import (
     MessageTypeEnum,
     NotificationLevelEnum,
     User,
+    UserBlock,
 )
 from src.schema.message import MessageCreate, MessageUpdate
 
@@ -27,6 +28,20 @@ def should_notify_user(
 
 
 def create_message(db: Session, message: MessageCreate, from_user_id: str) -> Message:
+    # Check if the sender is blocked by the recipient
+    is_blocked = (
+        db.query(UserBlock)
+        .filter(
+            UserBlock.blocker_user_id == message.to_user_id,
+            UserBlock.blocked_user_id == from_user_id,
+        )
+        .first()
+        is not None
+    )
+
+    if is_blocked:
+        raise ValueError("Cannot send message to user who has blocked you")
+
     db_message = Message(
         message_id=str(uuid.uuid4()),
         from_user_id=from_user_id,
@@ -46,11 +61,20 @@ def create_message(db: Session, message: MessageCreate, from_user_id: str) -> Me
 def get_messages_for_user(
     db: Session, user_id: str, skip: int = 0, limit: int = 50
 ) -> list[Message]:
-    """Get messages received by a user."""
+    """Get messages received by a user, excluding messages from blocked users."""
+    # Get blocked user IDs
+    blocked_user_ids = (
+        db.query(UserBlock.blocked_user_id)
+        .filter(UserBlock.blocker_user_id == user_id)
+        .subquery()
+    )
+
     return (
         db.query(Message)
         .options(joinedload(Message.from_user))
-        .filter(Message.to_user_id == user_id)
+        .filter(
+            Message.to_user_id == user_id, ~Message.from_user_id.in_(blocked_user_ids)
+        )
         .order_by(Message.created_at.desc())
         .offset(skip)
         .limit(limit)

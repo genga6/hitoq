@@ -3,8 +3,12 @@ from collections import defaultdict
 from sqlalchemy.orm import Session, joinedload
 
 from src.db.tables import Answer, Question
-from src.schema.answer import AnswerCreate
-from src.schema.composite_schema import AnsweredQARead, UserAnswerGroupRead
+from src.schema.answer import AnswerCreate, AnswerRead
+from src.schema.composite_schema import (
+    AnsweredQARead,
+    QAWithDetails,
+    UserAnswerGroupRead,
+)
 from src.schema.question import QuestionRead
 from src.service.categories import get_category_by_id
 from src.service.yaml_loader import get_yaml_loader
@@ -94,6 +98,27 @@ def create_answer(
     db.commit()
     db.refresh(db_answer)
     return db_answer
+
+
+def get_answer_with_question(db: Session, answer_id: int) -> QAWithDetails:
+    """指定されたanswer_idの回答とその質問を取得（トークのリファレンス表示用）"""
+    answer = (
+        db.query(Answer)
+        .options(joinedload(Answer.question))
+        .filter(Answer.answer_id == answer_id)
+        .first()
+    )
+
+    if not answer:
+        raise ValueError(f"Answer with id {answer_id} not found")
+
+    if not answer.question:
+        raise ValueError(f"Question for answer {answer_id} not found")
+
+    return QAWithDetails(
+        question=QuestionRead.model_validate(answer.question),
+        answer=AnswerRead.model_validate(answer),
+    )
 
 
 def initialize_default_questions(db: Session) -> None:

@@ -9,8 +9,7 @@ export const load: PageServerLoad = async ({ params, request }) => {
 
   try {
     const rawData = await getQnAPageData(userName);
-    const { profile, userAnswerGroups, availableTemplates, categories } =
-      rawData;
+    const { profile, userAnswerGroups, categories } = rawData;
 
     // Check if the current user is the owner and get authentication status
     let isOwner = false;
@@ -18,7 +17,7 @@ export const load: PageServerLoad = async ({ params, request }) => {
     let isLoggedIn = false;
     try {
       currentUser = await getCurrentUserServer(cookieHeader);
-      isOwner = currentUser && currentUser.userName === userName;
+      isOwner = currentUser?.userName === userName;
       isLoggedIn = !!currentUser;
     } catch {
       // User not authenticated - this is expected for logged out users
@@ -29,7 +28,6 @@ export const load: PageServerLoad = async ({ params, request }) => {
     return {
       profile,
       userAnswerGroups,
-      availableTemplates,
       categories,
       isOwner,
       currentUser,

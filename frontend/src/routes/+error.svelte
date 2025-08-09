@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { page } from '$app/state';
+  import { page } from "$app/state";
 </script>
 
 <div class="flex flex-col items-center justify-center px-4 py-24 text-center">
@@ -9,7 +9,7 @@
     </h1>
 
     <p class="mt-4 text-3xl font-semibold text-gray-700">
-      {page.error?.message ?? 'ページが見つかりません'}
+      {page.error?.message ?? "ページが見つかりません"}
     </p>
 
     <p class="mt-4 text-gray-600">

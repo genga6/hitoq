@@ -17,7 +17,7 @@ export const load: PageServerLoad = async ({ params, request }) => {
     let isLoggedIn = false;
     try {
       currentUser = await getCurrentUserServer(cookieHeader);
-      isOwner = currentUser && currentUser.userName === userName;
+      isOwner = currentUser?.userName === userName;
       isLoggedIn = !!currentUser;
     } catch {
       // User not authenticated - this is expected for logged out users
@@ -38,7 +38,7 @@ export const load: PageServerLoad = async ({ params, request }) => {
       isLoggedIn,
     };
   } catch (e) {
-    if (e.status === 302) {
+    if (e && typeof e === "object" && "status" in e && e.status === 302) {
       throw e; // Re-throw redirects
     }
     console.error("Error loading gacha data:", e);

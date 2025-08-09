@@ -3,8 +3,13 @@ import {
   refreshAccessTokenServer,
 } from "$lib/api-client/auth";
 import type { LayoutServerLoad } from "./$types";
+import type { UnauthenticatedState } from "$lib/types";
 
-const UNAUTHORIZED_RESULT = { isLoggedIn: false, user: null, userName: null };
+const UNAUTHORIZED_RESULT: UnauthenticatedState = {
+  isLoggedIn: false,
+  user: null,
+  userName: null,
+};
 
 export const load: LayoutServerLoad = async ({ cookies }) => {
   try {
@@ -15,7 +20,7 @@ export const load: LayoutServerLoad = async ({ cookies }) => {
     let user = await getCurrentUserServer(cookieHeader);
     if (user) return { isLoggedIn: true, user: user, userName: user.userName };
 
-    // アクセストークンが無効な場合、リフレッシュトークンで再試行
+    // If the access token is invalid, retry with the refresh token
     const refreshToken = cookies.get("refresh_token");
     if (!refreshToken) return UNAUTHORIZED_RESULT;
 

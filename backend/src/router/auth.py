@@ -93,6 +93,34 @@ def _get_current_user(request: Request, db: Session = Depends(get_db)):
     return user
 
 
+def get_current_user_optional(request: Request, db: Session = Depends(get_db)):
+    """
+    現在のユーザーを取得する（オプショナル版）
+    ログインしていない場合はNoneを返し、エラーを発生させない
+    """
+    try:
+        token = request.cookies.get("access_token")
+        if not token:
+            return None
+
+        # _verify_token を直接呼ばずに、エラーをキャッチ
+        try:
+            payload = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+            if payload.get("type") != "access":
+                return None
+        except (jwt.ExpiredSignatureError, jwt.InvalidTokenError):
+            return None
+
+        user_id = payload.get("sub")
+        if not user_id:
+            return None
+
+        user = user_service.get_user(db, user_id=user_id)
+        return user
+    except Exception:
+        return None
+
+
 # https://docs.x.com/resources/fundamentals/authentication/oauth-2-0/user-access-token
 @auth_router.get("/login/twitter")
 @limiter.limit("10/minute")  # Prevent auth spam

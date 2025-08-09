@@ -43,3 +43,21 @@ export const updateCurrentUser = async (
     body: JSON.stringify(userUpdate),
   });
 };
+
+export const discoverUsers = async (
+  type: "activity" | "random" | "mixed" = "mixed",
+  limit: number = 10,
+  offset: number = 0,
+): Promise<Profile[]> => {
+  const params = new URLSearchParams({
+    type,
+    limit: limit.toString(),
+    offset: offset.toString(),
+  });
+
+  try {
+    return fetchApiWithAuth<Profile[]>(`/users/discover?${params.toString()}`);
+  } catch {
+    return [];
+  }
+};
