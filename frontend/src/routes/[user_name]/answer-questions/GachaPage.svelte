@@ -1,15 +1,18 @@
 <script lang="ts">
   import type { CategoryInfo } from "$lib/types";
   import type { Question } from "$lib/types";
-  import CategoryFilter from "$lib/components/CategoryFilter.svelte";
+  import QuestionAnswerCard from "$lib/components/domain/qna/QuestionAnswerCard.svelte";
+  import GachaControls from "./components/GachaControls.svelte";
+  import ToastContainer from "$lib/components/ui/ToastContainer.svelte";
+  import { toasts } from "$lib/stores/toast";
+  import { fly } from "svelte/transition";
 
   type Props = {
     categories: Record<string, CategoryInfo>;
-    isOwner: boolean;
     userId: string;
   };
 
-  const { categories, isOwner, userId }: Props = $props();
+  const { categories, userId }: Props = $props();
 
   let gachaQuestionCount = $state(3);
   let selectedCategories = $state<string[]>([]);
@@ -23,6 +26,7 @@
     questionIndex: number;
     groupIndex: number;
     categoryInfo?: CategoryInfo;
+    isNew?: boolean; // 新しく追加された質問かどうか
   }
 
   // ガチャ結果の未回答質問を管理
@@ -31,21 +35,6 @@
   // localStorageのキー
   const STORAGE_KEY = `hitoq-unanswered-questions-${userId}`;
   const STORAGE_KEY_INPUTS = `hitoq-question-inputs-${userId}`;
-  const STORAGE_KEY_NEW_QUESTIONS = `hitoq-new-questions-${userId}`;
-
-  interface NewQuestion {
-    messageId: string;
-    content: string;
-    fromUserId: string;
-    fromUserName: string;
-    fromDisplayName: string;
-    createdAt: string;
-    groupId: string;
-    questionIndex: number;
-  }
-
-  // 新規質問（メッセージ）を管理
-  let newQuestions = $state<NewQuestion[]>([]);
 
   function generateGroupId(): string {
     return `group-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
@@ -82,12 +71,22 @@
             displayOrder: question.displayOrder
           },
           questionIndex: index,
-          groupIndex: unansweredQAPairs.length + index,
-          categoryInfo: categories[question.categoryId]
+          groupIndex: index,
+          categoryInfo: categories[question.categoryId],
+          isNew: true // 新しい質問としてマーク
         })
       );
 
-      unansweredQAPairs = [...unansweredQAPairs, ...newUnansweredPairs];
+      unansweredQAPairs = [...newUnansweredPairs, ...unansweredQAPairs];
+      
+      // 少し遅延させてアニメーション効果を演出
+      setTimeout(() => {
+        unansweredQAPairs = unansweredQAPairs.map(pair => ({
+          ...pair,
+          isNew: false
+        }));
+      }, 2000);
+      
       saveToStorage();
 
       return selectedQuestions.length;
@@ -97,39 +96,43 @@
     }
   }
 
-  async function performRandomGacha() {
-    let count = 0;
+  async function performRandomGacha(count: number = gachaQuestionCount) {
+    let resultCount = 0;
     // カテゴリが選択されている場合はカテゴリフィルターを適用
     if (selectedCategories.length > 0) {
       // 複数カテゴリが選択されている場合はランダムに1つを選択
       const randomCategory =
         selectedCategories[Math.floor(Math.random() * selectedCategories.length)];
-      count = await performGacha(randomCategory, gachaQuestionCount);
-      if (count === 0) {
+      resultCount = await performGacha(randomCategory, count);
+      if (resultCount === 0) {
         const categoryInfo = categories[randomCategory];
-        alert(
+        toasts.warning(
           `${categoryInfo?.label || randomCategory}カテゴリにはもう回答できる質問がありません！`
         );
       }
     } else {
-      count = await performGacha(undefined, gachaQuestionCount);
-      if (count === 0) {
-        alert("もう回答できる質問がありません！");
+      resultCount = await performGacha(undefined, count);
+      if (resultCount === 0) {
+        toasts.warning("もう回答できる質問がありません！");
       }
     }
 
-    if (count > 0) {
-      alert(`${count}問の質問を追加しました！`);
+    if (resultCount > 0) {
+      toasts.success(`${resultCount}問の質問を追加しました！`);
     }
   }
 
-  // async function performCategoryGacha(category: string) {
-  //   const count = await performGacha(category, gachaQuestionCount);
-  //   if (count === 0) {
-  //     const categoryInfo = categories[category];
-  //     alert(`${categoryInfo?.label || category}カテゴリにはもう回答できる質問がありません！`);
-  //   }
-  // }
+  function toggleCategory(categoryId: string) {
+    if (selectedCategories.includes(categoryId)) {
+      selectedCategories = selectedCategories.filter((c) => c !== categoryId);
+    } else {
+      selectedCategories = [...selectedCategories, categoryId];
+    }
+  }
+
+  function clearFilters() {
+    selectedCategories = [];
+  }
 
   async function handleSaveAnswer(pair: UnansweredQAPair) {
     const questionKey = `${pair.groupId}-${pair.questionIndex}`;
@@ -177,97 +180,6 @@
     saveToStorage();
   }
 
-  // 新規質問を取得
-  async function loadNewQuestions() {
-    if (!isOwner) return;
-
-    try {
-      const { getMyMessages } = await import("$lib/api-client/messages");
-      const messages = await getMyMessages();
-
-      // 未回答のメッセージのみを新規質問として表示（いいねメッセージは除外）
-      interface APIMessage {
-        messageId: string;
-        content: string;
-        fromUserId: string;
-        fromUserName: string;
-        fromDisplayName: string;
-        createdAt: string;
-        isAnswered: boolean;
-        messageType: string;
-      }
-
-      const unansweredMessages = (messages as APIMessage[]).filter(
-        (msg: APIMessage) => !msg.isAnswered && msg.messageType !== "like"
-      );
-      const newQuestionsFromAPI = unansweredMessages.map(
-        (msg): NewQuestion => ({
-          messageId: msg.messageId,
-          content: msg.content,
-          fromUserId: msg.fromUserId,
-          fromUserName: msg.fromUserName,
-          fromDisplayName: msg.fromDisplayName,
-          createdAt: msg.createdAt,
-          groupId: generateGroupId(),
-          questionIndex: 0
-        })
-      );
-
-      // 既存のローカル質問と重複しないようにマージ
-      const existingMessageIds = new Set(newQuestions.map((q) => q.messageId));
-      const newUniqueQuestions = newQuestionsFromAPI.filter(
-        (q) => !existingMessageIds.has(q.messageId)
-      );
-
-      if (newUniqueQuestions.length > 0) {
-        newQuestions = [...newQuestions, ...newUniqueQuestions];
-        saveToStorage();
-      }
-    } catch (error) {
-      console.error("新規質問の取得に失敗しました:", error);
-    }
-  }
-
-  // 新規質問に回答
-  // async function handleAnswerNewQuestion(question: NewQuestion) {
-  //   const questionKey = `new-${question.groupId}`;
-  //   const inputValue = questionInputs[questionKey] || '';
-
-  //   if (!inputValue.trim()) return;
-
-  //   try {
-  //     const { createMessage } = await import('$lib/api-client/messages');
-
-  //     // メッセージに返信
-  //     await createMessage({
-  //       toUserId: question.fromUserId || '',
-  //       messageType: 'comment',
-  //       content: inputValue.trim(),
-  //       parentMessageId: question.messageId
-  //     });
-
-  //     // 成功したら新規質問リストから削除
-  //     newQuestions = newQuestions.filter((q) => q.messageId !== question.messageId);
-  //     questionInputs[questionKey] = '';
-  //     saveToStorage();
-
-  //     // 成功メッセージ
-  //     alert('回答を送信しました！');
-  //   } catch (error) {
-  //     console.error('回答送信エラー:', error);
-  //     alert('回答の送信に失敗しました。');
-  //   }
-  // }
-
-  // function handleSkipNewQuestion(question: NewQuestion) {
-  //   // 新規質問リストから削除
-  //   newQuestions = newQuestions.filter((q) => q.messageId !== question.messageId);
-  //   // 入力値をクリア
-  //   const questionKey = `new-${question.groupId}`;
-  //   questionInputs[questionKey] = '';
-  //   saveToStorage();
-  // }
-
   // localStorageから保存されたデータを読み込み
   function loadFromStorage() {
     if (typeof window === "undefined") return;
@@ -275,7 +187,6 @@
     try {
       const savedQuestions = localStorage.getItem(STORAGE_KEY);
       const savedInputs = localStorage.getItem(STORAGE_KEY_INPUTS);
-      const savedNewQuestions = localStorage.getItem(STORAGE_KEY_NEW_QUESTIONS);
 
       if (savedQuestions) {
         const parsed = JSON.parse(savedQuestions);
@@ -291,14 +202,6 @@
           questionInputs = parsed;
         }
       }
-
-      if (savedNewQuestions) {
-        const parsed = JSON.parse(savedNewQuestions);
-        if (Array.isArray(parsed)) {
-          newQuestions = parsed;
-          console.log("復元した新規質問数:", parsed.length);
-        }
-      }
     } catch (error) {
       console.error("localStorageからのデータ読み込みエラー:", error);
     }
@@ -311,13 +214,7 @@
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(unansweredQAPairs));
       localStorage.setItem(STORAGE_KEY_INPUTS, JSON.stringify(questionInputs));
-      localStorage.setItem(STORAGE_KEY_NEW_QUESTIONS, JSON.stringify(newQuestions));
-      console.log(
-        "保存した未回答質問数:",
-        unansweredQAPairs.length,
-        "新規質問数:",
-        newQuestions.length
-      );
+      console.log("保存した未回答質問数:", unansweredQAPairs.length);
     } catch (error) {
       console.error("localStorageへのデータ保存エラー:", error);
     }
@@ -326,13 +223,10 @@
   // 初期化フラグ
   let isInitialized = $state(false);
 
-  // ページ読み込み時に新規質問を取得とlocalStorageから復元
+  // ページ読み込み時にlocalStorageから復元
   $effect(() => {
     if (!isInitialized) {
       loadFromStorage();
-      if (isOwner) {
-        loadNewQuestions();
-      }
       isInitialized = true;
     }
   });
@@ -346,128 +240,64 @@
 </script>
 
 <!-- 質問ガチャとカテゴリフィルター -->
-<div>
-  <!-- 質問ガチャ -->
-  <div class="rounded-2xl theme-bg-surface p-6">
-    <h2 class="mb-4 text-lg font-semibold theme-text-primary">質問ガチャ</h2>
-
-    <div class="mb-4 flex items-center gap-4">
-      <span class="text-sm theme-text-secondary">質問数</span>
-      <select
-        bind:value={gachaQuestionCount}
-        class="rounded theme-border theme-bg-surface px-3 py-1 text-sm theme-text-primary"
-      >
-        {#each [1, 2, 3, 4, 5] as num (num)}
-          <option value={num}>{num}問</option>
-        {/each}
-      </select>
-      <button
-        onclick={performRandomGacha}
-        class="rounded-lg bg-orange-500 px-4 py-2 text-sm font-medium text-white hover:bg-orange-600"
-      >
-        ガチャ
-      </button>
-    </div>
-  </div>
-
-  <!-- カテゴリフィルター -->
-  <CategoryFilter
-    {categories}
-    {selectedCategories}
-    answeredCount={0}
-    onToggleCategory={(categoryId) => {
-      if (selectedCategories.includes(categoryId)) {
-        selectedCategories = selectedCategories.filter((c) => c !== categoryId);
-      } else {
-        selectedCategories = [...selectedCategories, categoryId];
-      }
-    }}
-    onClearFilters={() => {
-      selectedCategories = [];
-    }}
-  />
-</div>
-
-<!-- 受信した質問
-{#if newQuestions && newQuestions.length > 0}
-  <div class="mt-8 rounded-2xl border border-gray-200 bg-white p-6">
-    <div class="flex items-center gap-2 mb-4">
-      <h2 class="text-lg font-semibold text-gray-800">受信した質問</h2>
-      <span class="rounded-full theme-bg-subtle px-2 py-0.5 text-xs font-medium theme-text-muted">{newQuestions.length}件</span>
-    </div>
-    
-    <div class="space-y-4">
-      {#each newQuestions as question, i (`new-question-${question.messageId}`)}
-        {@const questionKey = `new-${question.groupId}`}
-        <div>
-          <div class="flex items-center gap-2 mb-3">
-            <span class="text-sm text-gray-600">{question.fromDisplayName}</span>
-            <span class="text-xs text-gray-400">{new Date(question.createdAt).toLocaleDateString('ja-JP')}</span>
-          </div>
-          
-          <p class="text-gray-700 mb-3">{question.content}</p>
-          
-          <textarea bind:value={questionInputs[questionKey]} placeholder="回答を入力..." class="w-full rounded-lg border border-gray-300 p-3 text-sm focus:border-orange-400 focus:outline-none mb-3" rows="3"></textarea>
-          
-          <div class="flex items-center justify-end gap-3">
-            <button onclick={() => handleSkipNewQuestion(question)} class="px-4 py-2 text-sm text-gray-500 hover:text-gray-700">スキップ</button>
-            <button onclick={() => handleAnswerNewQuestion(question)} disabled={!questionInputs[questionKey]?.trim()} class="rounded-lg bg-orange-500 px-4 py-2 text-sm text-white hover:bg-orange-600 disabled:opacity-50">回答を送信</button>
-          </div>
-        </div>
-        {#if i < newQuestions.length - 1}
-          <hr class="border-gray-200">
-        {/if}
-      {/each}
-    </div>
-  </div>
-{/if} -->
+<GachaControls
+  {categories}
+  {gachaQuestionCount}
+  {selectedCategories}
+  onGacha={performRandomGacha}
+  onToggleCategory={toggleCategory}
+  onClearFilters={clearFilters}
+/>
 
 <!-- 回答待ちの質問 -->
 {#if unansweredQAPairs && unansweredQAPairs.length > 0}
-  <div class="mt-8 rounded-2xl theme-border theme-bg-surface p-6">
+  <div class="theme-border theme-bg-surface mt-8 rounded-2xl p-6">
     <div class="mb-4 flex items-center gap-2">
-      <h2 class="text-lg font-semibold theme-text-primary">回答待ちの質問</h2>
-      <span class="rounded-full theme-bg-subtle px-2 py-0.5 text-xs font-medium theme-text-muted"
+      <h2 class="theme-text-primary text-lg font-semibold">回答待ちの質問</h2>
+      <span class="theme-bg-subtle theme-text-muted rounded-full px-2 py-0.5 text-xs font-medium"
         >{unansweredQAPairs.length}件</span
       >
     </div>
 
-    <div class="space-y-4">
+    <div class="divide-y divide-gray-200 dark:divide-gray-700">
       {#each unansweredQAPairs as pair, i (`unanswered-gacha-${pair.groupId}-${pair.question.questionId}-${pair.questionIndex}`)}
         {@const questionKey = `${pair.groupId}-${pair.questionIndex}`}
-        <div data-question-id={pair.groupId}>
-          {#if pair.categoryInfo}
-            <div class="mb-3">
-              <span class="text-xs theme-text-muted">{pair.categoryInfo.label}</span>
+        <div 
+          data-question-id={pair.groupId} 
+          class="py-6 first:pt-0 last:pb-0 {pair.isNew ? 'bg-orange-50 dark:bg-orange-900/20 rounded-lg -mx-2 px-4 border-l-4 border-orange-400' : ''}"
+          transition:fly={{ y: 20, duration: 300, delay: i * 100 }}
+        >
+          <QuestionAnswerCard
+            question={pair.question.text}
+            answer={questionInputs[questionKey] || ""}
+            categoryInfo={pair.categoryInfo}
+            mode="input"
+            onAnswerChange={(value) => {
+              questionInputs[questionKey] = value;
+            }}
+            primaryAction={{
+              label: "保存",
+              onClick: () => handleSaveAnswer(pair),
+              disabled: !questionInputs[questionKey]?.trim()
+            }}
+            secondaryAction={{
+              label: "スキップ",
+              onClick: () => handleSkip(pair)
+            }}
+          />
+          {#if pair.isNew}
+            <div class="mt-2 flex items-center gap-2 text-sm text-orange-600 dark:text-orange-400 font-medium">
+              <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              新しく追加された質問
             </div>
           {/if}
-
-          <p class="mb-3 theme-text-primary">{pair.question.text}</p>
-
-          <textarea
-            bind:value={questionInputs[questionKey]}
-            placeholder="回答を入力..."
-            class="mb-3 w-full rounded-lg theme-border theme-bg-surface p-3 text-sm theme-text-primary focus:border-orange-400 focus:outline-none"
-            rows="3"
-          ></textarea>
-
-          <div class="flex items-center justify-end gap-3">
-            <button
-              onclick={() => handleSkip(pair)}
-              class="px-4 py-2 text-sm theme-text-muted hover:opacity-80">スキップ</button
-            >
-            <button
-              onclick={() => handleSaveAnswer(pair)}
-              disabled={!questionInputs[questionKey]?.trim()}
-              class="rounded-lg bg-orange-500 px-4 py-2 text-sm text-white hover:bg-orange-600 disabled:opacity-50"
-              >保存</button
-            >
-          </div>
         </div>
-        {#if i < unansweredQAPairs.length - 1}
-          <hr class="theme-border" />
-        {/if}
       {/each}
     </div>
   </div>
 {/if}
+
+<!-- トースト通知 -->
+<ToastContainer />

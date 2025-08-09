@@ -16,7 +16,7 @@ from src.router import auth
 from src.router.block_router import block_router
 from src.router.message_router import message_router
 from src.router.profile_router import profile_router
-from src.router.qna_router import qna_router, questions_router
+from src.router.qna_router import answers_router, qna_router, questions_router
 from src.router.user_router import user_router
 from src.router.username_router import username_router
 from src.router.visit_router import visit_router
@@ -54,6 +54,7 @@ app = FastAPI(
         {"name": "Profile", "description": "User profile and Q&A management"},
         {"name": "Messages", "description": "User messaging system"},
         {"name": "Questions", "description": "Question template management"},
+        {"name": "Answers", "description": "Answer management and retrieval"},
         {"name": "Visits", "description": "User visit tracking"},
         {"name": "Username", "description": "Username availability and validation"},
         {"name": "Blocks", "description": "User blocking and reporting functionality"},
@@ -92,6 +93,7 @@ app.include_router(profile_router, tags=["Profile"])
 app.include_router(message_router, tags=["Messages"])
 app.include_router(qna_router, tags=["Profile"])
 app.include_router(questions_router, tags=["Questions"])
+app.include_router(answers_router, tags=["Answers"])
 app.include_router(visit_router, tags=["Visits"])
 app.include_router(block_router, tags=["Blocks"])
 app.include_router(auth.auth_router, prefix="/auth", tags=["Authentication"])

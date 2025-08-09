@@ -148,19 +148,19 @@ body {
 
 /* テーマ対応ユーティリティクラス */
 .theme-text-primary {
-  @apply text-gray-900 dark:text-gray-50;
+  @apply text-gray-900 dark:text-gray-100;
 }
 
 .theme-text-secondary {
-  @apply text-gray-800 dark:text-gray-100;
+  @apply text-gray-800 dark:text-gray-200;
 }
 
 .theme-text-muted {
-  @apply text-gray-700 dark:text-gray-200;
+  @apply text-gray-700 dark:text-gray-300;
 }
 
 .theme-text-subtle {
-  @apply text-gray-600 dark:text-gray-300;
+  @apply text-gray-600 dark:text-gray-400;
 }
 
 .theme-text-link {
@@ -297,7 +297,7 @@ body {
 }
 
 .theme-button-action {
-  @apply flex items-center gap-1 rounded-full px-1.5 py-1 text-xs transition-all duration-200 sm:px-2 sm:py-1 sm:text-sm bg-gray-50 text-gray-700 hover:bg-gray-100 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700;
+  @apply flex items-center gap-1 rounded-full bg-gray-50 px-1.5 py-1 text-xs text-gray-700 transition-all duration-200 hover:bg-gray-100 sm:px-2 sm:py-1 sm:text-sm dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700;
 }
 
 /* Dropdown Components */
@@ -307,7 +307,7 @@ body {
 
 /* Tab Navigation */
 .theme-tab-active {
-  @apply border-b-2 border-orange-500 text-orange-600 dark:border-orange-400 dark:text-orange-400;
+  @apply border-b-2 border-orange-500 text-orange-500 dark:border-orange-400 dark:text-orange-400;
 }
 
 .theme-tab-inactive {

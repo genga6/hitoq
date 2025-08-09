@@ -69,9 +69,8 @@ export const ValidationRules = {
     minLength: 1,
   },
   profileValue: {
-    required: true,
+    required: false,
     maxLength: 100,
-    minLength: 1,
   },
 
   // Q&A回答

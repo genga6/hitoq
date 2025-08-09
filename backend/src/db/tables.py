@@ -36,6 +36,9 @@ class User(Base):
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )
+    last_login_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
 
     answers: Mapped[list["Answer"]] = relationship(
         back_populates="user", cascade="all, delete-orphan"

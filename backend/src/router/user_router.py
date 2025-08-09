@@ -1,9 +1,11 @@
+from typing import Literal
+
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
 from src.db.session import get_db
 from src.db.tables import User
-from src.router.auth import _get_current_user
+from src.router.auth import _get_current_user, get_current_user_optional
 from src.schema.user import UserCreate, UserRead, UserUpdate
 from src.service import user_service
 
@@ -23,6 +25,35 @@ def read_all_users_endpoint(
     skip: int = 0, limit: int = 100, db: Session = Depends(get_db)
 ):
     return user_service.get_users(db, skip=skip, limit=limit)
+
+
+# 特定のパスを先に配置（動的パスより前）
+@user_router.get("/discover", response_model=list[UserRead])
+def discover_users_endpoint(
+    type: Literal["activity", "random", "mixed"] = Query(
+        "mixed", description="Discovery type"
+    ),
+    limit: int = Query(10, ge=1, le=50, description="Maximum number of results"),
+    offset: int = Query(0, ge=0, description="Offset for pagination"),
+    db: Session = Depends(get_db),
+    current_user: User | None = Depends(get_current_user_optional),
+):
+    """
+    新しいユーザーを発見する
+
+    - activity: アクティブなユーザー（新規登録、最近の回答・メッセージ・ログイン）
+    - random: ランダムなユーザー
+    - mixed: アクティブ + ランダムの混合（デフォルト）
+    """
+    current_user_id = current_user.user_id if current_user else None
+    users = user_service.discover_users(
+        db=db,
+        discovery_type=type,
+        limit=limit,
+        offset=offset,
+        current_user_id=current_user_id,
+    )
+    return users
 
 
 @user_router.get("/{user_id}", response_model=UserRead)

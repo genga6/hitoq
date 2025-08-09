@@ -15,7 +15,7 @@ export const load: PageServerLoad = async ({ params, request }) => {
     let isOwner = false;
     try {
       const currentUser = await getCurrentUserServer(cookieHeader);
-      isOwner = currentUser && currentUser.userName === userName;
+      isOwner = currentUser?.userName === userName;
     } catch {
       // User not authenticated - this is expected for logged out users
       isOwner = false;
