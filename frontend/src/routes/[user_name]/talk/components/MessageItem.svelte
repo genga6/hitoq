@@ -44,8 +44,11 @@
   // メッセージの送受信関係を判定
   const isSentByCurrentUser = currentUser?.userId === message.fromUserId;
   
-  // 送信者から見た時は自分のメッセージは常に既読扱い
-  const shouldShowAsUnread = message.status === 'unread' && !isSentByCurrentUser;
+  // プロフィールページの所有者（受信者）かどうかを判定
+  const isProfileOwner = currentUser?.userId === profile.userId;
+  
+  // 未読状態の表示判定: プロフィール所有者でログイン中の場合のみ未読を表示
+  const shouldShowAsUnread = message.status === 'unread' && isLoggedIn && currentUser && isProfileOwner;
 
   let showReplyForm = $state(false);
   let showThread = $state(false);
@@ -86,8 +89,8 @@
 
   // メッセージを既読にする
   async function handleMarkAsRead() {
-    // 送信者は自分のメッセージを既読にする必要がない
-    if (message.status === "unread" && !isSentByCurrentUser) {
+    // プロフィール所有者でログイン中の場合のみ既読処理
+    if (message.status === "unread" && isLoggedIn && isProfileOwner) {
       try {
         await markMessageAsRead(message.messageId);
         // UIの更新は親コンポーネントに任せる（リアクティブ更新）
@@ -207,7 +210,7 @@
 
 <div
   class="theme-border theme-visitor-hover border-b p-4 mx-2
-        {shouldShowAsUnread ? 'bg-orange-50' : ''}"
+        {shouldShowAsUnread ? 'bg-orange-50 dark:bg-orange-900/20' : ''}"
   role="button"
   tabindex="0"
   onclick={handleMarkAsRead}
@@ -223,6 +226,7 @@
       displayName: profile.displayName,
       iconUrl: profile.iconUrl
     }}
+    {isLoggedIn}
   />
   <!-- 親メッセージの表示（リプライの場合） -->
   {#if message.parentMessage}

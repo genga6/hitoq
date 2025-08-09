@@ -3,6 +3,9 @@
   import type { Question } from "$lib/types";
   import QuestionAnswerCard from "$lib/components/domain/qna/QuestionAnswerCard.svelte";
   import GachaControls from "./components/GachaControls.svelte";
+  import ToastContainer from "$lib/components/ui/ToastContainer.svelte";
+  import { toasts } from "$lib/stores/toast";
+  import { fly } from "svelte/transition";
 
   type Props = {
     categories: Record<string, CategoryInfo>;
@@ -23,6 +26,7 @@
     questionIndex: number;
     groupIndex: number;
     categoryInfo?: CategoryInfo;
+    isNew?: boolean; // 新しく追加された質問かどうか
   }
 
   // ガチャ結果の未回答質問を管理
@@ -67,12 +71,22 @@
             displayOrder: question.displayOrder
           },
           questionIndex: index,
-          groupIndex: unansweredQAPairs.length + index,
-          categoryInfo: categories[question.categoryId]
+          groupIndex: index,
+          categoryInfo: categories[question.categoryId],
+          isNew: true // 新しい質問としてマーク
         })
       );
 
-      unansweredQAPairs = [...unansweredQAPairs, ...newUnansweredPairs];
+      unansweredQAPairs = [...newUnansweredPairs, ...unansweredQAPairs];
+      
+      // 少し遅延させてアニメーション効果を演出
+      setTimeout(() => {
+        unansweredQAPairs = unansweredQAPairs.map(pair => ({
+          ...pair,
+          isNew: false
+        }));
+      }, 2000);
+      
       saveToStorage();
 
       return selectedQuestions.length;
@@ -92,19 +106,19 @@
       resultCount = await performGacha(randomCategory, count);
       if (resultCount === 0) {
         const categoryInfo = categories[randomCategory];
-        alert(
+        toasts.warning(
           `${categoryInfo?.label || randomCategory}カテゴリにはもう回答できる質問がありません！`
         );
       }
     } else {
       resultCount = await performGacha(undefined, count);
       if (resultCount === 0) {
-        alert("もう回答できる質問がありません！");
+        toasts.warning("もう回答できる質問がありません！");
       }
     }
 
     if (resultCount > 0) {
-      alert(`${resultCount}問の質問を追加しました！`);
+      toasts.success(`${resultCount}問の質問を追加しました！`);
     }
   }
 
@@ -245,10 +259,14 @@
       >
     </div>
 
-    <div class="space-y-4">
+    <div class="divide-y divide-gray-200 dark:divide-gray-700">
       {#each unansweredQAPairs as pair, i (`unanswered-gacha-${pair.groupId}-${pair.question.questionId}-${pair.questionIndex}`)}
         {@const questionKey = `${pair.groupId}-${pair.questionIndex}`}
-        <div data-question-id={pair.groupId}>
+        <div 
+          data-question-id={pair.groupId} 
+          class="py-6 first:pt-0 last:pb-0 {pair.isNew ? 'bg-orange-50 dark:bg-orange-900/20 rounded-lg -mx-2 px-4 border-l-4 border-orange-400' : ''}"
+          transition:fly={{ y: 20, duration: 300, delay: i * 100 }}
+        >
           <QuestionAnswerCard
             question={pair.question.text}
             answer={questionInputs[questionKey] || ""}
@@ -267,11 +285,19 @@
               onClick: () => handleSkip(pair)
             }}
           />
+          {#if pair.isNew}
+            <div class="mt-2 flex items-center gap-2 text-sm text-orange-600 dark:text-orange-400 font-medium">
+              <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              新しく追加された質問
+            </div>
+          {/if}
         </div>
-        {#if i < unansweredQAPairs.length - 1}
-          <hr class="theme-border" />
-        {/if}
       {/each}
     </div>
   </div>
 {/if}
+
+<!-- トースト通知 -->
+<ToastContainer />

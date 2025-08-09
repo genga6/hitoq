@@ -45,6 +45,7 @@
         userName={data.profile.userName}
         userId={data.profile.userId}
         isOwner={data.isOwner ?? false}
+        isLoggedIn={data.isLoggedIn ?? false}
         onBlockStatusChange={(blocked) => (isBlockedByCurrentUser = blocked)}
       />
 

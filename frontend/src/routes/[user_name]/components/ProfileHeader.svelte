@@ -8,6 +8,7 @@
     userName: string;
     userId: string;
     isOwner?: boolean;
+    isLoggedIn?: boolean;
     onBlockStatusChange?: (blocked: boolean) => void;
   };
   const {
@@ -17,6 +18,7 @@
     userName,
     userId,
     isOwner = false,
+    isLoggedIn = false,
     onBlockStatusChange
   }: Props = $props();
 </script>
@@ -87,7 +89,7 @@
         />
       </svg>
     </a>
-  {:else}
+  {:else if isLoggedIn}
     <!-- ユーザーアクション（ブロック・通報）メニュー -->
     <div class="absolute top-0 right-0 z-10 sm:-top-2 sm:-right-2 lg:-top-3 lg:-right-3">
       <UserActions {userId} {onBlockStatusChange} class="" />

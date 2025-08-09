@@ -1,3 +1,4 @@
+from src.schema.answer import AnswerRead
 from src.schema.common import OrmBaseModel
 from src.schema.message import MessageRead
 from src.schema.profile_item import ProfileItemRead
@@ -45,3 +46,8 @@ class QnAPageData(OrmBaseModel):
 class MessagesPageData(OrmBaseModel):
     profile: UserRead
     messages: list[MessageRead]
+
+
+class QAWithDetails(OrmBaseModel):
+    question: QuestionRead
+    answer: AnswerRead

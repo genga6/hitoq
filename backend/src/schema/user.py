@@ -29,3 +29,4 @@ class UserRead(UserBase):
     user_id: str
     notification_level: NotificationLevelEnum
     created_at: datetime
+    last_login_at: datetime | None = None

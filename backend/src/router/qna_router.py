@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 
 from src.db.session import get_db
 from src.schema.answer import AnswerCreate, AnswerRead
+from src.schema.composite_schema import QAWithDetails
 from src.schema.question import QuestionRead
 from src.service import qna_service
 
@@ -14,6 +15,11 @@ qna_router = APIRouter(
 questions_router = APIRouter(
     prefix="/questions",
     tags=["Questions"],
+)
+
+answers_router = APIRouter(
+    prefix="/answers",
+    tags=["Answers"],
 )
 
 
@@ -54,3 +60,9 @@ def read_categories():
         }
         for category in categories
     ]
+
+
+@answers_router.get("/{answer_id}/with-question", response_model=QAWithDetails)
+def read_answer_with_question(answer_id: int, db: Session = Depends(get_db)):
+    """指定されたanswer_idの回答とその質問を取得（トークのリファレンス表示用）"""
+    return qna_service.get_answer_with_question(db=db, answer_id=answer_id)

@@ -198,8 +198,8 @@
       </div>
     {/if}
 
-    <!-- キーボードショートカットヒント -->
-    <div class="theme-text-muted mt-1 text-xs">Ctrl+Enter で保存、Esc でキャンセル</div>
+    <!-- キーボードショートカットヒント（デスクトップのみ） -->
+    <div class="theme-text-muted mt-1 text-xs hidden sm:block">Ctrl+Enter で保存、Esc でキャンセル</div>
 
     <!-- アクションボタン -->
     <div class="mt-2 flex justify-end gap-1 sm:gap-2">
