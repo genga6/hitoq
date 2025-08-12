@@ -1,0 +1,21 @@
+# Render Configuration
+render_api_key = "your-render-api-key-here"
+github_repo_url = "https://github.com/your-username/hitoq"
+
+# Environment
+environment = "production"
+
+# Database
+db_password = "your-secure-database-password-here"
+
+# Application Secrets
+secret_key = "your-secret-key-generate-with-openssl-rand-hex-32"
+session_secret_key = "your-session-secret-key-here"
+
+# Twitter OAuth
+twitter_client_id = "your-twitter-client-id"
+twitter_client_secret = "your-twitter-client-secret"
+
+# Monitoring
+sentry_dsn = "https://your-backend-sentry-dsn@sentry.io/backend-project-id"
+public_sentry_dsn = "https://your-frontend-sentry-dsn@sentry.io/frontend-project-id"
