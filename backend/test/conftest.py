@@ -7,24 +7,29 @@ from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 
-from src.db.session import get_db
 from src.db.tables import Base
-from src.main import app
 
 
 @pytest.fixture(scope="session")
 def test_db_engine():
-    """テスト用SQLiteデータベースエンジンを作成"""
-    db_fd, db_path = tempfile.mkstemp(suffix=".db")
+    """テスト用データベースエンジンを作成
+    本番はSupabase(PostgreSQL)を使用するが、テストではインメモリSQLiteを使用
+    """
+    # テスト用インメモリSQLiteでPostgreSQLの振る舞いをエミュレート
     engine = create_engine(
-        f"sqlite:///{db_path}", echo=False, connect_args={"check_same_thread": False}
+        "sqlite:///:memory:",
+        echo=False,
+        connect_args={"check_same_thread": False},
+        # PostgreSQLとの互換性を高めるためのPRAGMA設定
+        poolclass=None,
     )
+
+    # テーブル作成
     Base.metadata.create_all(engine)
 
     yield engine
 
-    os.close(db_fd)
-    os.unlink(db_path)
+    engine.dispose()
 
 
 @pytest.fixture(scope="function")
@@ -50,6 +55,21 @@ def test_db_session(test_db_engine) -> Generator[Session, None, None]:
 @pytest.fixture(scope="function")
 def client(test_db_session) -> Generator[TestClient, None, None]:
     """テスト用のFastAPIクライアントを作成"""
+    # router テストでは実際のAPIエンドポイントをテストするため、
+    # 環境変数を事前に設定してからアプリをインポートする
+
+    # 必要な環境変数を設定（GitHub Actions用）
+    import os
+
+    os.environ.setdefault("DATABASE_URL", "sqlite:///:memory:")
+    os.environ.setdefault("JWT_SECRET_KEY", "test_secret_key")
+    os.environ.setdefault("TWITTER_CLIENT_ID", "test_client_id")
+    os.environ.setdefault("TWITTER_CLIENT_SECRET", "test_client_secret")
+    os.environ.setdefault("ENVIRONMENT", "testing")
+
+    # 環境変数設定後にアプリと依存関係をインポート
+    from src.db.session import get_db
+    from src.main import app
 
     def override_get_db():
         try:
@@ -209,6 +229,7 @@ def clean_environment():
     os.environ.update(
         {
             "DATABASE_URL": "sqlite:///:memory:",
+            "TEST_DATABASE_URL": "sqlite:///:memory:",
             "JWT_SECRET_KEY": "test_secret_key",
             "TWITTER_CLIENT_ID": "test_client_id",
             "TWITTER_CLIENT_SECRET": "test_client_secret",

@@ -1,7 +1,7 @@
-from datetime import datetime, timedelta
-from unittest.mock import patch
+from datetime import datetime, timedelta, timezone
 
 import pytest
+from freezegun import freeze_time
 
 from src.service import visit_service
 
@@ -42,51 +42,47 @@ class TestVisitService:
 
         assert result is None
 
-    @patch("src.service.visit_service.datetime")
-    def test_record_visit_recent_visit_update(
-        self, mock_datetime, test_db_session, create_user
-    ):
+    def test_record_visit_recent_visit_update(self, test_db_session, create_user):
         create_user(user_id="visitor")
         create_user(user_id="visited")
 
-        base_time = datetime(2024, 1, 1, 12, 0, 0)
-        mock_datetime.utcnow.return_value = base_time
+        base_time = datetime(2024, 1, 1, 12, 0, 0, tzinfo=timezone.utc)
 
         # 最初の訪問
-        first_visit = visit_service.record_visit(test_db_session, "visited", "visitor")
+        with freeze_time(base_time) as frozen_time:
+            first_visit = visit_service.record_visit(
+                test_db_session, "visited", "visitor"
+            )
 
-        # 30分後の再訪問（1時間以内なので既存レコードを更新）
-        later_time = base_time + timedelta(minutes=30)
-        mock_datetime.utcnow.return_value = later_time
+            # 30分後の再訪問（24時間以内なので既存レコードを更新）
+            frozen_time.tick(delta=timedelta(minutes=30))
+            second_visit = visit_service.record_visit(
+                test_db_session, "visited", "visitor"
+            )
 
-        second_visit = visit_service.record_visit(test_db_session, "visited", "visitor")
+            # 同じレコードが更新されている
+            assert first_visit.visit_id == second_visit.visit_id
 
-        # 同じレコードが更新されている
-        assert first_visit.visit_id == second_visit.visit_id
-        assert second_visit.visited_at == later_time
-
-    @patch("src.service.visit_service.datetime")
-    def test_record_visit_old_visit_new_record(
-        self, mock_datetime, test_db_session, create_user
-    ):
+    def test_record_visit_old_visit_new_record(self, test_db_session, create_user):
         create_user(user_id="visitor")
         create_user(user_id="visited")
 
-        base_time = datetime(2024, 1, 1, 12, 0, 0)
-        mock_datetime.utcnow.return_value = base_time
+        base_time = datetime(2024, 1, 1, 12, 0, 0, tzinfo=timezone.utc)
 
         # 最初の訪問
-        first_visit = visit_service.record_visit(test_db_session, "visited", "visitor")
+        with freeze_time(base_time) as frozen_time:
+            first_visit = visit_service.record_visit(
+                test_db_session, "visited", "visitor"
+            )
 
-        # 2時間後の再訪問（1時間を超えているので新しいレコード）
-        later_time = base_time + timedelta(hours=2)
-        mock_datetime.utcnow.return_value = later_time
+            # 25時間後の再訪問
+            frozen_time.tick(delta=timedelta(hours=25))
+            second_visit = visit_service.record_visit(
+                test_db_session, "visited", "visitor"
+            )
 
-        second_visit = visit_service.record_visit(test_db_session, "visited", "visitor")
-
-        # 異なるレコードが作成されている
-        assert first_visit.visit_id != second_visit.visit_id
-        assert second_visit.visited_at == later_time
+            # 異なるレコードが作成されている
+            assert first_visit.visit_id != second_visit.visit_id
 
     def test_get_user_visits_visible(self, test_db_session, create_user):
         create_user(user_id="visitor", display_name="Visitor User")

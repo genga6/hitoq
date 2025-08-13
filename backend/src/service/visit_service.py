@@ -17,7 +17,7 @@ def record_visit(
         return None
 
     # Check for recent visit (within last hour) to avoid spam
-    recent_cutoff = datetime.now(timezone.utc) - timedelta(hours=1)
+    recent_cutoff = datetime.now(timezone.utc) - timedelta(hours=24)
     existing_visit = (
         db.query(Visit)
         .filter(
@@ -40,6 +40,7 @@ def record_visit(
         visitor_user_id=visitor_user_id,
         visited_user_id=visited_user_id,
         is_anonymous=(visitor_user_id is None),
+        visited_at=datetime.now(timezone.utc),
     )
 
     db.add(visit)
