@@ -1,5 +1,4 @@
-from datetime import datetime, timedelta
-from typing import Optional
+from datetime import datetime, timedelta, timezone
 
 from sqlalchemy import func
 from sqlalchemy.orm import Session, joinedload
@@ -8,23 +7,17 @@ from src.db.tables import User, Visit
 
 
 def record_visit(
-    db: Session, visited_user_id: str, visitor_user_id: Optional[str] = None
-) -> Optional[Visit]:
-    """
-    Record a visit to a user's page.
-    Returns None if the visit was not recorded (e.g., same user visiting their own page).
-    """
-    # Don't record visits to own page
+    db: Session, visited_user_id: str, visitor_user_id: str | None = None
+) -> Visit | None:
     if visitor_user_id == visited_user_id:
         return None
 
-    # Check if visited user exists
     visited_user = db.query(User).filter(User.user_id == visited_user_id).first()
     if not visited_user:
         return None
 
     # Check for recent visit (within last hour) to avoid spam
-    recent_cutoff = datetime.utcnow() - timedelta(hours=1)
+    recent_cutoff = datetime.now(timezone.utc) - timedelta(hours=1)
     existing_visit = (
         db.query(Visit)
         .filter(
@@ -37,7 +30,7 @@ def record_visit(
 
     if existing_visit:
         # Update existing visit timestamp
-        existing_visit.visited_at = datetime.utcnow()
+        existing_visit.visited_at = datetime.now(timezone.utc)
         db.commit()
         db.refresh(existing_visit)
         return existing_visit
@@ -56,12 +49,6 @@ def record_visit(
 
 
 def get_user_visits(db: Session, user_id: str, limit: int = 50) -> list[Visit]:
-    """
-    Get visits to a user's page, ordered by most recent.
-    Only returns visits if the user has made their visits visible.
-    Returns only the latest visit per visitor to avoid duplicates.
-    """
-    # Check if user exists and has visits visible
     user = db.query(User).filter(User.user_id == user_id).first()
     if not user or not user.visits_visible:
         return []
@@ -91,12 +78,10 @@ def get_user_visits(db: Session, user_id: str, limit: int = 50) -> list[Visit]:
 
 
 def get_visit_count(db: Session, user_id: str) -> int:
-    """Get the total number of visits to a user's page."""
     return db.query(Visit).filter(Visit.visited_user_id == user_id).count()
 
 
 def update_visits_visibility(db: Session, user_id: str, visible: bool) -> bool:
-    """Update a user's visits visibility setting."""
     user = db.query(User).filter(User.user_id == user_id).first()
     if not user:
         return False
@@ -107,7 +92,6 @@ def update_visits_visibility(db: Session, user_id: str, visible: bool) -> bool:
 
 
 def get_visits_visibility(db: Session, user_id: str) -> bool:
-    """Get a user's visits visibility setting."""
     user = db.query(User).filter(User.user_id == user_id).first()
     if not user:
         return False

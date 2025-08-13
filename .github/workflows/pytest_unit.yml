@@ -1,0 +1,77 @@
+name: Unit Tests
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+    paths:
+      - "backend/src/**"
+      - "backend/test/unit/**"
+      - ".github/workflows/pytest_unit.yml"
+
+defaults:
+  run:
+    shell: bash
+    working-directory: backend
+
+jobs:
+  unit-tests:
+    name: ${{ matrix.module }} unit tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      GITHUB_WORKSPACE: ${{ github.workspace }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        module:
+          - service
+          - router
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Ensure pip cache dir exists
+        run: mkdir -p ~/.cache/pip
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+          cache-dependency-path: backend/uv.lock
+
+      - name: Install uv
+        run: |
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+
+      - name: Install dependencies
+        run: |
+          uv pip install --system .
+
+      - name: Set PYTHONPATH
+        run: echo "PYTHONPATH=$PYTHONPATH:$GITHUB_WORKSPACE/backend/src" >> $GITHUB_ENV
+
+      - name: Create report directory
+        run: |
+          mkdir -p test-reports/${{ matrix.module }}
+
+      - name: Run pytest for ${{ matrix.module }}
+        run: |
+          uv run pytest \
+            --cov=src/${{ matrix.module }} \
+            --cov-branch \
+            --cov-report=term-missing \
+            --disable-warnings \
+            --junitxml=test-reports/${{ matrix.module }}/unit.xml \
+            -v test/unit/${{ matrix.module }}
+
+      - name: Upload ${{ matrix.module }} results summary
+        if: always()
+        uses: dorny/test-reporter@v2
+        with:
+          name: ${{ matrix.module }} Summary Report
+          path: backend/test-reports/${{ matrix.module }}/unit.xml
+          reporter: java-junit
+          list-suites: failed
+          list-tests: failed
+          fail-on-error: false
+          only-summary: true

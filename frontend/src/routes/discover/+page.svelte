@@ -7,7 +7,7 @@
   let users = $state<Profile[]>([]);
   let loading = $state(false);
   let error = $state<string | null>(null);
-  let currentFilter = $state<"activity" | "random" | "mixed">("mixed");
+  let currentFilter = $state<"activity" | "random" | "recommend">("recommend");
   let hasMore = $state(true);
   let offset = $state(0);
   const limit = 12;
@@ -42,7 +42,7 @@
     }
   }
 
-  function handleFilterChange(filter: "activity" | "random" | "mixed") {
+  function handleFilterChange(filter: "activity" | "random" | "recommend") {
     currentFilter = filter;
     offset = 0;
     loadUsers(true);

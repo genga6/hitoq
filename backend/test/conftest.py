@@ -16,7 +16,9 @@ from src.main import app
 def test_db_engine():
     """テスト用SQLiteデータベースエンジンを作成"""
     db_fd, db_path = tempfile.mkstemp(suffix=".db")
-    engine = create_engine(f"sqlite:///{db_path}", echo=False)
+    engine = create_engine(
+        f"sqlite:///{db_path}", echo=False, connect_args={"check_same_thread": False}
+    )
     Base.metadata.create_all(engine)
 
     yield engine
@@ -31,12 +33,18 @@ def test_db_session(test_db_engine) -> Generator[Session, None, None]:
     TestingSessionLocal = sessionmaker(
         autocommit=False, autoflush=False, bind=test_db_engine
     )
-    session = TestingSessionLocal()
+
+    # トランザクションベースのテストセッション
+    connection = test_db_engine.connect()
+    transaction = connection.begin()
+    session = TestingSessionLocal(bind=connection)
 
     try:
         yield session
     finally:
         session.close()
+        transaction.rollback()
+        connection.close()
 
 
 @pytest.fixture(scope="function")
@@ -58,6 +66,56 @@ def client(test_db_session) -> Generator[TestClient, None, None]:
 
 
 @pytest.fixture
+def create_user(test_db_session):
+    """テストユーザー作成ヘルパー"""
+    created_users: list = []
+
+    def _create_user(
+        user_id: str | None = None,
+        user_name: str | None = None,
+        display_name: str | None = None,
+        **kwargs,
+    ):
+        user_num = len(created_users) + 1
+        user_data = {
+            "user_id": user_id or f"test_user_{user_num}",
+            "user_name": user_name or f"testuser{user_num}",
+            "display_name": display_name or f"Test User {user_num}",
+            **kwargs,
+        }
+
+        from src.db.tables import User
+
+        user = User(**user_data)
+        test_db_session.add(user)
+        test_db_session.commit()
+        test_db_session.refresh(user)
+        created_users.append(user)
+        return user
+
+    return _create_user
+
+
+@pytest.fixture
+def create_users(create_user):
+    """複数のテストユーザー作成ヘルパー"""
+
+    def _create_users(count: int, **common_kwargs):
+        users = []
+        for i in range(count):
+            user_kwargs = {
+                "user_id": f"bulk_user_{i}",
+                "user_name": f"bulkuser{i}",
+                "display_name": f"Bulk User {i}",
+                **common_kwargs,
+            }
+            users.append(create_user(**user_kwargs))
+        return users
+
+    return _create_users
+
+
+@pytest.fixture
 def sample_user_data():
     """テスト用ユーザーデータ"""
     return {
@@ -70,15 +128,45 @@ def sample_user_data():
 
 
 @pytest.fixture
-def sample_profile_item_data():
-    """テスト用プロフィールアイテムデータ"""
-    return {"label": "Favorite Food", "value": "Sushi", "display_order": 1}
+def create_profile_item(test_db_session):
+    """プロフィールアイテム作成ヘルパー"""
+    created_items: list = []
+
+    def _create_profile_item(
+        user_id: str,
+        label: str | None = None,
+        value: str | None = None,
+        display_order: int | None = None,
+        **kwargs,
+    ):
+        import uuid
+
+        from src.db.tables import ProfileItem
+
+        item_num = len(created_items) + 1
+        item_data = {
+            "profile_item_id": uuid.uuid4(),
+            "user_id": user_id,
+            "label": label or f"Test Label {item_num}",
+            "value": value or f"Test Value {item_num}",
+            "display_order": display_order or item_num,
+            **kwargs,
+        }
+
+        profile_item = ProfileItem(**item_data)
+        test_db_session.add(profile_item)
+        test_db_session.commit()
+        test_db_session.refresh(profile_item)
+        created_items.append(profile_item)
+        return profile_item
+
+    return _create_profile_item
 
 
 @pytest.fixture
-def sample_bucket_list_item_data():
-    """テスト用バケットリストアイテムデータ"""
-    return {"content": "Visit Japan", "is_completed": False, "display_order": 1}
+def sample_profile_item_data():
+    """テスト用プロフィールアイテムデータ"""
+    return {"label": "Favorite Food", "value": "Sushi", "display_order": 1}
 
 
 @pytest.fixture
@@ -97,3 +185,121 @@ def mock_jwt_token():
 def authenticated_headers(mock_jwt_token):
     """認証済みリクエスト用ヘッダー"""
     return {"Authorization": f"Bearer {mock_jwt_token}"}
+
+
+@pytest.fixture
+def clean_db(test_db_session):
+    """データベースをクリーンアップ"""
+    for table in reversed(Base.metadata.sorted_tables):
+        test_db_session.execute(table.delete())
+    test_db_session.commit()
+
+    yield
+
+    for table in reversed(Base.metadata.sorted_tables):
+        test_db_session.execute(table.delete())
+    test_db_session.commit()
+
+
+@pytest.fixture(autouse=True)
+def clean_environment():
+    """テスト環境をクリーンアップ"""
+    # テスト前の環境変数設定
+    original_env = os.environ.copy()
+    os.environ.update(
+        {
+            "DATABASE_URL": "sqlite:///:memory:",
+            "JWT_SECRET_KEY": "test_secret_key",
+            "TWITTER_CLIENT_ID": "test_client_id",
+            "TWITTER_CLIENT_SECRET": "test_client_secret",
+            "ENVIRONMENT": "testing",
+        }
+    )
+
+    yield
+
+    # テスト後の環境変数復元
+    os.environ.clear()
+    os.environ.update(original_env)
+
+
+@pytest.fixture
+def config_manager():
+    """ConfigManagerインスタンス"""
+    from src.service.config_manager import ConfigManager
+
+    return ConfigManager()
+
+
+@pytest.fixture
+def sample_versions_data():
+    """テスト用バージョンデータ"""
+    return {
+        "versions": {"profile_labels": "v2.0", "questions": "v1.5"},
+        "migrations": {
+            "profile_labels": [
+                {
+                    "version": "v2.0",
+                    "mappings": {"old_label": "new_label", "趣味": "エンタメ"},
+                }
+            ]
+        },
+    }
+
+
+@pytest.fixture
+def temp_config_dir():
+    """一時的なコンフィグディレクトリ"""
+    with tempfile.TemporaryDirectory() as temp_dir:
+        from pathlib import Path
+
+        yield Path(temp_dir)
+
+
+@pytest.fixture
+def sample_yaml_content():
+    """テスト用YAMLコンテンツ"""
+    return {
+        "category": "性格・特徴",
+        "questions": [
+            "あなたの性格を教えてください",
+            "趣味は何ですか",
+            "好きな食べ物は何ですか",
+        ],
+    }
+
+
+@pytest.fixture
+def create_question(test_db_session):
+    """テスト用質問作成ヘルパー"""
+
+    def _create_question(category_id="personality", text="テスト質問", display_order=1):
+        from src.db.tables import Question
+
+        question = Question(
+            category_id=category_id, text=text, display_order=display_order
+        )
+        test_db_session.add(question)
+        test_db_session.commit()
+        test_db_session.refresh(question)
+        return question
+
+    return _create_question
+
+
+@pytest.fixture
+def create_answer(test_db_session):
+    """テスト用回答作成ヘルパー"""
+
+    def _create_answer(user_id, question_id, answer_text="テスト回答"):
+        from src.db.tables import Answer
+
+        answer = Answer(
+            user_id=user_id, question_id=question_id, answer_text=answer_text
+        )
+        test_db_session.add(answer)
+        test_db_session.commit()
+        test_db_session.refresh(answer)
+        return answer
+
+    return _create_answer
