@@ -32,6 +32,8 @@ async def create_block(
         block = block_service.create_block(db, current_user.user_id, block_in)
         return block
     except ValueError as e:
+        if "User not found" in str(e):
+            raise HTTPException(status_code=404, detail=str(e)) from e
         raise HTTPException(status_code=400, detail=str(e)) from e
 
 
@@ -70,6 +72,8 @@ async def create_report(
         report = block_service.create_report(db, current_user.user_id, report_in)
         return report
     except ValueError as e:
+        if "User not found" in str(e):
+            raise HTTPException(status_code=404, detail=str(e)) from e
         raise HTTPException(status_code=400, detail=str(e)) from e
 
 

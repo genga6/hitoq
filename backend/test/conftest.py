@@ -12,9 +12,6 @@ from src.db.tables import Base
 
 @pytest.fixture(scope="session")
 def test_db_engine():
-    """テスト用データベースエンジンを作成
-    本番はSupabase(PostgreSQL)を使用するが、テストではインメモリSQLiteを使用
-    """
     # テスト用インメモリSQLiteでPostgreSQLの振る舞いをエミュレート
     engine = create_engine(
         "sqlite:///:memory:",
@@ -24,7 +21,6 @@ def test_db_engine():
         poolclass=None,
     )
 
-    # テーブル作成
     Base.metadata.create_all(engine)
 
     yield engine
@@ -62,10 +58,17 @@ def client(test_db_session) -> Generator[TestClient, None, None]:
     import os
 
     os.environ.setdefault("DATABASE_URL", "sqlite:///:memory:")
+    os.environ.setdefault("SECRET_KEY", "test_secret_key_for_jwt")
     os.environ.setdefault("JWT_SECRET_KEY", "test_secret_key")
     os.environ.setdefault("TWITTER_CLIENT_ID", "test_client_id")
     os.environ.setdefault("TWITTER_CLIENT_SECRET", "test_client_secret")
     os.environ.setdefault("ENVIRONMENT", "testing")
+    os.environ.setdefault("SESSION_SECRET_KEY", "test_session_secret")
+    os.environ.setdefault("DB_USER", "test_user")
+    os.environ.setdefault("DB_PASSWORD", "test_password")
+    os.environ.setdefault("DB_HOST", "localhost")
+    os.environ.setdefault("DB_PORT", "5432")
+    os.environ.setdefault("DB_NAME", "test_db")
 
     # 環境変数設定後にアプリと依存関係をインポート
     from src.db.session import get_db
@@ -230,10 +233,17 @@ def clean_environment():
         {
             "DATABASE_URL": "sqlite:///:memory:",
             "TEST_DATABASE_URL": "sqlite:///:memory:",
+            "SECRET_KEY": "test_secret_key_for_jwt",
             "JWT_SECRET_KEY": "test_secret_key",
             "TWITTER_CLIENT_ID": "test_client_id",
             "TWITTER_CLIENT_SECRET": "test_client_secret",
             "ENVIRONMENT": "testing",
+            "SESSION_SECRET_KEY": "test_session_secret",
+            "DB_USER": "test_user",
+            "DB_PASSWORD": "test_password",
+            "DB_HOST": "localhost",
+            "DB_PORT": "5432",
+            "DB_NAME": "test_db",
         }
     )
 

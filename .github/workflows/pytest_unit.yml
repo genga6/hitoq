@@ -61,7 +61,7 @@ jobs:
 
       - name: Upload ${{ matrix.module }} results summary
         if: always()
-        uses: dorny/test-reporter@v1
+        uses: dorny/test-reporter@v2
         with:
           name: ${{ matrix.module }} Summary Report
           path: backend/test-reports/${{ matrix.module }}/unit.xml
