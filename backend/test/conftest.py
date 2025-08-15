@@ -1,5 +1,7 @@
 import os
 import tempfile
+import uuid
+from pathlib import Path
 from typing import Generator
 
 import pytest
@@ -7,7 +9,10 @@ from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 
-from src.db.tables import Base
+from src.db.session import get_db
+from src.db.tables import Answer, Base, ProfileItem, Question, User
+from src.main import app
+from src.service.config_manager import ConfigManager
 
 
 @pytest.fixture(scope="session")
@@ -30,7 +35,6 @@ def test_db_engine():
 
 @pytest.fixture(scope="function")
 def test_db_session(test_db_engine) -> Generator[Session, None, None]:
-    """各テスト関数用のデータベースセッションを作成"""
     TestingSessionLocal = sessionmaker(
         autocommit=False, autoflush=False, bind=test_db_engine
     )
@@ -50,13 +54,10 @@ def test_db_session(test_db_engine) -> Generator[Session, None, None]:
 
 @pytest.fixture(scope="function")
 def client(test_db_session) -> Generator[TestClient, None, None]:
-    """テスト用のFastAPIクライアントを作成"""
     # router テストでは実際のAPIエンドポイントをテストするため、
     # 環境変数を事前に設定してからアプリをインポートする
 
     # 必要な環境変数を設定（GitHub Actions用）
-    import os
-
     os.environ.setdefault("DATABASE_URL", "sqlite:///:memory:")
     os.environ.setdefault("SECRET_KEY", "test_secret_key_for_jwt")
     os.environ.setdefault("JWT_SECRET_KEY", "test_secret_key")
@@ -69,10 +70,6 @@ def client(test_db_session) -> Generator[TestClient, None, None]:
     os.environ.setdefault("DB_HOST", "localhost")
     os.environ.setdefault("DB_PORT", "5432")
     os.environ.setdefault("DB_NAME", "test_db")
-
-    # 環境変数設定後にアプリと依存関係をインポート
-    from src.db.session import get_db
-    from src.main import app
 
     def override_get_db():
         try:
@@ -90,7 +87,6 @@ def client(test_db_session) -> Generator[TestClient, None, None]:
 
 @pytest.fixture
 def create_user(test_db_session):
-    """テストユーザー作成ヘルパー"""
     created_users: list = []
 
     def _create_user(
@@ -107,8 +103,6 @@ def create_user(test_db_session):
             **kwargs,
         }
 
-        from src.db.tables import User
-
         user = User(**user_data)
         test_db_session.add(user)
         test_db_session.commit()
@@ -121,8 +115,6 @@ def create_user(test_db_session):
 
 @pytest.fixture
 def create_users(create_user):
-    """複数のテストユーザー作成ヘルパー"""
-
     def _create_users(count: int, **common_kwargs):
         users = []
         for i in range(count):
@@ -140,7 +132,6 @@ def create_users(create_user):
 
 @pytest.fixture
 def sample_user_data():
-    """テスト用ユーザーデータ"""
     return {
         "user_id": "test_user_123",
         "user_name": "testuser",
@@ -152,7 +143,6 @@ def sample_user_data():
 
 @pytest.fixture
 def create_profile_item(test_db_session):
-    """プロフィールアイテム作成ヘルパー"""
     created_items: list = []
 
     def _create_profile_item(
@@ -162,10 +152,6 @@ def create_profile_item(test_db_session):
         display_order: int | None = None,
         **kwargs,
     ):
-        import uuid
-
-        from src.db.tables import ProfileItem
-
         item_num = len(created_items) + 1
         item_data = {
             "profile_item_id": uuid.uuid4(),
@@ -188,31 +174,26 @@ def create_profile_item(test_db_session):
 
 @pytest.fixture
 def sample_profile_item_data():
-    """テスト用プロフィールアイテムデータ"""
     return {"label": "Favorite Food", "value": "Sushi", "display_order": 1}
 
 
 @pytest.fixture
 def sample_answer_data():
-    """テスト用回答データ"""
     return {"answer_text": "I love programming!"}
 
 
 @pytest.fixture
 def mock_jwt_token():
-    """テスト用JWTトークン（実際の認証はスキップ）"""
     return "test_jwt_token_123"
 
 
 @pytest.fixture
 def authenticated_headers(mock_jwt_token):
-    """認証済みリクエスト用ヘッダー"""
     return {"Authorization": f"Bearer {mock_jwt_token}"}
 
 
 @pytest.fixture
 def clean_db(test_db_session):
-    """データベースをクリーンアップ"""
     for table in reversed(Base.metadata.sorted_tables):
         test_db_session.execute(table.delete())
     test_db_session.commit()
@@ -226,8 +207,6 @@ def clean_db(test_db_session):
 
 @pytest.fixture(autouse=True)
 def clean_environment():
-    """テスト環境をクリーンアップ"""
-    # テスト前の環境変数設定
     original_env = os.environ.copy()
     os.environ.update(
         {
@@ -249,22 +228,17 @@ def clean_environment():
 
     yield
 
-    # テスト後の環境変数復元
     os.environ.clear()
     os.environ.update(original_env)
 
 
 @pytest.fixture
 def config_manager():
-    """ConfigManagerインスタンス"""
-    from src.service.config_manager import ConfigManager
-
     return ConfigManager()
 
 
 @pytest.fixture
 def sample_versions_data():
-    """テスト用バージョンデータ"""
     return {
         "versions": {"profile_labels": "v2.0", "questions": "v1.5"},
         "migrations": {
@@ -280,16 +254,12 @@ def sample_versions_data():
 
 @pytest.fixture
 def temp_config_dir():
-    """一時的なコンフィグディレクトリ"""
     with tempfile.TemporaryDirectory() as temp_dir:
-        from pathlib import Path
-
         yield Path(temp_dir)
 
 
 @pytest.fixture
 def sample_yaml_content():
-    """テスト用YAMLコンテンツ"""
     return {
         "category": "性格・特徴",
         "questions": [
@@ -302,11 +272,7 @@ def sample_yaml_content():
 
 @pytest.fixture
 def create_question(test_db_session):
-    """テスト用質問作成ヘルパー"""
-
     def _create_question(category_id="personality", text="テスト質問", display_order=1):
-        from src.db.tables import Question
-
         question = Question(
             category_id=category_id, text=text, display_order=display_order
         )
@@ -320,11 +286,7 @@ def create_question(test_db_session):
 
 @pytest.fixture
 def create_answer(test_db_session):
-    """テスト用回答作成ヘルパー"""
-
     def _create_answer(user_id, question_id, answer_text="テスト回答"):
-        from src.db.tables import Answer
-
         answer = Answer(
             user_id=user_id, question_id=question_id, answer_text=answer_text
         )

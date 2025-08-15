@@ -124,27 +124,36 @@ class TestQnaService:
         assert result.answer.answer_text == "テスト回答"
         assert result.answer.answer_id == answer.answer_id
 
-    def test_get_answer_with_question_not_found(self, test_db_session):
-        with pytest.raises(ValueError, match="Answer with id 99999 not found"):
-            qna_service.get_answer_with_question(test_db_session, 99999)
+    @pytest.mark.parametrize(
+        "test_case,answer_id,setup_answer,expected_error",
+        [
+            ("answer_not_found", 99999, False, "Answer with id 99999 not found"),
+            ("question_not_found", None, True, "Question for answer .* not found"),
+        ],
+    )
+    def test_get_answer_with_question_errors(
+        self,
+        test_db_session,
+        create_user,
+        test_case,
+        answer_id,
+        setup_answer,
+        expected_error,
+    ):
+        if setup_answer:
+            user = create_user(user_id="test_user")
+            answer = Answer(
+                user_id=user.user_id,
+                question_id=99999,  # 存在しない質問ID
+                answer_text="孤立した回答",
+            )
+            test_db_session.add(answer)
+            test_db_session.commit()
+            test_db_session.refresh(answer)
+            answer_id = answer.answer_id
 
-    def test_get_answer_with_question_no_question(self, test_db_session, create_user):
-        user = create_user(user_id="test_user")
-
-        # 質問なしで直接回答を作成（通常は発生しないが、データ整合性テスト）
-        answer = Answer(
-            user_id=user.user_id,
-            question_id=99999,  # 存在しない質問ID
-            answer_text="孤立した回答",
-        )
-        test_db_session.add(answer)
-        test_db_session.commit()
-        test_db_session.refresh(answer)
-
-        with pytest.raises(
-            ValueError, match=f"Question for answer {answer.answer_id} not found"
-        ):
-            qna_service.get_answer_with_question(test_db_session, answer.answer_id)
+        with pytest.raises(ValueError, match=expected_error):
+            qna_service.get_answer_with_question(test_db_session, answer_id)
 
     @patch("src.service.qna_service.get_yaml_loader")
     def test_initialize_default_questions_first_time(

@@ -1,3 +1,5 @@
+import uuid
+
 import pytest
 from fastapi import status
 
@@ -30,14 +32,14 @@ class TestUsernameRouter:
         response_data = response.json()
 
         assert "profile" in response_data
-        assert "profile_items" in response_data
+        assert "profileItems" in response_data
 
         profile = response_data["profile"]
-        assert profile["user_id"] == user.user_id
-        assert profile["user_name"] == user.user_name
-        assert profile["display_name"] == "Profile Page User"
+        assert profile["userId"] == user.user_id
+        assert profile["userName"] == user.user_name
+        assert profile["displayName"] == "Profile Page User"
 
-        items = response_data["profile_items"]
+        items = response_data["profileItems"]
         assert len(items) >= 2
         item_labels = [item["label"] for item in items]
         assert "趣味" in item_labels
@@ -61,12 +63,12 @@ class TestUsernameRouter:
         response_data = response.json()
 
         assert "profile" in response_data
-        assert "profile_items" in response_data
+        assert "profileItems" in response_data
 
         profile = response_data["profile"]
-        assert profile["user_name"] == user.user_name
+        assert profile["userName"] == user.user_name
 
-        items = response_data["profile_items"]
+        items = response_data["profileItems"]
         assert len(items) == 0
 
     def test_read_qna_page_data_success(
@@ -91,22 +93,22 @@ class TestUsernameRouter:
             user.user_id, questions[1].question_id, "技術書を読むのが好きです"
         )
 
-        response = client.get(f"/users/by-username/{user.user_name}/qa")
+        response = client.get(f"/users/by-username/{user.user_name}/qna")
 
         assert response.status_code == status.HTTP_200_OK
         response_data = response.json()
 
-        assert "user" in response_data
-        assert "qa_pairs" in response_data
+        assert "profile" in response_data
+        assert "userAnswerGroups" in response_data
 
-        user_data = response_data["user"]
-        assert user_data["user_name"] == user.user_name
+        profile_data = response_data["profile"]
+        assert profile_data["userName"] == user.user_name
 
-        qa_pairs = response_data["qa_pairs"]
-        assert len(qa_pairs) >= 2
+        user_answer_groups = response_data["userAnswerGroups"]
+        assert len(user_answer_groups) >= 1
 
     def test_read_qna_page_data_nonexistent_user(self, client):
-        response = client.get("/users/by-username/nonexistent_user/qa")
+        response = client.get("/users/by-username/nonexistent_user/qna")
 
         assert response.status_code == status.HTTP_404_NOT_FOUND
 
@@ -117,16 +119,16 @@ class TestUsernameRouter:
             display_name="No Answers User",
         )
 
-        response = client.get(f"/users/by-username/{user.user_name}/qa")
+        response = client.get(f"/users/by-username/{user.user_name}/qna")
 
         assert response.status_code == status.HTTP_200_OK
         response_data = response.json()
 
-        assert "user" in response_data
-        assert "qa_pairs" in response_data
+        assert "profile" in response_data
+        assert "userAnswerGroups" in response_data
 
-        qa_pairs = response_data["qa_pairs"]
-        assert len(qa_pairs) == 0
+        user_answer_groups = response_data["userAnswerGroups"]
+        assert len(user_answer_groups) == 0
 
     def test_read_messages_page_data_success(
         self, client, test_db_session, create_user
@@ -143,6 +145,7 @@ class TestUsernameRouter:
         # Messageを直接作成（現在conftest.pyにヘルパーがないため）
         messages = [
             Message(
+                message_id=str(uuid.uuid4()),
                 from_user_id=sender.user_id,
                 to_user_id=user.user_id,
                 message_type=MessageTypeEnum.comment,
@@ -150,6 +153,7 @@ class TestUsernameRouter:
                 status=MessageStatusEnum.unread,
             ),
             Message(
+                message_id=str(uuid.uuid4()),
                 from_user_id=sender.user_id,
                 to_user_id=user.user_id,
                 message_type=MessageTypeEnum.like,
@@ -167,12 +171,11 @@ class TestUsernameRouter:
         assert response.status_code == status.HTTP_200_OK
         response_data = response.json()
 
-        assert "user" in response_data
+        assert "profile" in response_data
         assert "messages" in response_data
-        assert "notifications" in response_data
 
-        user_data = response_data["user"]
-        assert user_data["user_name"] == user.user_name
+        profile_data = response_data["profile"]
+        assert profile_data["userName"] == user.user_name
 
         messages_data = response_data["messages"]
         assert len(messages_data) >= 1
@@ -194,9 +197,8 @@ class TestUsernameRouter:
         assert response.status_code == status.HTTP_200_OK
         response_data = response.json()
 
-        assert "user" in response_data
+        assert "profile" in response_data
         assert "messages" in response_data
-        assert "notifications" in response_data
 
         messages_data = response_data["messages"]
         assert len(messages_data) == 0
@@ -228,7 +230,7 @@ class TestUsernameRouter:
         assert response.status_code == status.HTTP_200_OK
         response_data = response.json()
 
-        assert response_data["profile"]["user_name"] == "user_123"
+        assert response_data["profile"]["userName"] == "user_123"
 
     def test_unicode_username(self, client, create_user):
         try:

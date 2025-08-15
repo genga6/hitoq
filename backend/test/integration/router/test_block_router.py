@@ -1,9 +1,9 @@
-from unittest.mock import patch
 from uuid import uuid4
 
 import pytest
 from fastapi import status
 
+from src.config.limiter import limiter
 from src.db.tables import ReportStatusEnum, ReportTypeEnum, UserBlock, UserReport
 from src.main import app
 from src.router.block_router import _get_current_user
@@ -309,21 +309,38 @@ class TestBlockRouter:
             app.dependency_overrides.pop(_get_current_user, None)
 
     def test_rate_limiting_block_creation(self, client, create_user):
+        limiter.reset()  # NOTE: Reset because other tests may have been executed before this func.
         blocker = create_user(user_id="rate_blocker", user_name="rateblocker")
         blocked = create_user(user_id="rate_blocked", user_name="rateblocked")
 
-        block_data = {"blocked_user_id": blocked.user_id, "reason": "レート制限テスト"}
+        block_data = {"blocked_user_id": blocked.user_id}
 
-        with patch("src.router.block_router._get_current_user") as mock_auth:
-            mock_auth.return_value = blocker
+        RATE_LIMIT_COUNT = 10
+        REQUEST_COUNT = 15
 
-            # 複数回連続でリクエストしてレート制限をテスト
+        def override_get_current_user():
+            return blocker
+
+        app.dependency_overrides[_get_current_user] = override_get_current_user
+
+        try:
             responses = []
-            for _ in range(15):  # 制限を超える回数
+            for _ in range(REQUEST_COUNT):
                 response = client.post("/block", json=block_data)
-                responses.append(response.status_code)
+                responses.append(response)
 
-            success_responses = [r for r in responses if r == status.HTTP_200_OK]
+            success_responses = [
+                r for r in responses if r.status_code == status.HTTP_200_OK
+            ]
+            rate_limited_responses = [
+                r
+                for r in responses
+                if r.status_code == status.HTTP_429_TOO_MANY_REQUESTS
+            ]
 
-            # 少なくとも1つは成功している（レート制限前）
-            assert len(success_responses) >= 1
+            assert len(success_responses) == RATE_LIMIT_COUNT
+            assert len(rate_limited_responses) == REQUEST_COUNT - RATE_LIMIT_COUNT
+            for response in rate_limited_responses:
+                assert "Rate limit exceeded" in response.text
+        finally:
+            app.dependency_overrides.pop(_get_current_user, None)

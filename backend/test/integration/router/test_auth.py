@@ -23,6 +23,7 @@ class TestAuthRouter:
         assert "/i/oauth2/authorize" in parsed_url.path
 
         query_params = parse_qs(parsed_url.query)
+
         assert "client_id" in query_params
         assert "redirect_uri" in query_params
         assert "scope" in query_params
@@ -57,6 +58,7 @@ class TestAuthRouter:
         with client as c:
             # First, initiate login to set up session state
             login_response = c.get("/auth/login/twitter", follow_redirects=False)
+
             assert login_response.status_code == status.HTTP_307_TEMPORARY_REDIRECT
 
             # Extract state from login redirect URL for callback
@@ -84,41 +86,46 @@ class TestAuthRouter:
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
 
-    @patch("src.router.auth._get_current_user")
-    def test_refresh_token_success(
-        self, mock_get_user, client, test_db_session, create_user
-    ):
+    def test_refresh_token_success(self, client, test_db_session, create_user):
         user = create_user(user_id="refresh_user", user_name="refreshuser")
-        mock_get_user.return_value = user
 
-        response = client.post(
-            "/auth/refresh", headers={"Authorization": "Bearer valid_refresh_token"}
-        )
+        def override_get_current_user():
+            return user
 
-        # トークンの検証が成功するかは実装次第だが、
-        # 構造的なテストとしてレスポンス形式を確認
-        assert response.status_code in [
-            status.HTTP_200_OK,
-            status.HTTP_401_UNAUTHORIZED,
-        ]
+        app.dependency_overrides[_get_current_user] = override_get_current_user
+        try:
+            response = client.post(
+                "/auth/refresh", headers={"Authorization": "Bearer valid_refresh_token"}
+            )
+            assert response.status_code in [
+                status.HTTP_200_OK,
+                status.HTTP_401_UNAUTHORIZED,
+            ]
+        finally:
+            app.dependency_overrides.pop(_get_current_user, None)
 
     def test_refresh_token_missing_header(self, client):
         response = client.post("/auth/refresh")
 
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
-    @patch("src.router.auth._get_current_user")
-    def test_logout_success(self, mock_get_user, client, test_db_session, create_user):
+    def test_logout_success(self, client, test_db_session, create_user):
         user = create_user(user_id="logout_user", user_name="logoutuser")
-        mock_get_user.return_value = user
 
-        response = client.post(
-            "/auth/logout", headers={"Authorization": "Bearer valid_token"}
-        )
-        assert response.status_code in [
-            status.HTTP_200_OK,
-            status.HTTP_401_UNAUTHORIZED,
-        ]
+        def override_get_current_user():
+            return user
+
+        app.dependency_overrides[_get_current_user] = override_get_current_user
+        try:
+            response = client.post(
+                "/auth/logout", headers={"Authorization": "Bearer valid_token"}
+            )
+            assert response.status_code in [
+                status.HTTP_200_OK,
+                status.HTTP_401_UNAUTHORIZED,
+            ]
+        finally:
+            app.dependency_overrides.pop(_get_current_user, None)
 
     def test_logout_missing_header(self, client):
         response = client.post("/auth/logout")
@@ -135,7 +142,6 @@ class TestAuthRouter:
             return user
 
         app.dependency_overrides[_get_current_user] = override_get_current_user
-
         try:
             response = client.get("/auth/me")
 
@@ -149,10 +155,8 @@ class TestAuthRouter:
             # Clean up dependency override
             app.dependency_overrides.pop(_get_current_user, None)
 
-    @patch("src.router.auth.get_current_user_optional")
-    def test_me_endpoint_unauthenticated(self, mock_auth, client):
-        mock_auth.return_value = None
-
+    def test_me_endpoint_unauthenticated(self, client):
+        # 認証なしでアクセス（依存関係オーバーライドなし）
         response = client.get("/auth/me")
 
         assert response.status_code == status.HTTP_401_UNAUTHORIZED

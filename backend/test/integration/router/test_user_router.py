@@ -1,7 +1,8 @@
-from unittest.mock import patch
-
 import pytest
 from fastapi import status
+
+from src.main import app
+from src.router.user_router import get_current_user_optional
 
 # User クラスのimportは不要（create_userヘルパーを使用）
 
@@ -22,9 +23,9 @@ class TestUserRouter:
         assert response.status_code == status.HTTP_201_CREATED
         response_data = response.json()
 
-        assert response_data["user_id"] == "new_router_user"
-        assert response_data["user_name"] == "newrouteruser"
-        assert response_data["display_name"] == "New Router User"
+        assert response_data["userId"] == "new_router_user"
+        assert response_data["userName"] == "newrouteruser"
+        assert response_data["displayName"] == "New Router User"
         assert response_data["bio"] == "Created via router test"
 
     def test_upsert_user_update_existing(self, client, test_db_session, create_user):
@@ -35,7 +36,6 @@ class TestUserRouter:
             bio="Old bio",
         )
 
-        # 更新データ
         update_data = {
             "user_id": "existing_router_user",
             "user_name": "existingrouteruser",
@@ -49,9 +49,9 @@ class TestUserRouter:
         assert response.status_code == status.HTTP_201_CREATED
         response_data = response.json()
 
-        assert response_data["display_name"] == "Updated Display Name"
+        assert response_data["displayName"] == "Updated Display Name"
         assert response_data["bio"] == "Updated bio via router"
-        assert response_data["icon_url"] == "https://example.com/updated_avatar.jpg"
+        assert response_data["iconUrl"] == "https://example.com/updated_avatar.jpg"
 
     def test_read_all_users(self, client, test_db_session, create_users):
         create_users(3)
@@ -64,7 +64,7 @@ class TestUserRouter:
         assert isinstance(response_data, list)
         assert len(response_data) >= 3
 
-        user_ids = [user["user_id"] for user in response_data]
+        user_ids = [user["userId"] for user in response_data]
         assert "bulk_user_0" in user_ids
         assert "bulk_user_1" in user_ids
         assert "bulk_user_2" in user_ids
@@ -84,59 +84,74 @@ class TestUserRouter:
         assert len(page2_data) >= 5  # 残りのユーザー + 既存のユーザー
 
         # ページ間でユーザーが重複していないことを確認
-        page1_user_ids = {user["user_id"] for user in page1_data}
-        page2_user_ids = {user["user_id"] for user in page2_data}
+        page1_user_ids = {user["userId"] for user in page1_data}
+        page2_user_ids = {user["userId"] for user in page2_data}
         overlap = page1_user_ids.intersection(page2_user_ids)
         assert len(overlap) == 0
 
-    @patch("src.router.user_router.get_current_user_optional")
-    def test_discover_users_random(
-        self, mock_auth, client, test_db_session, create_users
-    ):
-        mock_auth.return_value = None
+    def test_discover_users_random(self, client, test_db_session, create_users):
+        def override_get_current_user_optional(request=None, db=None):
+            return None
+
+        app.dependency_overrides[get_current_user_optional] = (
+            override_get_current_user_optional
+        )
 
         create_users(5)
 
-        response = client.get("/users/discover?type=random&limit=3")
+        try:
+            response = client.get("/users/discover?type=random&limit=3")
 
-        assert response.status_code == status.HTTP_200_OK
+            assert response.status_code == status.HTTP_200_OK
+        finally:
+            app.dependency_overrides.pop(get_current_user_optional, None)
         response_data = response.json()
 
         assert isinstance(response_data, list)
         assert len(response_data) <= 3
 
         for user in response_data:
-            assert "user_id" in user
-            assert "user_name" in user
-            assert "display_name" in user
+            assert "userId" in user
+            assert "userName" in user
+            assert "displayName" in user
 
-    @patch("src.router.user_router.get_current_user_optional")
-    def test_discover_users_activity(
-        self, mock_auth, client, test_db_session, create_users
-    ):
-        mock_auth.return_value = None
+    def test_discover_users_activity(self, client, test_db_session, create_users):
+        def override_get_current_user_optional(request=None, db=None):
+            return None
+
+        app.dependency_overrides[get_current_user_optional] = (
+            override_get_current_user_optional
+        )
 
         create_users(3)
 
-        response = client.get("/users/discover?type=activity&limit=5")
+        try:
+            response = client.get("/users/discover?type=activity&limit=5")
 
-        assert response.status_code == status.HTTP_200_OK
+            assert response.status_code == status.HTTP_200_OK
+        finally:
+            app.dependency_overrides.pop(get_current_user_optional, None)
         response_data = response.json()
 
         assert isinstance(response_data, list)
         assert len(response_data) <= 5
 
-    @patch("src.router.user_router.get_current_user_optional")
-    def test_discover_users_mixed(
-        self, mock_auth, client, test_db_session, create_users
-    ):
-        mock_auth.return_value = None
+    def test_discover_users_mixed(self, client, test_db_session, create_users):
+        def override_get_current_user_optional(request=None, db=None):
+            return None
+
+        app.dependency_overrides[get_current_user_optional] = (
+            override_get_current_user_optional
+        )
 
         create_users(4)
 
-        response = client.get("/users/discover")  # デフォルトは recommend
+        try:
+            response = client.get("/users/discover")  # デフォルトは recommend
 
-        assert response.status_code == status.HTTP_200_OK
+            assert response.status_code == status.HTTP_200_OK
+        finally:
+            app.dependency_overrides.pop(get_current_user_optional, None)
         response_data = response.json()
 
         assert isinstance(response_data, list)
@@ -157,18 +172,18 @@ class TestUserRouter:
         create_user(user_id="search2", user_name="search2", display_name="Jane Smith")
         create_user(user_id="search3", user_name="search3", display_name="Bob Johnson")
 
-        response = client.get("/users/search?display_name=Smith")
+        response = client.get("/users/search/users?q=Smith")
 
         assert response.status_code == status.HTTP_200_OK
         response_data = response.json()
 
         assert len(response_data) == 2
-        display_names = [user["display_name"] for user in response_data]
+        display_names = [user["displayName"] for user in response_data]
         assert "John Smith" in display_names
         assert "Jane Smith" in display_names
 
     def test_search_users_no_results(self, client, test_db_session):
-        response = client.get("/users/search?display_name=NonExistentUser")
+        response = client.get("/users/search/users?q=NonExistentUser")
 
         assert response.status_code == status.HTTP_200_OK
         response_data = response.json()

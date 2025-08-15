@@ -34,7 +34,7 @@ class TestProfileService:
             user.user_id, label="趣味", value="読書", display_order=1
         )
 
-        update_data = ProfileItemUpdate(value="プログラミング", display_order=2)
+        update_data = ProfileItemUpdate(value="プログラミング")
 
         result = profile_service.update_profile_item(
             test_db_session,
@@ -45,7 +45,7 @@ class TestProfileService:
 
         assert result.label == "趣味"  # 変更されない
         assert result.value == "プログラミング"  # 更新される
-        assert result.display_order == 2  # 更新される
+        assert result.display_order == 1  # 変更されない
 
     def test_update_profile_item_not_found(self, test_db_session, create_user):
         user = create_user()

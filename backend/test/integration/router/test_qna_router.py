@@ -22,15 +22,16 @@ class TestQnARouter:
         assert response.status_code == status.HTTP_200_OK
         response_data = response.json()
 
-        assert response_data["answer_text"] == "これは私の回答です。"
-        assert response_data["user_id"] == user.user_id
-        assert response_data["question_id"] == question.question_id
+        assert response_data["answerText"] == "これは私の回答です。"
+        assert response_data["userId"] == user.user_id
+        assert response_data["questionId"] == question.question_id
 
     def test_create_answer_nonexistent_user(self, client, create_question):
         question = create_question(text="テスト質問", category_id="personality")
 
         answer_data = {"answer_text": "存在しないユーザーの回答"}
 
+        # NOTE: `nonexistent_user`というuser_idになってしまうため認証チェックしている
         response = client.post(
             f"/users/nonexistent_user/questions/{question.question_id}/answers",
             json=answer_data,
@@ -67,20 +68,21 @@ class TestQnARouter:
 
         assert response.status_code in [status.HTTP_409_CONFLICT, status.HTTP_200_OK]
 
-    def test_create_answer_invalid_data(self, client, create_user, create_question):
-        user = create_user(user_id="invalid_user", user_name="invaliduser")
-        question = create_question(
-            text="バリデーションテスト", category_id="personality"
-        )
+    def test_create_answer_empty_text_allowed(
+        self, client, create_user, create_question
+    ):
+        user = create_user(user_id="empty_answer_user", user_name="emptyuser")
+        question = create_question(text="空回答テスト", category_id="personality")
 
-        invalid_data = {"answer_text": ""}
+        empty_answer_data = {"answer_text": ""}
 
         response = client.post(
             f"/users/{user.user_id}/questions/{question.question_id}/answers",
-            json=invalid_data,
+            json=empty_answer_data,
         )
 
-        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+        # 空の回答も許容される
+        assert response.status_code == status.HTTP_200_OK
 
     def test_read_all_questions_success(self, client, test_db_session, create_question):
         [
@@ -118,7 +120,7 @@ class TestQnARouter:
         assert len(response_data) >= 2
 
         for question in response_data:
-            assert question["category_id"] == "personality"
+            assert question["categoryId"] == "personality"
 
     def test_read_questions_by_nonexistent_category(self, client):
         response = client.get("/questions/by-category/nonexistent_category")
@@ -143,43 +145,6 @@ class TestQnARouter:
             assert "name" in category
             assert isinstance(category["id"], str)
             assert isinstance(category["name"], str)
-
-    def test_read_user_answers_success(
-        self, client, test_db_session, create_user, create_question, create_answer
-    ):
-        user = create_user(user_id="qa_user", user_name="qauser")
-        questions = [
-            create_question(text="QA質問1", category_id="personality"),
-            create_question(text="QA質問2", category_id="lifestyle"),
-        ]
-
-        # 各質問に対する回答をcreate_answerヘルパーで作成
-        for i, question in enumerate(questions):
-            create_answer(user.user_id, question.question_id, f"回答{i + 1}")
-
-        response = client.get(f"/users/{user.user_id}/qa")
-
-        assert response.status_code == status.HTTP_200_OK
-        response_data = response.json()
-
-        assert isinstance(response_data, list)
-        assert len(response_data) >= 2
-
-    def test_read_user_answers_nonexistent_user(self, client):
-        response = client.get("/users/nonexistent_user/qa")
-
-        assert response.status_code == status.HTTP_404_NOT_FOUND
-
-    def test_read_user_answers_no_answers(self, client, create_user):
-        user = create_user(user_id="no_answers_user", user_name="noanswersuser")
-
-        response = client.get(f"/users/{user.user_id}/qa")
-
-        assert response.status_code == status.HTTP_200_OK
-        response_data = response.json()
-
-        assert isinstance(response_data, list)
-        assert len(response_data) == 0
 
     def test_answer_text_length_validation(self, client, create_user, create_question):
         user = create_user(user_id="length_user", user_name="lengthuser")

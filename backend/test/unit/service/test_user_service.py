@@ -10,8 +10,6 @@ from src.service import user_service
 
 @pytest.mark.unit
 class TestUserService:
-    """ユーザーサービスのユニットテスト"""
-
     def test_get_user_exists(self, test_db_session, create_user):
         create_user(
             user_id="test_user_001",
@@ -190,49 +188,57 @@ class TestUserService:
         # initialize_default_questions はユーザーIDではなくセッションのみで呼ばれる
         mock_init_questions.assert_called_once_with(test_db_session)
 
-    def test_discover_users_activity_type(self, test_db_session, create_user):
-        now = datetime.now(timezone.utc)
-        recent_date = now - timedelta(days=1)
+    @pytest.mark.parametrize(
+        "discover_type,limit,setup_func",
+        [
+            ("activity", 10, "setup_activity_users"),
+            ("random", 3, "setup_random_users"),
+            ("recommend", 4, "setup_recommend_users"),
+        ],
+    )
+    def test_discover_users_types(
+        self,
+        test_db_session,
+        create_user,
+        create_users,
+        discover_type,
+        limit,
+        setup_func,
+    ):
+        if setup_func == "setup_activity_users":
+            now = datetime.now(timezone.utc)
+            recent_date = now - timedelta(days=1)
+            create_user(
+                user_id="recent_user",
+                user_name="recentuser",
+                display_name="Recent User",
+                created_at=recent_date,
+            )
+            create_user(
+                user_id="old_user",
+                user_name="olduser",
+                display_name="Old User",
+                created_at=now - timedelta(days=30),
+            )
+        elif setup_func == "setup_random_users":
+            create_users(5)
+        elif setup_func == "setup_recommend_users":
+            create_users(6)
 
-        create_user(
-            user_id="recent_user",
-            user_name="recentuser",
-            display_name="Recent User",
-            created_at=recent_date,
+        result = user_service.discover_users(
+            test_db_session, discover_type, limit=limit
         )
-        create_user(
-            user_id="old_user",
-            user_name="olduser",
-            display_name="Old User",
-            created_at=now - timedelta(days=30),
-        )
-
-        result = user_service.discover_users(test_db_session, "activity", limit=10)
 
         assert isinstance(result, list)
-        # 最近のユーザーが含まれることを確認
-        recent_user_ids = [user.user_id for user in result]
-        assert "recent_user" in recent_user_ids
+        assert len(result) <= limit
 
-    def test_discover_users_random_type(self, test_db_session, create_users):
-        create_users(5)
-
-        result = user_service.discover_users(test_db_session, "random", limit=3)
-
-        assert isinstance(result, list)
-        assert len(result) <= 3
-        # 結果のユーザーIDが作成したユーザーの中に含まれることを確認
-        result_user_ids = [user.user_id for user in result]
-        created_user_ids = [f"bulk_user_{i}" for i in range(5)]
-        assert all(uid in created_user_ids for uid in result_user_ids)
-
-    def test_discover_users_recommend_type(self, test_db_session, create_users):
-        create_users(6)
-
-        result = user_service.discover_users(test_db_session, "recommend", limit=4)
-
-        assert isinstance(result, list)
-        assert len(result) <= 4
+        if discover_type == "activity":
+            recent_user_ids = [user.user_id for user in result]
+            assert "recent_user" in recent_user_ids
+        elif discover_type == "random":
+            result_user_ids = [user.user_id for user in result]
+            created_user_ids = [f"bulk_user_{i}" for i in range(5)]
+            assert all(uid in created_user_ids for uid in result_user_ids)
 
     def test_discover_users_exclude_current_user(self, test_db_session, create_user):
         create_user(
