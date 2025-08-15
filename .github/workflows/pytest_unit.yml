@@ -5,6 +5,7 @@ on:
     paths:
       - "backend/src/**"
       - "backend/test/unit/**"
+      - "backend/test/integration/**"
       - ".github/workflows/pytest_unit.yml"
 
 defaults:
@@ -19,6 +20,15 @@ jobs:
     timeout-minutes: 10
     env:
       GITHUB_WORKSPACE: ${{ github.workspace }}
+      # Required environment variables for testing
+      TWITTER_CLIENT_ID: test_client_id
+      TWITTER_CLIENT_SECRET: test_client_secret
+      SECRET_KEY: test_secret_key
+      DB_USER: test_user
+      DB_PASSWORD: test_password
+      DB_HOST: localhost
+      DB_PORT: 5432
+      DB_NAME: test_db
 
     strategy:
       fail-fast: false
@@ -49,6 +59,14 @@ jobs:
         run: |
           mkdir -p test-reports/${{ matrix.module }}
 
+      - name: Set test directory
+        run: |
+          if [ "${{ matrix.module }}" = "router" ]; then
+            echo "TEST_DIR=test/integration/${{ matrix.module }}" >> $GITHUB_ENV
+          else
+            echo "TEST_DIR=test/unit/${{ matrix.module }}" >> $GITHUB_ENV
+          fi
+
       - name: Run pytest for ${{ matrix.module }}
         run: |
           uv run pytest \
@@ -57,7 +75,7 @@ jobs:
             --cov-report=term-missing \
             --disable-warnings \
             --junitxml=test-reports/${{ matrix.module }}/unit.xml \
-            -v test/unit/${{ matrix.module }}
+            -v ${{ env.TEST_DIR }}
 
       - name: Upload ${{ matrix.module }} results summary
         if: always()
