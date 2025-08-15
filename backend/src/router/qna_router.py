@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from src.db.session import get_db
@@ -30,9 +30,16 @@ def create_new_answer(
     answer_in: AnswerCreate,
     db: Session = Depends(get_db),
 ):
-    return qna_service.create_answer(
-        db=db, user_id=user_id, question_id=question_id, answer_in=answer_in
-    )
+    try:
+        return qna_service.create_answer(
+            db=db, user_id=user_id, question_id=question_id, answer_in=answer_in
+        )
+    except ValueError as e:
+        if "User not found" in str(e):
+            raise HTTPException(status_code=404, detail=str(e)) from e
+        if "Question not found" in str(e):
+            raise HTTPException(status_code=404, detail=str(e)) from e
+        raise HTTPException(status_code=400, detail=str(e)) from e
 
 
 @questions_router.get("/", response_model=list[QuestionRead])

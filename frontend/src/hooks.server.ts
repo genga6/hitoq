@@ -1,7 +1,15 @@
 import type { Handle } from "@sveltejs/kit";
 import { dev } from "$app/environment";
+import * as Sentry from "@sentry/sveltekit";
+import { PUBLIC_SENTRY_DSN, PUBLIC_ENVIRONMENT } from "$env/static/public";
 
-export const handle: Handle = async ({ event, resolve }) => {
+Sentry.init({
+  dsn: PUBLIC_SENTRY_DSN,
+  tracesSampleRate: 0.1,
+  environment: PUBLIC_ENVIRONMENT || "development",
+});
+
+const customHandle: Handle = async ({ event, resolve }) => {
   // HTTPS enforcement in production
   if (!dev) {
     const proto = event.request.headers.get("x-forwarded-proto");
@@ -40,3 +48,6 @@ export const handle: Handle = async ({ event, resolve }) => {
 
   return response;
 };
+
+export const handle = Sentry.sentryHandle(customHandle);
+export const handleError = Sentry.handleErrorWithSentry();

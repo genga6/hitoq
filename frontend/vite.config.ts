@@ -1,9 +1,21 @@
 import tailwindcss from "@tailwindcss/vite";
 import { sveltekit } from "@sveltejs/kit/vite";
 import { defineConfig } from "vite";
+import { sentrySvelteKit } from "@sentry/sveltekit";
 
 export default defineConfig({
-  plugins: [tailwindcss(), sveltekit()],
+  plugins: [
+    sentrySvelteKit({
+      sourceMapsUploadOptions: {
+        org: "your-org",
+        project: "hitoq-frontend",
+        url: "https://sentry.io/",
+        telemetry: false,
+      },
+    }),
+    tailwindcss(),
+    sveltekit(),
+  ],
   server: {
     // https://ja.vite.dev/config/server-options
     host: "0.0.0.0",

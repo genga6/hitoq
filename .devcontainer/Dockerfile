@@ -6,8 +6,15 @@ RUN apt-get update && apt-get install -y \
     bash \
     git \
     curl \
+    gnupg \
+    software-properties-common \
+    lsb-release \
     && rm -rf /var/lib/apt/lists/*
 
+RUN curl -fsSL https://apt.releases.hashicorp.com/gpg | gpg --dearmor | tee /usr/share/keyrings/hashicorp-archive-keyring.gpg > /dev/null \
+    && echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | tee /etc/apt/sources.list.d/hashicorp.list
+
+RUN apt-get update && apt-get install -y terraform
 
 ENV VENV_PATH="/workspaces/hitoq/backend/.venv"
 ENV PATH="$VENV_PATH/bin:$PATH"

@@ -4,9 +4,15 @@ from sqlalchemy.orm import Session
 
 from src.db.tables import UserBlock, UserReport
 from src.schema.block import BlockCreate, ReportCreate, ReportUpdate
+from src.service import user_service
 
 
 def create_block(db: Session, blocker_user_id: str, block_in: BlockCreate) -> UserBlock:
+    # Check if blocked user exists
+    blocked_user = user_service.get_user(db, block_in.blocked_user_id)
+    if not blocked_user:
+        raise ValueError("User not found")
+
     existing_block = (
         db.query(UserBlock)
         .filter(
@@ -69,6 +75,11 @@ def is_blocked(db: Session, blocker_user_id: str, blocked_user_id: str) -> bool:
 def create_report(
     db: Session, reporter_user_id: str, report_in: ReportCreate
 ) -> UserReport:
+    # Check if reported user exists
+    reported_user = user_service.get_user(db, report_in.reported_user_id)
+    if not reported_user:
+        raise ValueError("User not found")
+
     if reporter_user_id == report_in.reported_user_id:
         raise ValueError("Cannot report yourself")
 

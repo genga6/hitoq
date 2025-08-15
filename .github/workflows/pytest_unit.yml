@@ -1,0 +1,90 @@
+name: Unit Tests
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+    paths:
+      - "backend/src/**"
+      - "backend/test/unit/**"
+      - "backend/test/integration/**"
+      - ".github/workflows/pytest_unit.yml"
+
+defaults:
+  run:
+    shell: bash
+    working-directory: backend
+
+jobs:
+  unit-tests:
+    name: ${{ matrix.module }} unit tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      GITHUB_WORKSPACE: ${{ github.workspace }}
+      # Required environment variables for testing
+      TWITTER_CLIENT_ID: test_client_id
+      TWITTER_CLIENT_SECRET: test_client_secret
+      SECRET_KEY: test_secret_key
+      DB_USER: test_user
+      DB_PASSWORD: test_password
+      DB_HOST: localhost
+      DB_PORT: 5432
+      DB_NAME: test_db
+
+    strategy:
+      fail-fast: false
+      matrix:
+        module:
+          - service
+          - router
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install uv
+        run: |
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+
+      - name: Install dependencies
+        run: |
+          uv sync --dev
+
+      - name: Set PYTHONPATH
+        run: echo "PYTHONPATH=$PYTHONPATH:$GITHUB_WORKSPACE/backend/src" >> $GITHUB_ENV
+
+      - name: Create report directory
+        run: |
+          mkdir -p test-reports/${{ matrix.module }}
+
+      - name: Set test directory
+        run: |
+          if [ "${{ matrix.module }}" = "router" ]; then
+            echo "TEST_DIR=test/integration/${{ matrix.module }}" >> $GITHUB_ENV
+          else
+            echo "TEST_DIR=test/unit/${{ matrix.module }}" >> $GITHUB_ENV
+          fi
+
+      - name: Run pytest for ${{ matrix.module }}
+        run: |
+          uv run pytest \
+            --cov=src/${{ matrix.module }} \
+            --cov-branch \
+            --cov-report=term-missing \
+            --disable-warnings \
+            --junitxml=test-reports/${{ matrix.module }}/unit.xml \
+            -v ${{ env.TEST_DIR }}
+
+      - name: Upload ${{ matrix.module }} results summary
+        if: always()
+        uses: dorny/test-reporter@v2
+        with:
+          name: ${{ matrix.module }} Summary Report
+          path: backend/test-reports/${{ matrix.module }}/unit.xml
+          reporter: java-junit
+          list-suites: failed
+          list-tests: failed
+          fail-on-error: false
+          only-summary: true

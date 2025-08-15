@@ -16,7 +16,6 @@ visit_router = APIRouter(
 def record_visit_endpoint(
     user_id: str, request: Request, db: Session = Depends(get_db)
 ):
-    """Record a visit to a user's page."""
     visitor_user_id = None
     try:
         current_user = _get_current_user(request, db)
@@ -38,7 +37,6 @@ def record_visit_endpoint(
 def get_user_visits_endpoint(
     user_id: str, limit: int = Query(50, ge=1, le=100), db: Session = Depends(get_db)
 ):
-    """Get visits to a user's page (only if visits are visible)."""
     visits = visit_service.get_user_visits(db=db, user_id=user_id, limit=limit)
 
     visit_reads = []
@@ -76,7 +74,6 @@ def update_visits_visibility_endpoint(
     request: Request,
     db: Session = Depends(get_db),
 ):
-    """Update visits visibility setting (requires authentication and ownership)."""
     current_user = _get_current_user(request, db)
 
     if current_user.user_id != user_id:
@@ -96,7 +93,6 @@ def update_visits_visibility_endpoint(
 def get_visits_visibility_endpoint(
     user_id: str, request: Request, db: Session = Depends(get_db)
 ):
-    """Get visits visibility setting (requires authentication and ownership)."""
     current_user = _get_current_user(request, db)
 
     if current_user.user_id != user_id:

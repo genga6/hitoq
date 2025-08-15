@@ -154,8 +154,16 @@ async def login_twitter(request: Request):
 @auth_router.get("/callback/twitter")
 @limiter.limit("20/minute")  # Higher limit for callback (legitimate flow)
 async def auth_twitter_callback(
-    request: Request, code: str, state: str, db: Session = Depends(get_db)
+    request: Request,
+    code: str | None = None,
+    state: str | None = None,
+    db: Session = Depends(get_db),
 ):
+    if code is None:
+        raise HTTPException(status_code=400, detail="Missing code parameter")
+    if state is None:
+        raise HTTPException(status_code=400, detail="Missing state parameter")
+
     session_state = request.session.pop("state", None)
     if session_state is None or session_state != state:
         raise HTTPException(status_code=400, detail="Invalid state parameter")

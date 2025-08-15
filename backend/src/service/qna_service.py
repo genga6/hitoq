@@ -2,7 +2,7 @@ from collections import defaultdict
 
 from sqlalchemy.orm import Session, joinedload
 
-from src.db.tables import Answer, Question
+from src.db.tables import Answer, Question, User
 from src.schema.answer import AnswerCreate, AnswerRead
 from src.schema.composite_schema import (
     AnsweredQARead,
@@ -91,6 +91,16 @@ def get_questions_by_category(db: Session, category_id: str) -> list[Question]:
 def create_answer(
     db: Session, user_id: str, question_id: int, answer_in: AnswerCreate
 ) -> Answer:
+    # ユーザーが存在するかチェック
+    user = db.query(User).filter(User.user_id == user_id).first()
+    if not user:
+        raise ValueError("User not found")
+
+    # 質問が存在するかチェック
+    question = db.query(Question).filter(Question.question_id == question_id).first()
+    if not question:
+        raise ValueError("Question not found")
+
     db_answer = Answer(
         user_id=user_id, question_id=question_id, **answer_in.model_dump()
     )

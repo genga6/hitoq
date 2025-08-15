@@ -24,8 +24,6 @@ def create_message(
     db: Session = Depends(get_db),
     current_user: User = Depends(_get_current_user),
 ):
-    """Create a new message."""
-    # Verify target user exists
     target_user = user_service.get_user(db, message.to_user_id)
     if not target_user:
         raise HTTPException(status_code=404, detail="Target user not found")
@@ -41,7 +39,6 @@ def get_my_messages(
     db: Session = Depends(get_db),
     current_user: User = Depends(_get_current_user),
 ):
-    """Get messages received by the current user."""
     messages = message_service.get_messages_with_replies(
         db, current_user.user_id, skip, limit
     )
@@ -55,12 +52,10 @@ def update_message(
     db: Session = Depends(get_db),
     current_user: User = Depends(_get_current_user),
 ):
-    """Update message status (mark as read, etc.)."""
     message = message_service.get_message(db, message_id)
     if not message:
         raise HTTPException(status_code=404, detail="Message not found")
 
-    # Only the recipient can update the message status
     if message.to_user_id != current_user.user_id:
         raise HTTPException(
             status_code=403, detail="Not authorized to update this message"
@@ -77,7 +72,6 @@ def get_unread_count(
     db: Session = Depends(get_db),
     current_user: User = Depends(_get_current_user),
 ):
-    """Get count of unread messages."""
     count = message_service.get_unread_count(db, current_user.user_id)
     return {"unread_count": count}
 
@@ -89,7 +83,6 @@ def get_notifications(
     db: Session = Depends(get_db),
     current_user: User = Depends(_get_current_user),
 ):
-    """Get notification messages based on user's notification level."""
     notifications = message_service.get_notifications_for_user(
         db, current_user.user_id, skip, limit
     )
@@ -101,7 +94,6 @@ def get_notification_count(
     db: Session = Depends(get_db),
     current_user: User = Depends(_get_current_user),
 ):
-    """Get count of unread notifications based on user's notification level."""
     count = message_service.get_notification_count(db, current_user.user_id)
     return {"notification_count": count}
 
@@ -112,7 +104,6 @@ def get_message_thread(
     db: Session = Depends(get_db),
     current_user: User = Depends(_get_current_user),
 ):
-    """Get a message thread (original message + all replies)."""
     thread = message_service.get_message_thread(db, message_id, current_user.user_id)
     if not thread:
         raise HTTPException(
@@ -128,12 +119,10 @@ def update_message_content(
     db: Session = Depends(get_db),
     current_user: User = Depends(_get_current_user),
 ):
-    """Update message content (only for the sender)."""
     message = message_service.get_message(db, message_id)
     if not message:
         raise HTTPException(status_code=404, detail="Message not found")
 
-    # Only the sender can edit the message
     if message.from_user_id != current_user.user_id:
         raise HTTPException(
             status_code=403, detail="Not authorized to edit this message"
@@ -151,7 +140,6 @@ def delete_message(
     db: Session = Depends(get_db),
     current_user: User = Depends(_get_current_user),
 ):
-    """Delete a message (only for the sender)."""
     message = message_service.get_message(db, message_id)
     if not message:
         raise HTTPException(status_code=404, detail="Message not found")
@@ -175,8 +163,6 @@ def toggle_heart_reaction(
     db: Session = Depends(get_db),
     current_user: User = Depends(_get_current_user),
 ):
-    """Toggle heart reaction for a message."""
-    # Verify target message exists
     target_message = message_service.get_message(db, message_id)
     if not target_message:
         raise HTTPException(status_code=404, detail="Message not found")
@@ -198,8 +184,6 @@ def get_message_likes(
     db: Session = Depends(get_db),
     current_user: User = Depends(_get_current_user),
 ):
-    """Get list of users who liked a message."""
-    # Verify target message exists
     target_message = message_service.get_message(db, message_id)
     if not target_message:
         raise HTTPException(status_code=404, detail="Message not found")
@@ -214,7 +198,6 @@ def get_heart_states(
     db: Session = Depends(get_db),
     current_user: User = Depends(_get_current_user),
 ):
-    """Get heart states for multiple messages."""
     heart_states = message_service.get_heart_states_for_messages(
         db, current_user.user_id, message_ids
     )

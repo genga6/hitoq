@@ -45,7 +45,7 @@ export const updateCurrentUser = async (
 };
 
 export const discoverUsers = async (
-  type: "activity" | "random" | "mixed" = "mixed",
+  type: "activity" | "random" | "recommend" = "recommend",
   limit: number = 10,
   offset: number = 0,
 ): Promise<Profile[]> => {

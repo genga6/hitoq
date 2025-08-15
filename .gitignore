@@ -128,12 +128,20 @@ celerybeat.pid
 
 # Environments
 .env
+.env.local
+.env.production
 .venv
 env/
 venv/
 ENV/
 env.bak/
 venv.bak/
+
+# Terraform
+terraform/terraform.tfvars
+terraform/.terraform/
+terraform/*.tfstate
+terraform/*.tfstate.backup
 
 # Spyder project settings
 .spyderproject
