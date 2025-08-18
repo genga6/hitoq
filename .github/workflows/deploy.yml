@@ -9,6 +9,9 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     environment: production # Optional: for environment protection rules and secrets
+    permissions:
+      contents: read
+      packages: write
 
     steps:
       - name: Checkout code
@@ -22,7 +25,7 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_ACCESS_TOKEN }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and push Frontend Docker image
         working-directory: ./frontend
