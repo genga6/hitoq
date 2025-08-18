@@ -72,14 +72,27 @@
   }
 </script>
 
+<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
 <div 
   class="group relative theme-bg-surface rounded-2xl p-6 theme-border theme-visitor-hover transition-all duration-300 {isOwner && answer ? 'cursor-pointer' : ''}"
+  role={isOwner && answer ? "button" : undefined}
+  tabindex={isOwner && answer ? 0 : -1}
   onclick={(e) => {
     // インタラクションボタンのクリックを除外
     if (e.target instanceof Element && e.target.closest('.interaction-buttons')) {
       return;
     }
     startEditing();
+  }}
+  onkeydown={(e) => {
+    if (isOwner && answer && (e.key === 'Enter' || e.key === ' ')) {
+      e.preventDefault();
+      // インタラクションボタンのフォーカスを除外
+      if (e.target instanceof Element && e.target.closest('.interaction-buttons')) {
+        return;
+      }
+      startEditing();
+    }
   }}
 >
   <!-- 質問エリア -->

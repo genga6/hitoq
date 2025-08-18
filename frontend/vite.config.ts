@@ -12,6 +12,7 @@ export default defineConfig({
         url: "https://sentry.io/",
         telemetry: false,
       },
+      autoUploadSourceMaps: false,
     }),
     tailwindcss(),
     sveltekit(),

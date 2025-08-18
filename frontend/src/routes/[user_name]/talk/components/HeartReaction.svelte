@@ -82,6 +82,11 @@
       tabindex="-1"
       class="mx-4 w-full max-w-sm rounded-lg bg-white p-4"
       onclick={(e) => e.stopPropagation()}
+      onkeydown={(e) => {
+        if (e.key === 'Escape') {
+          closeLikesModal();
+        }
+      }}
     >
       <div class="mb-3 flex items-center justify-between">
         <h3 class="theme-text-primary text-lg font-semibold">いいね</h3>
