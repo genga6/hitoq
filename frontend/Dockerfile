@@ -1,6 +1,16 @@
 # Multi-stage build for production-ready SvelteKit frontend
 FROM node:18-alpine AS builder
 
+# Build arguments for environment variables
+ARG PUBLIC_API_BASE_URL="http://localhost:8000"
+ARG PUBLIC_SENTRY_DSN=""
+ARG PUBLIC_ENVIRONMENT="production"
+
+# Set environment variables for SvelteKit build
+ENV PUBLIC_API_BASE_URL=$PUBLIC_API_BASE_URL
+ENV PUBLIC_SENTRY_DSN=$PUBLIC_SENTRY_DSN
+ENV PUBLIC_ENVIRONMENT=$PUBLIC_ENVIRONMENT
+
 # Install pnpm
 RUN npm install -g pnpm
 
