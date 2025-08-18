@@ -1,0 +1,61 @@
+{
+  "name": "hitoq",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "dev",
+  "workspaceFolder": "/workspaces/hitoq",
+  "overrideCommand": true,
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "oderwat.indent-rainbow",
+        "ms-ceintl.vscode-language-pack-ja",
+        // Backend
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "ms-python.debugpy",
+        "ms-python.mypy-type-checker",
+        "charliermarsh.ruff",
+        "tomoki1207.pdf",
+        // Frontend
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "formulahendry.auto-close-tag",
+        "formulahendry.auto-rename-tag",
+        "svelte.svelte-vscode"
+      ]
+    },
+    "settings": {
+      "python.defaultInterpreterPath": ".venv/bin/python3",
+      "python.testing.pytestArgs": ["test"],
+      "python.testing.unittestEnabled": false,
+      "python.testing.pytestEnabled": true,
+      "[python]": {
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "charliermarsh.ruff",
+        "editor.codeActionsOnSave": {
+          "source.fixAll": true,
+          "source.organizeImports": true
+        }
+      },
+      "ruff.linting.enabled": true,
+      "python.linting.enabled": true,
+      "python.linting.mypyEnabled": true,
+      "python.analysis.typeCheckingMode": "off"
+    }
+  },
+
+  "forwardPorts": [5173, 8000],
+  "portsAttributes": {
+    "5173": {
+      "label": "Vite Dev Server",
+      "onAutoForward": "openBrowser"
+    },
+    "8000": {
+      "label": "FastAPI Backend",
+      "onAutoForward": "openBrowser"
+    }
+  },
+
+  "postCreateCommand": "bash .devcontainer/setup.sh"
+}

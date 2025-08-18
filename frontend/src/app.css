@@ -1,0 +1,333 @@
+@import "tailwindcss";
+@plugin '@tailwindcss/forms';
+@plugin '@tailwindcss/typography';
+
+@theme {
+  --default-transition-duration: 150ms;
+  --default-transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Tailwind V4でのダークモード設定 */
+@variant dark (.dark &);
+
+/* Design System Variables */
+:root {
+  /* Colors */
+  --color-primary: 251 146 60; /* orange-400 */
+  --color-primary-hover: 249 115 22; /* orange-500 */
+  --color-primary-light: 254 215 170; /* orange-200 */
+  --color-primary-lighter: 255 237 213; /* orange-100 */
+  --color-primary-lightest: 255 251 235; /* orange-50 */
+
+  /* Typography */
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-base: 1rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.25rem;
+  --font-size-2xl: 1.5rem;
+  --font-size-3xl: 1.875rem;
+  --font-size-4xl: 2.25rem;
+  --font-size-5xl: 3rem;
+
+  /* Spacing */
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+  --spacing-2xl: 3rem;
+
+  /* Border Radius */
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-2xl: 1.5rem;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg:
+    0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+
+  /* Typography Prose Invert Colors */
+  --tw-prose-invert-body: theme(colors.gray.100);
+  --tw-prose-invert-headings: theme(colors.white);
+  --tw-prose-invert-links: theme(colors.orange.400);
+  --tw-prose-invert-bold: theme(colors.white);
+  --tw-prose-invert-hr: theme(colors.gray.800);
+  --tw-prose-invert-quotes: theme(colors.gray.100);
+  --tw-prose-invert-quote-borders: theme(colors.gray.700);
+  --tw-prose-invert-captions: theme(colors.gray.400);
+  --tw-prose-invert-code: theme(colors.white);
+  --tw-prose-invert-pre-code: theme(colors.gray.200);
+  --tw-prose-invert-pre-bg: rgb(3 11 22 / 0.5); /* bg-gray-950 with opacity */
+  --tw-prose-invert-th-borders: theme(colors.gray.700);
+  --tw-prose-invert-td-borders: theme(colors.gray.800);
+}
+
+/* Global Base Styles */
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  @apply bg-gray-100 text-gray-900 transition-colors dark:bg-gray-900 dark:text-gray-50;
+}
+
+/* Responsive Container */
+.container-responsive {
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+@media (min-width: 640px) {
+  .container-responsive {
+    max-width: 640px;
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .container-responsive {
+    max-width: 768px;
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .container-responsive {
+    max-width: 1024px;
+  }
+}
+
+@media (min-width: 1280px) {
+  .container-responsive {
+    max-width: 1280px;
+  }
+}
+
+/* Button Components */
+.btn-primary {
+  @apply inline-flex items-center justify-center rounded-lg border border-transparent bg-orange-400 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:bg-orange-500 focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 focus:outline-none active:bg-orange-600 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-orange-500 dark:hover:bg-orange-600 dark:active:bg-orange-700;
+}
+
+.btn-secondary {
+  @apply inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm transition-all duration-200 hover:bg-gray-50 focus:ring-2 focus:ring-orange-400 focus:ring-offset-2 focus:outline-none active:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 dark:active:bg-gray-600;
+}
+
+.btn-ghost {
+  @apply inline-flex items-center justify-center rounded-lg border border-transparent bg-transparent px-4 py-2 text-sm font-semibold text-gray-700 transition-all duration-200 hover:bg-gray-100 focus:ring-2 focus:ring-orange-400 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 dark:text-gray-300 dark:hover:bg-gray-800;
+}
+
+/* Card Components */
+.card {
+  @apply overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-lg dark:border-gray-800 dark:bg-gray-800;
+}
+
+.card-header {
+  @apply border-b border-gray-100 px-6 py-4 dark:border-gray-700;
+}
+
+.card-body {
+  @apply px-6 py-4;
+}
+
+.card-footer {
+  @apply border-t border-gray-100 bg-gray-50 px-6 py-4 dark:border-gray-700 dark:bg-gray-700;
+}
+
+/* テーマ対応ユーティリティクラス */
+.theme-text-primary {
+  @apply text-gray-800 dark:text-gray-100;
+}
+
+.theme-text-secondary {
+  @apply text-gray-800 dark:text-gray-200;
+}
+
+.theme-text-muted {
+  @apply text-gray-700 dark:text-gray-300;
+}
+
+.theme-text-subtle {
+  @apply text-gray-600 dark:text-gray-400;
+}
+
+.theme-text-link {
+  @apply text-orange-400 hover:text-orange-500;
+}
+
+.theme-border {
+  @apply border-gray-200 dark:border-gray-700;
+}
+
+.theme-bg-surface {
+  @apply bg-white dark:bg-gray-800;
+}
+
+.theme-bg-elevated {
+  @apply bg-gray-50 dark:bg-gray-700;
+}
+
+.theme-bg-card {
+  @apply border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800;
+}
+
+.theme-border-light {
+  @apply border-gray-300 dark:border-gray-600;
+}
+
+.theme-hover-bg {
+  @apply hover:bg-gray-50 dark:hover:bg-gray-700;
+}
+
+.theme-hover-elevated {
+  @apply hover:bg-gray-100 dark:hover:bg-gray-600;
+}
+
+.theme-interactive {
+  @apply bg-gray-50 hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700;
+}
+
+.theme-button-secondary {
+  @apply bg-gray-50 text-gray-700 hover:bg-gray-100 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700;
+}
+
+/* QA・メッセージアイテム用コンテナ */
+.theme-content-item {
+  @apply rounded-xl border border-gray-200 bg-white p-4 transition-all duration-200 hover:border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700;
+}
+
+/* フォーム要素 */
+.theme-input {
+  @apply border border-gray-300 bg-white text-gray-900 placeholder-gray-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-50 dark:placeholder-gray-400;
+}
+
+.theme-textarea {
+  @apply resize-none border border-gray-300 bg-white text-gray-900 placeholder-gray-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-50 dark:placeholder-gray-400;
+}
+
+.input-error {
+  @apply border-red-300 focus:border-red-500 focus:ring-red-500 dark:border-red-500 dark:focus:border-red-400 dark:focus:ring-red-400;
+}
+
+.input-success {
+  @apply border-green-300 focus:border-green-500 focus:ring-green-500 dark:border-green-500 dark:focus:border-green-400 dark:focus:ring-green-400;
+}
+
+.theme-text-error {
+  @apply text-red-600 dark:text-red-400;
+}
+
+.theme-text-success {
+  @apply text-green-600 dark:text-green-400;
+}
+
+/* 静的ページ用コンテナ */
+.theme-page-container {
+  @apply rounded-lg border border-gray-200 bg-white p-6 md:p-8 lg:p-10 dark:border-gray-700 dark:bg-gray-800;
+}
+
+/* Input Components */
+.input-primary {
+  @apply w-full rounded-lg border border-gray-300 px-3 py-2 text-sm placeholder-gray-400 shadow-sm transition-colors duration-200 focus:border-orange-400 focus:ring-2 focus:ring-orange-400 focus:outline-none dark:border-gray-600 dark:bg-gray-800 dark:text-gray-50 dark:placeholder-gray-500;
+}
+
+/* 編集可能エリア用ホバーエフェクト */
+.theme-editable-hover {
+  @apply hover:-mx-2 hover:-my-1 hover:rounded-md hover:bg-orange-50 hover:px-2 hover:py-1 dark:hover:bg-orange-900/20;
+}
+
+/* 足跡機能用ホバーエフェクト（Twitterライク） */
+.theme-visitor-hover {
+  @apply transition-colors duration-200 hover:bg-gray-50 dark:hover:bg-white/10;
+}
+
+/* Responsive Utilities */
+.text-responsive {
+  font-size: clamp(0.875rem, 2.5vw, 1.125rem);
+}
+
+.text-responsive-lg {
+  font-size: clamp(1.125rem, 3vw, 1.5rem);
+}
+
+.text-responsive-xl {
+  font-size: clamp(1.5rem, 4vw, 2.25rem);
+}
+
+.text-responsive-2xl {
+  font-size: clamp(2rem, 5vw, 3rem);
+}
+
+/* Alert Components */
+.theme-alert-primary {
+  @apply rounded-lg border border-orange-200 bg-orange-50 p-6 dark:border-orange-700 dark:bg-orange-900/50;
+}
+
+.theme-alert-primary .theme-alert-icon {
+  @apply h-6 w-6 text-orange-600 dark:text-orange-400;
+}
+
+.theme-alert-primary .theme-alert-title {
+  @apply text-lg font-semibold text-orange-800 dark:text-orange-200;
+}
+
+.theme-alert-primary .theme-alert-text {
+  @apply mt-2 text-orange-700 dark:text-orange-300;
+}
+
+.theme-alert-primary .theme-alert-button {
+  @apply mt-4 text-sm text-orange-600 underline hover:text-orange-800 dark:text-orange-400 dark:hover:text-orange-200;
+}
+
+/* Action Button Components */
+.theme-button-like-active {
+  @apply bg-red-50 text-red-500 hover:bg-red-100 dark:bg-red-900/30 dark:text-red-300 dark:hover:bg-red-900/50;
+}
+
+.theme-button-action {
+  @apply flex items-center gap-1 rounded-full bg-gray-50 px-1.5 py-1 text-xs text-gray-700 transition-all duration-200 hover:bg-gray-100 sm:px-2 sm:py-1 sm:text-sm dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700;
+}
+
+/* Dropdown Components */
+.theme-dropdown {
+  @apply rounded-lg border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-800;
+}
+
+/* Tab Navigation */
+.theme-tab-active {
+  @apply border-b-2 border-orange-500 text-orange-500 dark:border-orange-400 dark:text-orange-400;
+}
+
+.theme-tab-inactive {
+  @apply text-gray-500 transition-colors hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300;
+}
+
+/* Badge Components */
+.theme-badge-count {
+  @apply rounded-full bg-orange-100 px-2.5 py-1 text-xs font-medium text-orange-700 dark:bg-orange-500/20 dark:text-orange-300;
+}
+
+.theme-badge-category {
+  @apply inline-flex items-center gap-1 rounded-full bg-orange-100 px-2.5 py-1 text-xs font-medium text-orange-700 dark:bg-orange-500/20 dark:text-orange-300;
+}
+
+/* Icon Button Components */
+.theme-icon-button {
+  @apply flex h-10 w-10 items-center justify-center overflow-hidden rounded-full ring-orange-400 transition hover:ring-2 focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 focus:outline-none md:h-12 md:w-12;
+}
+
+.theme-icon-button-sm {
+  @apply flex h-8 w-8 items-center justify-center overflow-hidden rounded-full ring-orange-400 transition hover:ring-2 focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 focus:outline-none;
+}
