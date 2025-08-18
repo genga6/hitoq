@@ -1,4 +1,4 @@
-import { handleErrorWithSentry, init, trace } from "@sentry/sveltekit";
+import { handleErrorWithSentry, init } from "@sentry/sveltekit";
 import { PUBLIC_SENTRY_DSN, PUBLIC_ENVIRONMENT } from "$env/static/public";
 
 init({
@@ -12,5 +12,3 @@ init({
 
 // If you have custom error handling, you can wrap it with handleErrorWithSentry
 export const handleError = handleErrorWithSentry();
-
-export const handleFetch = trace.handleFetch();
