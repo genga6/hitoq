@@ -26,87 +26,39 @@ resource "render_web_service" "hitoq_backend" {
   }
   
   # Environment variables
-  env_vars = [
+  env_vars = {
     # Database configuration (using external DB variables)
-    {
-      key   = "DATABASE_URL"
-      value = "postgresql://${var.db_user}:${var.db_password}@${var.db_host}:${var.db_port}/${var.db_name}"
-    },
-    {
-      key   = "DB_HOST"
-      value = var.db_host
-    },
-    {
-      key   = "DB_PORT"
-      value = var.db_port
-    },
-    {
-      key   = "DB_NAME"
-      value = var.db_name
-    },
-    {
-      key   = "DB_USER"
-      value = var.db_user
-    },
-    {
-      key   = "DB_PASSWORD"
-      value = var.db_password
-    },
+    DATABASE_URL        = "postgresql://${var.db_user}:${var.db_password}@${var.db_host}:${var.db_port}/${var.db_name}"
+    DB_HOST            = var.db_host
+    DB_PORT            = var.db_port
+    DB_NAME            = var.db_name
+    DB_USER            = var.db_user
+    DB_PASSWORD        = var.db_password
+    
     # Application security
-    {
-      key   = "SECRET_KEY"
-      value = var.secret_key
-    },
-    {
-      key   = "SESSION_SECRET_KEY"
-      value = var.session_secret_key
-    },
+    SECRET_KEY         = var.secret_key
+    SESSION_SECRET_KEY = var.session_secret_key
+    
     # Twitter OAuth configuration
-    {
-      key   = "TWITTER_CLIENT_ID"
-      value = var.twitter_client_id
-    },
-    {
-      key   = "TWITTER_CLIENT_SECRET"
-      value = var.twitter_client_secret
-    },
-    {
-      key   = "TWITTER_REDIRECT_URI"
-      value = var.twitter_redirect_uri
-    },
+    TWITTER_CLIENT_ID  = var.twitter_client_id
+    TWITTER_CLIENT_SECRET = var.twitter_client_secret
+    TWITTER_REDIRECT_URI = var.twitter_redirect_uri
+    
     # Frontend configuration
-    {
-      key   = "FRONTEND_URLS"
-      value = var.frontend_urls
-    },
+    FRONTEND_URLS      = var.frontend_urls
+    
     # Environment settings
-    {
-      key   = "COOKIE_SECURE"
-      value = var.cookie_secure
-    },
-    {
-      key   = "ENVIRONMENT"
-      value = var.environment
-    },
-    {
-      key   = "LOG_LEVEL"
-      value = var.log_level
-    },
+    COOKIE_SECURE      = var.cookie_secure
+    ENVIRONMENT        = var.environment
+    LOG_LEVEL          = var.log_level
+    
     # Monitoring and logging
-    {
-      key   = "SENTRY_DSN"
-      value = var.sentry_dsn
-    },
+    SENTRY_DSN         = var.sentry_dsn
+    
     # CORS settings
-    {
-      key   = "CORS_ALLOW_METHODS"
-      value = var.cors_allow_methods
-    },
-    {
-      key   = "CORS_ALLOW_HEADERS"
-      value = var.cors_allow_headers
-    }
-  ]
+    CORS_ALLOW_METHODS = var.cors_allow_methods
+    CORS_ALLOW_HEADERS = var.cors_allow_headers
+  }
 }
 
 # Frontend Web Service
@@ -127,20 +79,11 @@ resource "render_web_service" "hitoq_frontend" {
   }
   
   # Environment variables for build time
-  env_vars = [
-    {
-      key   = "PUBLIC_SENTRY_DSN"
-      value = var.public_sentry_dsn
-    },
-    {
-      key   = "PUBLIC_ENVIRONMENT"
-      value = var.public_environment
-    },
-    {
-      key   = "PUBLIC_API_BASE_URL"
-      value = var.public_api_base_url
-    }
-  ]
+  env_vars = {
+    PUBLIC_SENTRY_DSN    = var.public_sentry_dsn
+    PUBLIC_ENVIRONMENT   = var.public_environment
+    PUBLIC_API_BASE_URL  = var.public_api_base_url
+  }
 }
 
 # Output important URLs
