@@ -155,6 +155,13 @@ variable "backend_image" {
   default     = ""
 }
 
+# Render owner ID
+variable "render_owner_id" {
+  description = "Render Owner ID (username)"
+  type        = string
+}
+
 provider "render" {
-  api_key = var.render_api_key
+  api_key  = var.render_api_key
+  owner_id = var.render_owner_id
 }
