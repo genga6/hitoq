@@ -1,6 +1,3 @@
-# PostgreSQL Database Service - REMOVED
-# Using external Supabase PostgreSQL instead of Render PostgreSQL
-
 # Backend API Service
 resource "render_web_service" "hitoq_backend" {
   name               = "hitoq-backend"
@@ -130,9 +127,4 @@ output "backend_url" {
 output "frontend_url" {
   description = "Frontend service URL"
   value       = render_web_service.hitoq_frontend.url
-}
-
-output "database_name" {
-  description = "Database name"
-  value       = render_postgres.hitoq_db.name
 }
