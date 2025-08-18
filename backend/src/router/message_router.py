@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
 from src.db.session import get_db
@@ -34,8 +34,8 @@ def create_message(
 
 @message_router.get("/", response_model=list[MessageRead])
 def get_my_messages(
-    skip: int = 0,
-    limit: int = 50,
+    skip: int = Query(0, ge=0, description="Offset"),
+    limit: int = Query(50, ge=1, le=100, description="Limit"),
     db: Session = Depends(get_db),
     current_user: User = Depends(_get_current_user),
 ):
@@ -78,8 +78,8 @@ def get_unread_count(
 
 @message_router.get("/notifications", response_model=list[NotificationRead])
 def get_notifications(
-    skip: int = 0,
-    limit: int = 50,
+    skip: int = Query(0, ge=0, description="Offset"),
+    limit: int = Query(50, ge=1, le=100, description="Limit"),
     db: Session = Depends(get_db),
     current_user: User = Depends(_get_current_user),
 ):
