@@ -1,7 +1,7 @@
 # Backend API Service
 resource "render_web_service" "hitoq_backend" {
   name               = "hitoq-backend"
-  plan               = "standard" # or "free" for development
+  plan               = "free"     # Changed to free for testing
   region             = "oregon"   # or preferred region
   
   runtime_source = {
@@ -90,7 +90,7 @@ resource "render_web_service" "hitoq_backend" {
 # Frontend Web Service
 resource "render_web_service" "hitoq_frontend" {
   name            = "hitoq-frontend"
-  plan            = "standard" # or "free" for development
+  plan            = "free" # or "free" for development
   region          = "oregon"   # or preferred region
   
   runtime_source = {
