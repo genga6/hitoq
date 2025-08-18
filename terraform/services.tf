@@ -1,12 +1,5 @@
-# PostgreSQL Database Service
-resource "render_postgres" "hitoq_db" {
-  name         = "hitoq-database"
-  plan         = "free"     # Use 'free' for development or 'pro' for production
-  region       = "oregon"   # or preferred region
-  database_name = "hitoq"
-  database_user = "hitoq"
-  version      = "16"       # PostgreSQL version
-}
+# PostgreSQL Database Service - REMOVED
+# Using external Supabase PostgreSQL instead of Render PostgreSQL
 
 # Backend API Service
 resource "render_web_service" "hitoq_backend" {
