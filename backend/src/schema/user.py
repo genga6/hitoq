@@ -7,13 +7,17 @@ from src.schema.common import OrmBaseModel
 
 
 class UserBase(OrmBaseModel):
-    user_name: str = Field(..., min_length=1, description="Username cannot be empty")
-    display_name: str = Field(
-        ..., min_length=1, description="Display name cannot be empty"
+    user_name: str = Field(
+        ..., min_length=1, max_length=50, description="Username cannot be empty"
     )
-    bio: str | None = None
-    self_introduction: str | None = None
-    icon_url: str | None = None
+    display_name: str = Field(
+        ..., min_length=1, max_length=50, description="Display name cannot be empty"
+    )
+    bio: str | None = Field(None, max_length=200, description="Bio")
+    self_introduction: str | None = Field(
+        None, max_length=500, description="Self introduction"
+    )
+    icon_url: str | None = Field(None, max_length=500, description="Icon URL")
 
 
 class UserCreate(UserBase):

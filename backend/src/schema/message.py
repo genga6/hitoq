@@ -1,5 +1,7 @@
 from datetime import datetime
 
+from pydantic import Field
+
 from src.db.tables import MessageStatusEnum, MessageTypeEnum
 from src.schema.common import OrmBaseModel
 from src.schema.user import UserRead
@@ -7,7 +9,7 @@ from src.schema.user import UserRead
 
 class MessageBase(OrmBaseModel):
     message_type: MessageTypeEnum
-    content: str
+    content: str = Field(..., max_length=1000, description="Message content")
     reference_answer_id: int | None = None
     parent_message_id: str | None = None
 

@@ -22,7 +22,9 @@ def upsert_user_endpoint(user_in: UserCreate, db: Session = Depends(get_db)):
 
 @user_router.get("", response_model=list[UserRead])
 def read_all_users_endpoint(
-    skip: int = 0, limit: int = 100, db: Session = Depends(get_db)
+    skip: int = Query(0, ge=0, description="Offset"),
+    limit: int = Query(100, ge=1, le=100, description="Limit"),
+    db: Session = Depends(get_db),
 ):
     return user_service.get_users(db, skip=skip, limit=limit)
 
