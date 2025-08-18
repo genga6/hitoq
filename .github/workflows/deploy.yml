@@ -61,7 +61,7 @@ jobs:
         run: terraform apply -auto-approve # -auto-approve is for CI/CD, be careful with this in production
         env:
           # Render API Key for deployment
-          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+          TF_VAR_render_api_key: ${{ secrets.RENDER_API_KEY }}
 
           # Pass image tags to Terraform if needed
           TF_VAR_frontend_image: ghcr.io/${{ github.repository_owner }}/hitoq-frontend:${{ github.sha }}
