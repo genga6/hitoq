@@ -1,10 +1,12 @@
 import uuid
 
+from pydantic import Field
+
 from src.schema.common import OrmBaseModel
 
 
 class ProfileItemBase(OrmBaseModel):
-    label: str
+    label: str = Field(..., min_length=1, description="Label cannot be empty")
     value: str
     display_order: int
 
@@ -15,7 +17,6 @@ class ProfileItemCreate(ProfileItemBase):
 
 class ProfileItemUpdate(OrmBaseModel):
     value: str | None = None
-    display_order: int | None = None
 
 
 class ProfileItemRead(ProfileItemBase):

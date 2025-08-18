@@ -46,5 +46,9 @@
     "onlyBuiltDependencies": [
       "esbuild"
     ]
+  },
+  "dependencies": {
+    "@sentry/sveltekit": "^10.4.0",
+    "@sentry/vite-plugin": "^4.1.0"
   }
 }

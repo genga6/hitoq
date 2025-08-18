@@ -3,13 +3,13 @@
     currentFilter, 
     onChange 
   } = $props<{
-    currentFilter: "activity" | "random" | "mixed";
-    onChange: (filter: "activity" | "random" | "mixed") => void;
+    currentFilter: "activity" | "random" | "recommend";
+    onChange: (filter: "activity" | "random" | "recommend") => void;
   }>();
 
   const filters = [
     {
-      key: "mixed" as const,
+      key: "recommend" as const,
       label: "おすすめ",
       description: "アクティブなユーザーとランダムなユーザーの組み合わせ",
       icon: "⭐"

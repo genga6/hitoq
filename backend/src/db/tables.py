@@ -1,6 +1,7 @@
 import enum
 import uuid
 from datetime import datetime
+from typing import ClassVar
 
 from sqlalchemy import Boolean, DateTime, ForeignKey, String
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
@@ -266,3 +267,15 @@ class Message(Base):
         cascade="all, delete-orphan",
         overlaps="parent_message",
     )
+
+    # 動的に追加される属性（サービス層で計算される）
+    # これらはデータベースに保存されず、実行時に動的に設定される
+    reply_count: ClassVar[int]
+    thread_depth: ClassVar[int]
+    thread_parent_id: ClassVar[str | None]
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.reply_count = 0
+        self.thread_depth = 0
+        self.thread_parent_id = None

@@ -22,7 +22,7 @@ def should_notify_user(
     if notification_level == NotificationLevelEnum.none:
         return False
     elif notification_level == NotificationLevelEnum.important:
-        return message_type in [MessageTypeEnum.question, MessageTypeEnum.request]
+        return message_type == MessageTypeEnum.comment
     else:
         return True
 
@@ -63,17 +63,16 @@ def get_messages_for_user(
 ) -> list[Message]:
     """Get messages received by a user, excluding messages from blocked users."""
     # Get blocked user IDs
-    blocked_user_ids = (
-        db.query(UserBlock.blocked_user_id)
-        .filter(UserBlock.blocker_user_id == user_id)
-        .subquery()
+    blocked_user_ids_subquery = db.query(UserBlock.blocked_user_id).filter(
+        UserBlock.blocker_user_id == user_id
     )
 
     return (
         db.query(Message)
         .options(joinedload(Message.from_user))
         .filter(
-            Message.to_user_id == user_id, ~Message.from_user_id.in_(blocked_user_ids)
+            Message.to_user_id == user_id,
+            ~Message.from_user_id.in_(blocked_user_ids_subquery),
         )
         .order_by(Message.created_at.desc())
         .offset(skip)
@@ -129,11 +128,7 @@ def get_notification_count(db: Session, user_id: str) -> int:
     )
 
     if user.notification_level == NotificationLevelEnum.important:
-        query = query.filter(
-            Message.message_type.in_(
-                [MessageTypeEnum.question, MessageTypeEnum.request]
-            )
-        )
+        query = query.filter(Message.message_type == MessageTypeEnum.comment)
 
     return query.count()
 
@@ -156,11 +151,7 @@ def get_notifications_for_user(
     )
 
     if user.notification_level == NotificationLevelEnum.important:
-        query = query.filter(
-            Message.message_type.in_(
-                [MessageTypeEnum.question, MessageTypeEnum.request]
-            )
-        )
+        query = query.filter(Message.message_type == MessageTypeEnum.comment)
 
     notifications = (
         query.order_by(Message.created_at.desc()).offset(skip).limit(limit).all()

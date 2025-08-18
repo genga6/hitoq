@@ -5,11 +5,12 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from sentry_sdk.integrations.fastapi import FastApiIntegration
 from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
-from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
 from starlette.middleware.sessions import SessionMiddleware
 
+from src.config.limiter import limiter
 from src.config.logging_config import configure_logging, get_logger
 from src.middleware.logging import LoggingMiddleware
 from src.router import auth
@@ -39,7 +40,6 @@ if sentry_dsn:
 else:
     logger.warning("Sentry DSN not provided, error monitoring disabled")
 
-limiter = Limiter(key_func=get_remote_address)
 
 app = FastAPI(
     title="hitoQ API",
