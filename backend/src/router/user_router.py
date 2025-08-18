@@ -22,7 +22,9 @@ def upsert_user_endpoint(user_in: UserCreate, db: Session = Depends(get_db)):
 
 @user_router.get("", response_model=list[UserRead])
 def read_all_users_endpoint(
-    skip: int = 0, limit: int = 100, db: Session = Depends(get_db)
+    skip: int = Query(0, ge=0, description="Offset"),
+    limit: int = Query(100, ge=1, le=100, description="Limit"),
+    db: Session = Depends(get_db),
 ):
     return user_service.get_users(db, skip=skip, limit=limit)
 
@@ -30,8 +32,8 @@ def read_all_users_endpoint(
 # 特定のパスを先に配置（動的パスより前）
 @user_router.get("/discover", response_model=list[UserRead])
 def discover_users_endpoint(
-    type: Literal["activity", "random", "mixed"] = Query(
-        "mixed", description="Discovery type"
+    type: Literal["activity", "random", "recommend"] = Query(
+        "recommend", description="Discovery type"
     ),
     limit: int = Query(10, ge=1, le=50, description="Maximum number of results"),
     offset: int = Query(0, ge=0, description="Offset for pagination"),
@@ -43,7 +45,7 @@ def discover_users_endpoint(
 
     - activity: アクティブなユーザー（新規登録、最近の回答・メッセージ・ログイン）
     - random: ランダムなユーザー
-    - mixed: アクティブ + ランダムの混合（デフォルト）
+    - recommend: アクティブ + ランダムの混合（デフォルト）
     """
     current_user_id = current_user.user_id if current_user else None
     users = user_service.discover_users(
