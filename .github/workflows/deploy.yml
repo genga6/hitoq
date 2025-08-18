@@ -62,7 +62,7 @@ jobs:
         env:
           # Render API Key for deployment
           TF_VAR_render_api_key: ${{ secrets.RENDER_API_KEY }}
-          TF_VAR_render_owner_id: ${{ vars.RENDER_OWNER_ID }}
+          TF_VAR_render_owner_id: ${{ secrets.RENDER_OWNER_ID }}
 
           # Pass image tags to Terraform if needed
           TF_VAR_frontend_image: ghcr.io/${{ github.repository_owner }}/hitoq-frontend:${{ github.sha }}
