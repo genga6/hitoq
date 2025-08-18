@@ -1,7 +1,7 @@
 # PostgreSQL Database Service
 resource "render_postgres" "hitoq_db" {
   name         = "hitoq-database"
-  plan         = "standard" # or "free" for development
+  plan         = "starter"  # Updated: 'standard' is deprecated, use 'starter' or 'pro'
   region       = "oregon"   # or preferred region
   database_name = "hitoq"
   database_user = "hitoq"

@@ -16,7 +16,7 @@ variable "render_api_key" {
 variable "github_repo_url" {
   description = "GitHub repository URL"
   type        = string
-  default     = "https://github.com/your-username/hitoq"
+  default     = "https://github.com/genga6/hitoq"
 }
 
 variable "environment" {
