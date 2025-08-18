@@ -30,22 +30,37 @@ resource "render_web_service" "hitoq_backend" {
   
   # Environment variables
   environment_variables = {
-    DATABASE_URL        = render_postgres.hitoq_db.database_url
-    DB_HOST            = render_postgres.hitoq_db.host
-    DB_PORT            = render_postgres.hitoq_db.port
-    DB_NAME            = render_postgres.hitoq_db.database_name
-    DB_USER            = render_postgres.hitoq_db.database_user
-    DB_PASSWORD        = render_postgres.hitoq_db.database_password
+    # Database configuration (using external DB variables if provided, otherwise Render PostgreSQL)
+    DATABASE_URL        = var.db_host != "" ? "postgresql://${var.db_user}:${var.db_password}@${var.db_host}:${var.db_port}/${var.db_name}" : render_postgres.hitoq_db.database_url
+    DB_HOST            = var.db_host != "" ? var.db_host : render_postgres.hitoq_db.host
+    DB_PORT            = var.db_host != "" ? var.db_port : render_postgres.hitoq_db.port
+    DB_NAME            = var.db_host != "" ? var.db_name : render_postgres.hitoq_db.database_name
+    DB_USER            = var.db_host != "" ? var.db_user : render_postgres.hitoq_db.database_user
+    DB_PASSWORD        = var.db_host != "" ? var.db_password : render_postgres.hitoq_db.database_password
+    
+    # Application security
     SECRET_KEY         = var.secret_key
     SESSION_SECRET_KEY = var.session_secret_key
+    
+    # Twitter OAuth configuration
     TWITTER_CLIENT_ID  = var.twitter_client_id
     TWITTER_CLIENT_SECRET = var.twitter_client_secret
-    TWITTER_REDIRECT_URI = "https://api.hitoq.net/auth/callback/twitter"
-    FRONTEND_URLS      = "https://hitoq.net"
-    COOKIE_SECURE      = "true"
+    TWITTER_REDIRECT_URI = var.twitter_redirect_uri
+    
+    # Frontend configuration
+    FRONTEND_URLS      = var.frontend_urls
+    
+    # Environment settings
+    COOKIE_SECURE      = var.cookie_secure
     ENVIRONMENT        = var.environment
+    LOG_LEVEL          = var.log_level
+    
+    # Monitoring and logging
     SENTRY_DSN         = var.sentry_dsn
-    LOG_LEVEL          = "INFO"
+    
+    # CORS settings
+    CORS_ALLOW_METHODS = var.cors_allow_methods
+    CORS_ALLOW_HEADERS = var.cors_allow_headers
   }
   
   # Disk storage (if needed)
@@ -80,7 +95,8 @@ resource "render_web_service" "hitoq_frontend" {
   # Environment variables for build time
   environment_variables = {
     PUBLIC_SENTRY_DSN    = var.public_sentry_dsn
-    PUBLIC_ENVIRONMENT   = var.environment
+    PUBLIC_ENVIRONMENT   = var.public_environment
+    PUBLIC_API_BASE_URL  = var.public_api_base_url
   }
 }
 
