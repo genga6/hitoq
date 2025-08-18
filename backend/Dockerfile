@@ -16,7 +16,7 @@ COPY pyproject.toml uv.lock ./
 
 # Install uv and dependencies in single RUN command
 RUN curl -LsSf https://astral.sh/uv/0.7.2/install.sh | sh && \
-    export PATH="/root/.cargo/bin:$PATH" && \
+    export PATH="/root/.local/bin:$PATH" && \
     uv sync --frozen --no-dev
 
 # Production stage
