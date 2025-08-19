@@ -1,4 +1,11 @@
 terraform {
+  cloud {
+    organization = "hitoq"
+    workspaces {
+      name = "hitoq-production"
+    }
+  }
+
   required_providers {
     render = {
       source  = "render-oss/render"
