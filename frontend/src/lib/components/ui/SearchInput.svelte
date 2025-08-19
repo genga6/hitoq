@@ -93,7 +93,7 @@
   {#if showCandidates}
     <div
       bind:this={candidatesElement}
-      class="ring-opacity-5 absolute top-full right-0 left-0 z-50 mt-2 rounded-md bg-white shadow-lg ring-1 ring-black dark:bg-gray-800 dark:ring-gray-600"
+      class="theme-bg-surface absolute top-full right-0 left-0 z-50 mt-2 rounded-md shadow-lg ring-1 ring-opacity-5 ring-black dark:ring-gray-600"
       class:max-w-sm={isMobile}
     >
       {#if candidates.length > 0}
@@ -101,7 +101,7 @@
           {#each candidates as candidate (candidate.userId)}
             <button
               onclick={() => onSelectCandidate(candidate)}
-              class="flex w-full items-center px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
+              class="theme-search-result"
             >
               <img
                 src={candidate.iconUrl || "/default-avatar.svg"}
@@ -109,14 +109,14 @@
                 class="mr-3 h-8 w-8 rounded-full"
               />
               <div class="flex-1">
-                <div class="font-medium">{candidate.displayName}</div>
-                <div class="text-xs text-gray-500">@{candidate.userName}</div>
+                <div class="theme-search-result-name">{candidate.displayName}</div>
+                <div class="theme-search-result-username">@{candidate.userName}</div>
               </div>
             </button>
           {/each}
         </div>
       {:else}
-        <div class="px-4 py-3 text-center text-sm text-gray-500 dark:text-gray-400">
+        <div class="theme-text-subtle px-4 py-3 text-center text-sm">
           ユーザーが見つかりませんでした
         </div>
       {/if}

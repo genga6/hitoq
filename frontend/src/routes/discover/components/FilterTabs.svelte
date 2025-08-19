@@ -35,10 +35,10 @@
       {#each filters as filter (filter.key)}
         <button
           onclick={() => onChange(filter.key)}
-          class="relative border-b-2 pb-3 pt-2 text-sm font-medium transition-colors duration-200 {
+          class="relative border-b-2 pb-3 pt-2 px-2 rounded-t-md text-sm font-medium transition-all {
             currentFilter === filter.key
-              ? 'border-orange-500 text-orange-600'
-              : 'border-transparent theme-text-muted hover:text-orange-500'
+              ? 'theme-tab-active'
+              : 'border-transparent theme-tab-inactive hover:bg-gray-100 dark:hover:bg-gray-800'
           }"
           aria-pressed={currentFilter === filter.key}
         >

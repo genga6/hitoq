@@ -89,7 +89,7 @@
   };
 </script>
 
-<header class="theme-bg-surface relative z-50 w-full py-4 shadow-md md:py-6 lg:py-8">
+<header class="theme-bg-surface relative z-50 w-full py-4 border-b border-gray-200 dark:border-gray-700 md:py-6 lg:py-8">
   <div class="container-responsive max-w-4xl">
     <!-- Desktop Layout -->
     <div class="hidden sm:block">

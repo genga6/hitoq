@@ -27,16 +27,16 @@
   }
 </script>
 
-<div class="mt-3 rounded-md bg-gray-50 p-3">
+<div class="mt-3 rounded-md p-3 bg-transparent">
   <textarea
     bind:value={content}
     {placeholder}
-    class="w-full resize-none rounded-md border border-gray-300 p-2 text-sm"
+    class="theme-textarea w-full resize-none rounded-md p-2 text-sm focus:bg-transparent dark:focus:bg-transparent"
     rows="2"
   ></textarea>
   <div class="mt-2 flex items-center justify-end gap-2">
     {#if onCancel}
-      <button onclick={onCancel} class="px-3 py-1 text-xs text-gray-600 hover:text-gray-800">
+      <button onclick={onCancel} class="theme-button-ghost">
         キャンセル
       </button>
     {/if}

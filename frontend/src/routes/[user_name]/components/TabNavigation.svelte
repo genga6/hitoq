@@ -15,12 +15,12 @@
       ? [
           {
             id: `/${userName}/answer-questions`,
-            label: "質問に答える",
+            label: "回答する",
             href: `/${userName}/answer-questions`
           }
         ]
       : []),
-    { id: `/${userName}/qna`, label: "Q&A", href: `/${userName}/qna` },
+    { id: `/${userName}/qna`, label: "回答一覧", href: `/${userName}/qna` },
     { id: `/${userName}/talk`, label: "トーク", href: `/${userName}/talk` }
   ]);
 </script>

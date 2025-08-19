@@ -77,26 +77,26 @@
   }
 </script>
 
-<div class="border-b border-gray-200 p-6">
-  <h3 class="mb-4 text-lg font-semibold text-gray-800">
+<div class="theme-bg-surface theme-border border-b p-6">
+  <h3 class="theme-text-primary mb-4 text-lg font-semibold">
     @{toUserName} さんに質問を送る
   </h3>
 
   <form onsubmit={handleSubmit} class="space-y-4">
     <div>
-      <label for="content" class="mb-2 block text-sm font-medium text-gray-700"> 質問内容 </label>
+      <label for="content" class="theme-text-secondary mb-2 block text-sm font-medium"> 内容 </label>
       <textarea
         id="content"
         bind:value={content}
-        placeholder="質問内容を入力してください..."
+        placeholder="内容を入力してください..."
         rows="4"
         required
-        class="w-full resize-none rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-orange-500 focus:ring-1 focus:ring-orange-500 focus:outline-none"
+        class="theme-textarea w-full resize-none rounded-md px-3 py-2 text-sm focus:border-orange-500 focus:ring-1 focus:ring-orange-500 focus:outline-none"
       ></textarea>
     </div>
 
     {#if referenceQuestion}
-      <div class="rounded-md border border-orange-200 bg-orange-50 p-3">
+      <div class="rounded-md border border-orange-200 bg-orange-50 p-3 dark:border-orange-700 dark:bg-orange-900/50">
         <div class="flex items-start space-x-2">
           <svg
             class="mt-0.5 h-5 w-5 text-orange-500"
@@ -112,16 +112,16 @@
             />
           </svg>
           <div>
-            <p class="text-sm font-medium text-orange-800">参照している質問:</p>
-            <p class="mt-1 text-sm text-orange-700">{referenceQuestion}</p>
+            <p class="text-sm font-medium text-orange-800 dark:text-orange-200">参照している質問:</p>
+            <p class="mt-1 text-sm text-orange-700 dark:text-orange-300">{referenceQuestion}</p>
           </div>
         </div>
       </div>
     {/if}
 
     {#if error}
-      <div class="rounded-md bg-red-50 p-3">
-        <p class="text-sm text-red-700">{error}</p>
+      <div class="rounded-md bg-red-50 p-3 dark:bg-red-900/50">
+        <p class="theme-text-error text-sm">{error}</p>
       </div>
     {/if}
 
@@ -129,7 +129,7 @@
       <button
         type="button"
         onclick={() => onCancel && onCancel()}
-        class="rounded-md bg-gray-200 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-300 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 focus:outline-none"
+        class="btn-secondary rounded-md px-4 py-2 text-sm font-medium focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 focus:outline-none"
       >
         キャンセル
       </button>
@@ -141,7 +141,7 @@
           ? 'cursor-not-allowed bg-gray-400 text-gray-600'
           : 'bg-orange-400 text-white hover:bg-orange-500'}"
       >
-        {isSubmitting ? "送信中..." : "質問を送信"}
+        {isSubmitting ? "送信中..." : "メッセージを送信"}
       </button>
     </div>
   </form>
