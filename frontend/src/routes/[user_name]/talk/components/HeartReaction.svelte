@@ -95,6 +95,11 @@
     <div
       class="card relative mx-4 w-full max-w-sm"
       onclick={(e) => e.stopPropagation()}
+      onkeydown={(e) => {
+        if (e.key === 'Escape') {
+          closeLikesModal();
+        }
+      }}
     >
       <div class="card-header flex items-center justify-between">
         <h3 class="theme-text-primary text-lg font-semibold">いいねした人</h3>

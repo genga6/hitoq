@@ -1,4 +1,11 @@
 terraform {
+  cloud {
+    organization = "hitoq"
+    workspaces {
+      name = "hitoq-production"
+    }
+  }
+
   required_providers {
     render = {
       source  = "render-oss/render"
@@ -16,7 +23,7 @@ variable "render_api_key" {
 variable "github_repo_url" {
   description = "GitHub repository URL"
   type        = string
-  default     = "https://github.com/your-username/hitoq"
+  default     = "https://github.com/genga6/hitoq"
 }
 
 variable "environment" {
@@ -68,6 +75,100 @@ variable "public_sentry_dsn" {
   sensitive   = true
 }
 
+# Additional database variables
+variable "db_host" {
+  description = "Database host"
+  type        = string
+}
+
+variable "db_user" {
+  description = "Database user"
+  type        = string
+}
+
+variable "db_name" {
+  description = "Database name"
+  type        = string
+  default     = "postgres"
+}
+
+variable "db_port" {
+  description = "Database port"
+  type        = string
+  default     = "6543"
+}
+
+# Frontend configuration
+variable "frontend_urls" {
+  description = "Frontend URLs"
+  type        = string
+  default     = "https://hitoq.net"
+}
+
+variable "public_api_base_url" {
+  description = "Public API base URL"
+  type        = string
+  default     = "https://api.hitoq.net"
+}
+
+variable "twitter_redirect_uri" {
+  description = "Twitter OAuth redirect URI"
+  type        = string
+  default     = "https://api.hitoq.net/auth/callback/twitter"
+}
+
+# Environment settings
+variable "cookie_secure" {
+  description = "Cookie secure setting"
+  type        = string
+  default     = "true"
+}
+
+variable "log_level" {
+  description = "Log level"
+  type        = string
+  default     = "INFO"
+}
+
+variable "public_environment" {
+  description = "Public environment name"
+  type        = string
+  default     = "production"
+}
+
+# CORS settings
+variable "cors_allow_methods" {
+  description = "CORS allowed methods"
+  type        = string
+  default     = "GET,POST,PUT,DELETE,PATCH"
+}
+
+variable "cors_allow_headers" {
+  description = "CORS allowed headers"
+  type        = string
+  default     = "Content-Type,Authorization,Accept"
+}
+
+# Docker image variables
+variable "frontend_image" {
+  description = "Frontend Docker image"
+  type        = string
+  default     = ""
+}
+
+variable "backend_image" {
+  description = "Backend Docker image"
+  type        = string
+  default     = ""
+}
+
+# Render owner ID
+variable "render_owner_id" {
+  description = "Render Owner ID (username)"
+  type        = string
+}
+
 provider "render" {
-  api_key = var.render_api_key
+  api_key  = var.render_api_key
+  owner_id = var.render_owner_id
 }
