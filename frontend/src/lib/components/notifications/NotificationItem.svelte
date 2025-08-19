@@ -39,10 +39,26 @@
       await onMarkAsRead(notification.messageId);
     }
 
-    // Navigate to the message
-    const targetUrl = notification.parentMessageId
-      ? `/${notification.toUser?.userName}/messages`
-      : `/${notification.fromUser?.userName}/messages`;
+    let targetUrl = "/";
+
+    // fromUserがいない場合は何もしない
+    if (!notification.fromUser?.userName) {
+      return;
+    }
+
+    // いいねの場合は、いいねした人のプロフィールへ
+    if (notification.messageType === 'like') {
+      targetUrl = `/${notification.fromUser.userName}`;
+    }
+    // コメントやリプライの場合は、自分のTalkページへ
+    else if (notification.messageType === 'comment') {
+      // toUserは自分自身
+      targetUrl = `/${notification.toUser?.userName}/talk`;
+    }
+    // それ以外
+    else {
+      targetUrl = `/${notification.fromUser.userName}`;
+    }
 
     window.location.href = targetUrl;
   };

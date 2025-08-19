@@ -54,7 +54,7 @@
     <div class="mb-4">
       <div class="flex items-center gap-2">
         <h2 class="theme-text-primary text-lg font-semibold">回答済みQ&A</h2>
-        <span class="rounded-full bg-orange-100 px-2.5 py-1 text-xs font-medium text-orange-700">
+        <span class="theme-badge-orange">
           {answeredQAPairs.length}件
         </span>
         <!-- 他ユーザーのプロフィールでログイン時にヒントを表示 -->
@@ -83,7 +83,7 @@
   {#if answeredQAPairs && answeredQAPairs.length > 0}
     <div class="space-y-4">
       {#each answeredQAPairs as pair (`answered-${pair.groupId}-${pair.question.questionId}-${pair.questionIndex}`)}
-        <div class="theme-border theme-visitor-hover border-b p-4">
+        <div class="theme-border border-b p-4">
           <!-- Q&Aアイテム -->
           <QAItem
             question={pair.question.text}

@@ -52,15 +52,15 @@
 
   <div class="space-y-4">
     <div>
-      <h3 class="text-sm font-medium text-gray-700 md:text-base dark:text-gray-300">通知レベル</h3>
-      <p class="mt-1 text-xs text-gray-500 md:text-sm dark:text-gray-400">
+      <h3 class="theme-text-secondary text-sm font-medium md:text-base">通知レベル</h3>
+      <p class="theme-text-subtle mt-1 text-xs md:text-sm">
         受け取る通知の種類を選択できます。
       </p>
     </div>
 
     {#if loadingNotification}
       <div class="flex items-center justify-center py-4">
-        <div class="h-5 w-5 animate-spin rounded-full border-b-2 border-gray-400"></div>
+        <div class="h-5 w-5 animate-spin rounded-full border-b-2 border-gray-400 dark:border-gray-500"></div>
       </div>
     {:else}
       <div class="space-y-3">
@@ -73,13 +73,13 @@
               checked={notificationLevel === option.value}
               onchange={() => handleNotificationLevelChange(option.value)}
               disabled={savingNotification}
-              class="h-4 w-4 border-gray-300 text-orange-600 focus:ring-orange-500"
+              class="h-4 w-4 border-gray-300 text-orange-600 focus:ring-orange-500 dark:border-gray-600"
             />
             <div class="ml-3">
-              <span class="text-sm font-medium text-gray-700 md:text-base dark:text-gray-300">
+              <span class="theme-text-secondary text-sm font-medium md:text-base">
                 {option.title}
               </span>
-              <p class="text-xs text-gray-500 md:text-sm dark:text-gray-400">
+              <p class="theme-text-subtle text-xs md:text-sm">
                 {option.description}
               </p>
             </div>
@@ -87,12 +87,6 @@
         {/each}
       </div>
 
-      {#if savingNotification}
-        <div class="flex items-center gap-2 text-sm text-gray-600">
-          <div class="h-4 w-4 animate-spin rounded-full border-b-2 border-orange-400"></div>
-          設定を保存中...
-        </div>
-      {/if}
     {/if}
   </div>
 </div>

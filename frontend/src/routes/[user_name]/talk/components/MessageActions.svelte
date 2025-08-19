@@ -22,8 +22,8 @@
   }: Props = $props();
 </script>
 
-<div class="mt-2 flex items-center gap-2 text-xs">
-  <button onclick={onReplyClick} class="text-gray-500 transition-colors hover:text-orange-600">
+<div class="mt-2 flex items-center gap-2">
+  <button onclick={onReplyClick} class="theme-button-action">
     💬 返信
   </button>
 
@@ -36,8 +36,8 @@
   />
 
   {#if replyCount && replyCount > 0 && onThreadClick}
-    <button onclick={onThreadClick} class="text-gray-500 transition-colors hover:text-orange-600">
-      📄 スレッド ({replyCount}件)
+    <button onclick={onThreadClick} class="theme-button-action">
+      📄 スレッド（{replyCount - 1}件）
     </button>
   {/if}
 </div>

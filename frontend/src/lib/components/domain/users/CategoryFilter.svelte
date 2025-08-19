@@ -66,9 +66,7 @@
             </svg>
             <span class="theme-text-secondary text-sm font-medium">カテゴリで絞り込み</span>
             {#if selectedCategories.length > 0}
-              <span
-                class="rounded-full bg-orange-100 px-2 py-0.5 text-xs font-medium text-orange-700"
-              >
+              <span class="theme-badge-orange-small">
                 {selectedCategories.length}個選択中
               </span>
             {/if}
@@ -105,21 +103,21 @@
                     class="group theme-bg-surface relative overflow-hidden rounded-lg border border-gray-300 p-3 text-left transition-all duration-200 hover:border-orange-300 hover:shadow-sm dark:border-gray-600 {selectedCategories.includes(
                       categoryId
                     )
-                      ? 'border-orange-400 bg-orange-50 ring-2 ring-orange-200'
+                      ? 'border-orange-400 bg-orange-50 ring-2 ring-orange-200 dark:border-orange-500 dark:bg-orange-900/30 dark:ring-orange-800'
                       : 'theme-visitor-hover'}"
                   >
                     <div class="flex items-center justify-between">
                       <span
                         class="text-sm font-medium {selectedCategories.includes(categoryId)
-                          ? 'text-orange-700'
+                          ? 'text-orange-700 dark:text-orange-300'
                           : 'theme-text-secondary group-hover:opacity-90'}"
                       >
                         {category.label}
                       </span>
                       {#if selectedCategories.includes(categoryId)}
-                        <div class="rounded-full bg-orange-100 p-1">
+                        <div class="rounded-full bg-orange-100 p-1 dark:bg-orange-800">
                           <svg
-                            class="h-3 w-3 text-orange-600"
+                            class="h-3 w-3 text-orange-700 dark:text-orange-200"
                             fill="none"
                             viewBox="0 0 24 24"
                             stroke="currentColor"

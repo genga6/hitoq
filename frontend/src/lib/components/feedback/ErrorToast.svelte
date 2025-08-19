@@ -7,22 +7,22 @@
   function getErrorColors(type: "error" | "warning" | "info") {
     switch (type) {
       case "error":
-        return "bg-red-50 border-red-200 text-red-800";
+        return "bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800 text-red-800 dark:text-red-200";
       case "warning":
-        return "bg-yellow-50 border-yellow-200 text-yellow-800";
+        return "bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800 text-yellow-800 dark:text-yellow-200";
       case "info":
-        return "bg-green-50 border-green-200 text-green-800";
+        return "bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800 text-green-800 dark:text-green-200";
     }
   }
 
   function getIconColors(type: "error" | "warning" | "info") {
     switch (type) {
       case "error":
-        return "text-red-400";
+        return "text-red-400 dark:text-red-300";
       case "warning":
-        return "text-yellow-400";
+        return "text-yellow-400 dark:text-yellow-300";
       case "info":
-        return "text-green-400";
+        return "text-green-400 dark:text-green-300";
     }
   }
 </script>
@@ -81,8 +81,11 @@
                     }}
                     class="rounded-md px-3 py-1.5 text-xs font-medium transition-opacity hover:opacity-75"
                     class:bg-red-100={error.type === "error"}
+                    class:dark:bg-red-800={error.type === "error"}
                     class:bg-yellow-100={error.type === "warning"}
+                    class:dark:bg-yellow-800={error.type === "warning"}
                     class:bg-green-100={error.type === "info"}
+                    class:dark:bg-green-800={error.type === "info"}
                   >
                     {error.action.label}
                   </button>
@@ -92,10 +95,13 @@
             <div class="ml-4 flex flex-shrink-0">
               <button
                 onclick={() => errorStore.removeError(error.id)}
-                class="inline-flex rounded-md transition-opacity hover:opacity-75 focus:ring-2 focus:ring-offset-2 focus:outline-none"
+                class="inline-flex rounded-md transition-opacity hover:opacity-75 focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-800 focus:outline-none"
                 class:text-red-400={error.type === "error"}
+                class:dark:text-red-300={error.type === "error"}
                 class:text-yellow-400={error.type === "warning"}
+                class:dark:text-yellow-300={error.type === "warning"}
                 class:text-green-400={error.type === "info"}
+                class:dark:text-green-300={error.type === "info"}
                 class:focus:ring-red-500={error.type === "error"}
                 class:focus:ring-yellow-500={error.type === "warning"}
                 class:focus:ring-green-500={error.type === "info"}

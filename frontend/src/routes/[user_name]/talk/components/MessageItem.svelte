@@ -209,7 +209,7 @@
 </script>
 
 <div
-  class="theme-border theme-visitor-hover border-b p-4 mx-2
+  class="theme-border border-b p-3 mx-1 sm:p-4 sm:mx-2
         {shouldShowAsUnread ? 'bg-orange-50 dark:bg-orange-900/20' : ''}"
   role="button"
   tabindex="0"
@@ -237,6 +237,7 @@
   <MessageContent
     {message}
     {currentUser}
+    isOwner={isProfileOwner}
     {isEditingOrDeleting}
     onDelete={handleDelete}
   />
@@ -279,11 +280,7 @@
       {currentUser}
       onClose={() => (showThread = false)}
       onHeartToggle={handleHeartToggle}
-      onEdit={(messageId, content) => {
-        updateMessageContent(messageId, content);
-        loadThread();
-        onMessageUpdate?.();
-      }}
+      isOwner={isProfileOwner}
       onDelete={handleDelete}
       onReply={handleThreadReply}
       {isEditingOrDeleting}

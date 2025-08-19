@@ -73,7 +73,7 @@
 </script>
 
 <div 
-  class="group relative theme-bg-surface rounded-2xl p-6 theme-border theme-visitor-hover transition-all duration-300 {isOwner && answer ? 'cursor-pointer' : ''}"
+  class="group relative theme-bg-surface rounded-2xl p-6 theme-border transition-all duration-300 {isOwner && answer ? 'cursor-pointer theme-visitor-hover' : ''}"
   onclick={(e) => {
     // インタラクションボタンのクリックを除外
     if (e.target instanceof Element && e.target.closest('.interaction-buttons')) {

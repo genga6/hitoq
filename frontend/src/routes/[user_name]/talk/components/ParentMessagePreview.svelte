@@ -9,7 +9,7 @@
 </script>
 
 <!-- 親メッセージの表示（リプライの場合） -->
-<div class="mt-2 rounded-r-lg border-l-2 border-gray-200 bg-gray-50 py-1 pl-3">
+<div class="mt-2 rounded-r-lg border-l-2 border-gray-200 bg-gray-50 py-1 pl-3 dark:border-gray-700 dark:bg-gray-800">
   <div class="mb-1 flex items-center gap-2">
     <svg class="theme-text-muted h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path

@@ -77,11 +77,11 @@
   <meta name="description" content="新しいユーザーを発見して、質問や会話を楽しみましょう。" />
 </svelte:head>
 
-<div class="mx-auto max-w-4xl px-4 py-6">
+<div class="container-responsive max-w-4xl py-4 sm:py-6 bg-white dark:bg-gray-900">
   <!-- ヘッダー -->
-  <div class="mb-8">
-    <h1 class="theme-text-primary mb-2 text-3xl font-bold">ユーザーを発見</h1>
-    <p class="theme-text-muted text-base">
+  <div class="mb-6 sm:mb-8">
+    <h1 class="theme-text-primary mb-2 text-2xl font-bold sm:text-3xl">ユーザーを発見</h1>
+    <p class="theme-text-muted text-sm sm:text-base">
       アクティブなユーザーや新しいユーザーを見つけて、質問や会話を始めてみましょう。
     </p>
   </div>
@@ -91,30 +91,31 @@
 
   <!-- ランダム用シャッフルボタン -->
   {#if currentFilter === "random"}
-    <div class="mb-6 flex justify-end">
+    <div class="mb-4 flex justify-end sm:mb-6">
       <button
         onclick={handleShuffle}
         disabled={loading}
-        class="flex items-center gap-2 rounded-lg bg-orange-100 px-4 py-2 text-sm font-medium text-orange-700 transition-colors hover:bg-orange-200 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-orange-900/20 dark:text-orange-300 dark:hover:bg-orange-900/30"
+        class="flex items-center gap-1.5 rounded-lg bg-orange-100 px-3 py-1.5 text-xs font-medium text-orange-700 transition-colors hover:bg-orange-200 disabled:cursor-not-allowed disabled:opacity-50 sm:gap-2 sm:px-4 sm:py-2 sm:text-sm dark:bg-orange-900/20 dark:text-orange-300 dark:hover:bg-orange-900/30"
       >
-        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg class="h-3 w-3 sm:h-4 sm:w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
         </svg>
-        {loading ? "シャッフル中..." : "再シャッフル"}
+        <span class="hidden sm:inline">{loading ? "シャッフル中..." : "再シャッフル"}</span>
+        <span class="sm:hidden">{loading ? "中..." : "シャッフル"}</span>
       </button>
     </div>
   {/if}
 
   <!-- エラー表示 -->
   {#if error}
-    <div class="mb-6 rounded-lg bg-red-50 p-4 text-red-700 dark:bg-red-900/20 dark:text-red-300">
+    <div class="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-700 sm:mb-6 sm:p-4 sm:text-base dark:bg-red-900/20 dark:text-red-300">
       {error}
     </div>
   {/if}
 
   <!-- ユーザーグリッド -->
   {#if users.length > 0}
-    <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+    <div class="grid gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
       {#each users as user (user.userId)}
         <UserCard {user} />
       {/each}
@@ -122,38 +123,38 @@
 
     <!-- もっと読み込むボタン -->
     {#if hasMore}
-      <div class="mt-8 text-center">
+      <div class="mt-6 text-center sm:mt-8">
         <button
           onclick={handleLoadMore}
           disabled={loading}
-          class="rounded-lg bg-orange-500 px-6 py-3 text-white transition-colors hover:bg-orange-600 disabled:cursor-not-allowed disabled:opacity-50"
+          class="rounded-lg bg-orange-500 px-4 py-2 text-sm text-white transition-colors hover:bg-orange-600 disabled:cursor-not-allowed disabled:opacity-50 sm:px-6 sm:py-3 sm:text-base"
         >
           {loading ? "読み込み中..." : "さらに表示"}
         </button>
       </div>
     {:else if users.length > 0}
-      <div class="mt-8 text-center">
-        <p class="theme-text-muted">すべてのユーザーを表示しました</p>
+      <div class="mt-6 text-center sm:mt-8">
+        <p class="theme-text-muted text-sm sm:text-base">すべてのユーザーを表示しました</p>
       </div>
     {/if}
   {:else if loading}
     <!-- ローディング状態 -->
-    <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+    <div class="grid gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
       <!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
       {#each Array(6) as _, i (i)}
-        <div class="theme-bg-surface animate-pulse rounded-xl p-6">
-          <div class="mb-4 h-16 w-16 rounded-full bg-gray-300"></div>
-          <div class="mb-2 h-4 w-3/4 rounded bg-gray-300"></div>
-          <div class="h-3 w-full rounded bg-gray-300"></div>
+        <div class="theme-bg-surface animate-pulse rounded-xl p-4 sm:p-6">
+          <div class="mb-3 h-12 w-12 rounded-full bg-gray-300 sm:mb-4 sm:h-16 sm:w-16"></div>
+          <div class="mb-2 h-3 w-3/4 rounded bg-gray-300 sm:h-4"></div>
+          <div class="h-2 w-full rounded bg-gray-300 sm:h-3"></div>
         </div>
       {/each}
     </div>
   {:else}
     <!-- 空の状態 -->
-    <div class="py-16 text-center">
-      <div class="theme-text-muted mb-4 text-6xl">👥</div>
-      <h3 class="theme-text-primary mb-2 text-xl font-semibold">ユーザーが見つかりませんでした</h3>
-      <p class="theme-text-muted">
+    <div class="py-12 text-center sm:py-16">
+      <div class="theme-text-muted mb-3 text-4xl sm:mb-4 sm:text-6xl">👥</div>
+      <h3 class="theme-text-primary mb-2 text-lg font-semibold sm:text-xl">ユーザーが見つかりませんでした</h3>
+      <p class="theme-text-muted text-sm sm:text-base">
         しばらく時間をおいて再度お試しください。
       </p>
     </div>

@@ -45,16 +45,16 @@
   <div class="space-y-4">
     <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <div class="flex-1">
-        <h3 class="text-sm font-medium text-gray-700 md:text-base dark:text-gray-300">
+        <h3 class="theme-text-secondary text-sm font-medium md:text-base">
           足跡の公開
         </h3>
-        <p class="mt-1 text-xs text-gray-500 md:text-sm dark:text-gray-400">
+        <p class="theme-text-subtle mt-1 text-xs md:text-sm">
           オンにすると、あなたのページを訪問したユーザーの一覧を他のユーザーが見ることができます。
         </p>
       </div>
       <div class="flex items-center">
         {#if loadingVisibility}
-          <div class="h-5 w-5 animate-spin rounded-full border-b-2 border-gray-400"></div>
+          <div class="h-5 w-5 animate-spin rounded-full border-b-2 border-gray-400 dark:border-gray-500"></div>
         {:else}
           <label class="relative inline-flex cursor-pointer items-center">
             <input
@@ -65,7 +65,7 @@
               class="peer sr-only"
             />
             <div
-              class="peer h-6 w-11 rounded-full bg-gray-200 peer-checked:bg-blue-600 peer-focus:ring-4 peer-focus:ring-blue-300 peer-focus:outline-none after:absolute after:top-[2px] after:left-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:after:translate-x-full peer-checked:after:border-white {savingVisibility
+              class="peer h-6 w-11 rounded-full bg-gray-200 peer-checked:bg-orange-500 peer-focus:ring-4 peer-focus:ring-orange-300 peer-focus:outline-none after:absolute after:top-[2px] after:left-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:after:translate-x-full peer-checked:after:border-white dark:bg-gray-700 dark:peer-checked:bg-orange-400 dark:after:border-gray-600 {savingVisibility
                 ? 'opacity-50'
                 : ''}"
             ></div>
