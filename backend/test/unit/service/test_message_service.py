@@ -392,7 +392,7 @@ class TestMessageService:
         )
 
         assert len(result) == 2
-        user_ids = [like["user_id"] for like in result]
+        user_ids = [like["userId"] for like in result]
         assert "liker1" in user_ids
         assert "liker2" in user_ids
 
