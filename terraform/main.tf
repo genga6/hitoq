@@ -149,18 +149,6 @@ variable "cors_allow_headers" {
   default     = "Content-Type,Authorization,Accept"
 }
 
-# Docker image variables
-variable "frontend_image" {
-  description = "Frontend Docker image"
-  type        = string
-  default     = ""
-}
-
-variable "backend_image" {
-  description = "Backend Docker image"
-  type        = string
-  default     = ""
-}
 
 # Render owner ID
 variable "render_owner_id" {

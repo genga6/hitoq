@@ -12,6 +12,7 @@ resource "render_web_service" "hitoq_backend" {
         paths = ["backend/**"]
       }
       dockerfile_path = "backend/Dockerfile"
+      docker_context  = "backend"
     }
   }
 
@@ -100,6 +101,7 @@ resource "render_web_service" "hitoq_frontend" {
         paths = ["frontend/**"]
       }
       dockerfile_path = "frontend/Dockerfile"
+      docker_context  = "frontend"
     }
   }
 
