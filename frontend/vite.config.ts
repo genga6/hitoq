@@ -3,56 +3,62 @@ import { sveltekit } from "@sveltejs/kit/vite";
 import { defineConfig } from "vite";
 import { sentrySvelteKit } from "@sentry/sveltekit";
 
-export default defineConfig({
-  plugins: [
-    sentrySvelteKit({
-      sourceMapsUploadOptions: {
-        org: "your-org",
-        project: "hitoq-frontend",
-        url: "https://sentry.io/",
-        telemetry: false,
+export default defineConfig(({ mode }) => {
+  const plugins = [tailwindcss(), sveltekit()];
+
+  if (mode === "production") {
+    plugins.unshift(
+      sentrySvelteKit({
+        sourceMapsUploadOptions: {
+          org: "gengaru",
+          project: "hitoq-javascript-sveltekit",
+          url: "https://sentry.io/",
+          telemetry: false,
+        },
+        autoUploadSourceMaps: false,
+      }),
+    );
+  }
+
+  return {
+    plugins,
+    server: {
+      // https://ja.vite.dev/config/server-options
+      host: "0.0.0.0",
+      port: 5173,
+      strictPort: true,
+      watch: {
+        usePolling: true,
+        interval: 1000,
       },
-      autoUploadSourceMaps: false,
-    }),
-    tailwindcss(),
-    sveltekit(),
-  ],
-  server: {
-    // https://ja.vite.dev/config/server-options
-    host: "0.0.0.0",
-    port: 5173,
-    strictPort: true,
-    watch: {
-      usePolling: true,
-      interval: 100,
     },
-  },
-  test: {
-    projects: [
-      {
-        extends: "./vite.config.ts",
-        test: {
-          name: "client",
-          environment: "browser",
-          browser: {
-            enabled: true,
-            provider: "playwright",
-            instances: [{ browser: "chromium" }],
+    test: {
+      projects: [
+        {
+          extends: "./vite.config.ts",
+          test: {
+            name: "client",
+            environment: "browser",
+            browser: {
+              enabled: true,
+              provider: "playwright",
+              instances: [{ browser: "chromium" }],
+            },
+            include: ["src/**/*.svelte.{test,spec}.{js,ts}"],
+            exclude: ["src/lib/server/**"],
+            setupFiles: ["./vitest-setup-client.ts"],
           },
-          include: ["src/**/*.svelte.{test,spec}.{js,ts}"],
-          exclude: ["src/lib/server/**"],
-          setupFiles: ["./vitest-setup-client.ts"],
         },
-      },
-      {
-        extends: "./vite.config.ts",
-        test: {
-          name: "server",
-          environment: "node",
-          include: ["src/**/*.{test,spec}.{js,ts}"],
-          exclude: ["src/**/*.svelte.{test,spec}.{js,ts}"],
+        {
+          extends: "./vite.config.ts",
+          test: {
+            name: "server",
+            environment: "node",
+            include: ["src/**/*.{test,spec}.{js,ts}"],
+            exclude: ["src/**/*.svelte.{test,spec}.{js,ts}"],
+          },
         },
-      },
-    ],
-  },
+      ],
+    },
+  };
 });
