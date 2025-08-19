@@ -428,7 +428,7 @@ def get_message_likes(db: Session, message_id: str) -> list[dict]:
     )
 
     return [
-        UserRead.model_validate(like.from_user).model_dump()
+        UserRead.model_validate(like.from_user).model_dump(by_alias=True)
         for like in likes
         if like.from_user
     ]
