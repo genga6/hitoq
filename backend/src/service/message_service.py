@@ -13,7 +13,7 @@ from src.db.tables import (
     UserBlock,
 )
 from src.schema.message import MessageCreate, MessageUpdate
-from src.schema.user import UserBase
+from src.schema.user import UserRead
 
 
 def should_notify_user(
@@ -428,7 +428,7 @@ def get_message_likes(db: Session, message_id: str) -> list[dict]:
     )
 
     return [
-        UserBase.model_validate(like.from_user).model_dump(by_alias=True)
+        UserRead.model_validate(like.from_user).model_dump()
         for like in likes
         if like.from_user
     ]
