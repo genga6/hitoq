@@ -43,8 +43,8 @@
 
   <div class="space-y-4">
     <div>
-      <h3 class="text-sm font-medium text-gray-700 md:text-base dark:text-gray-300">テーマ</h3>
-      <p class="mt-1 text-xs text-gray-500 md:text-sm dark:text-gray-400">
+      <h3 class="theme-text-secondary text-sm font-medium md:text-base">テーマ</h3>
+      <p class="theme-text-subtle mt-1 text-xs md:text-sm">
         アプリの外観を選択できます。
       </p>
     </div>
@@ -58,13 +58,13 @@
             value={option.value}
             checked={currentTheme === option.value}
             onchange={() => handleThemeChange(option.value)}
-            class="h-4 w-4 border-gray-300 text-orange-600 focus:ring-orange-500"
+            class="h-4 w-4 border-gray-300 text-orange-600 focus:ring-orange-500 dark:border-gray-600"
           />
           <div class="ml-3">
-            <span class="text-sm font-medium text-gray-700 md:text-base dark:text-gray-300">
+            <span class="theme-text-secondary text-sm font-medium md:text-base">
               {option.title}
             </span>
-            <p class="text-xs text-gray-500 md:text-sm dark:text-gray-400">
+            <p class="theme-text-subtle text-xs md:text-sm">
               {option.description}
             </p>
           </div>

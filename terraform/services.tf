@@ -1,23 +1,22 @@
 # Backend API Service
 resource "render_web_service" "hitoq_backend" {
-  name               = "hitoq-backend"
-  plan               = "free"     # Changed to free for testing
-  region             = "oregon"   # or preferred region
-  
+  name   = "hitoq-backend"
+  plan   = "starter"
+  region = "oregon"
+
   runtime_source = {
     docker = {
-      repo_url        = var.github_repo_url
-      branch          = "main"
+      repo_url = var.github_repo_url
+      branch   = "main"
       build_filter = {
         paths = ["backend/**"]
       }
       dockerfile_path = "backend/Dockerfile"
     }
   }
-  
+
   # Environment variables
   env_vars = {
-    # Database configuration (using external DB variables)
     DATABASE_URL = {
       value = "postgresql://${var.db_user}:${var.db_password}@${var.db_host}:${var.db_port}/${var.db_name}"
     }
@@ -36,7 +35,7 @@ resource "render_web_service" "hitoq_backend" {
     DB_PASSWORD = {
       value = var.db_password
     }
-    
+
     # Application security
     SECRET_KEY = {
       value = var.secret_key
@@ -44,7 +43,7 @@ resource "render_web_service" "hitoq_backend" {
     SESSION_SECRET_KEY = {
       value = var.session_secret_key
     }
-    
+
     # Twitter OAuth configuration
     TWITTER_CLIENT_ID = {
       value = var.twitter_client_id
@@ -55,12 +54,12 @@ resource "render_web_service" "hitoq_backend" {
     TWITTER_REDIRECT_URI = {
       value = var.twitter_redirect_uri
     }
-    
+
     # Frontend configuration
     FRONTEND_URLS = {
       value = var.frontend_urls
     }
-    
+
     # Environment settings
     COOKIE_SECURE = {
       value = var.cookie_secure
@@ -71,12 +70,12 @@ resource "render_web_service" "hitoq_backend" {
     LOG_LEVEL = {
       value = var.log_level
     }
-    
+
     # Monitoring and logging
     SENTRY_DSN = {
       value = var.sentry_dsn
     }
-    
+
     # CORS settings
     CORS_ALLOW_METHODS = {
       value = var.cors_allow_methods
@@ -89,21 +88,21 @@ resource "render_web_service" "hitoq_backend" {
 
 # Frontend Web Service
 resource "render_web_service" "hitoq_frontend" {
-  name            = "hitoq-frontend"
-  plan            = "free" # or "free" for development
-  region          = "oregon"   # or preferred region
-  
+  name   = "hitoq-frontend"
+  plan   = "starter"
+  region = "oregon"
+
   runtime_source = {
     docker = {
-      repo_url        = var.github_repo_url
-      branch          = "main"
+      repo_url = var.github_repo_url
+      branch   = "main"
       build_filter = {
         paths = ["frontend/**"]
       }
       dockerfile_path = "frontend/Dockerfile"
     }
   }
-  
+
   # Environment variables for build time
   env_vars = {
     PUBLIC_SENTRY_DSN = {

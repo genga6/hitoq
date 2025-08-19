@@ -79,9 +79,9 @@
     <div class="mb-6">
       <button
         onclick={toggleMessageForm}
-        class="inline-flex items-center gap-2 rounded-lg bg-orange-400 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-orange-500 focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 focus:outline-none"
+        class="inline-flex items-center gap-2 rounded-lg bg-orange-400 px-3 py-2 text-xs font-medium text-white transition-colors hover:bg-orange-500 focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 focus:outline-none sm:px-4 sm:text-sm"
       >
-        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg class="h-4 w-4 sm:h-5 sm:w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path
             stroke-linecap="round"
             stroke-linejoin="round"
@@ -89,7 +89,8 @@
             d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
           />
         </svg>
-        💬 話題を投稿する
+        <span class="hidden sm:inline">話題を投稿する</span>
+        <span class="sm:hidden">💬 投稿</span>
       </button>
     </div>
 
@@ -125,7 +126,7 @@
           d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
         />
       </svg>
-      <h2 class="text-md theme-text-secondary font-medium">トーク ({filteredMessages.length}件)</h2>
+      <h2 class="text-sm theme-text-secondary font-medium sm:text-base">トーク ({filteredMessages.length}件)</h2>
     </div>
 
   </div>

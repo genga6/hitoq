@@ -79,7 +79,7 @@
   <div class="absolute right-0 flex items-center gap-2">
     <a
       href="/discover"
-      class="theme-text-muted hover:text-orange-500 transition-colors p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"
+      class="theme-text-muted flex h-10 w-10 items-center justify-center overflow-hidden rounded-full ring-orange-400 transition hover:ring-2 focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 focus:outline-none md:h-12 md:w-12"
       aria-label="ユーザーを発見"
     >
       <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

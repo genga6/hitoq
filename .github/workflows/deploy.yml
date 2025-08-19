@@ -8,7 +8,7 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    environment: production # Optional: for environment protection rules and secrets
+    environment: production
     permissions:
       contents: read
       packages: write
@@ -50,15 +50,16 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: 1.x.x # Specify your Terraform version
+          terraform_version: 1.x.x
+          cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
 
       - name: Terraform Init
-        working-directory: ./terraform # Assuming your Terraform files are in this directory
+        working-directory: ./terraform
         run: terraform init
 
       - name: Terraform Apply
         working-directory: ./terraform
-        run: terraform apply -auto-approve # -auto-approve is for CI/CD, be careful with this in production
+        run: terraform apply -auto-approve
         env:
           # Render API Key for deployment
           TF_VAR_render_api_key: ${{ secrets.RENDER_API_KEY }}
