@@ -19,7 +19,7 @@ resource "render_web_service" "hitoq_backend" {
   # Environment variables
   env_vars = {
     DATABASE_URL = {
-      value = "postgresql://${var.db_user}:${var.db_password}@${var.db_host}:${var.db_port}/${var.db_name}"
+      value = "postgresql+psycopg2://${var.db_user}:${var.db_password}@${var.db_host}:${var.db_port}/${var.db_name}"
     }
     DB_HOST = {
       value = var.db_host
