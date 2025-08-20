@@ -13,6 +13,7 @@ resource "render_web_service" "hitoq_backend" {
       }
       dockerfile_path = "backend/Dockerfile"
       context         = "backend"
+      auto_deploy     = true
     }
   }
 
@@ -107,6 +108,7 @@ resource "render_web_service" "hitoq_frontend" {
       }
       dockerfile_path = "frontend/Dockerfile"
       context         = "frontend"
+      auto_deploy     = true
     }
   }
 
