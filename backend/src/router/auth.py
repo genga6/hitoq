@@ -244,7 +244,7 @@ async def auth_twitter_callback(
             domain=".hitoq.net" if os.getenv("ENVIRONMENT") == "production" else None,
             path="/",
             max_age=ACCESS_TOKEN_EXPIRE_MINUTES * 60,  # 15分
-            samesite="lax",
+            samesite="none" if os.getenv("ENVIRONMENT") == "production" else "lax",
             httponly=True,
             secure=os.getenv("COOKIE_SECURE", "false").lower() == "true",
         )
@@ -255,7 +255,7 @@ async def auth_twitter_callback(
             domain=".hitoq.net" if os.getenv("ENVIRONMENT") == "production" else None,
             path="/",
             max_age=REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60,  # 7日
-            samesite="lax",
+            samesite="none" if os.getenv("ENVIRONMENT") == "production" else "lax",
             httponly=True,
             secure=os.getenv("COOKIE_SECURE", "false").lower() == "true",
         )
@@ -288,7 +288,7 @@ async def refresh_token(request: Request, db: Session = Depends(get_db)):
         domain=".hitoq.net" if os.getenv("ENVIRONMENT") == "production" else None,
         path="/",
         max_age=ACCESS_TOKEN_EXPIRE_MINUTES * 60,
-        samesite="lax",
+        samesite="none" if os.getenv("ENVIRONMENT") == "production" else "lax",
         httponly=True,
         secure=os.getenv("COOKIE_SECURE", "false").lower() == "true",
     )
