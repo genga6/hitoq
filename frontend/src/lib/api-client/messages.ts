@@ -169,12 +169,12 @@ export async function getHeartStates(messageIds: string[]): Promise<{
 // Server-side API functions
 export async function getMessagesPageDataServer(
   userName: string,
-  cookieHeader: string,
+  fetcher: typeof fetch,
 ): Promise<MessagesPageData> {
   try {
     return await fetchApiWithCookies(
       `/users/by-username/${userName}/messages`,
-      cookieHeader,
+      fetcher,
     );
   } catch (error) {
     console.error("Failed to fetch messages page data (server):", error);

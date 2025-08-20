@@ -2,12 +2,11 @@ import type { PageServerLoad } from "./$types";
 import { getCurrentUserServer } from "$lib/api-client/auth";
 import { error, redirect } from "@sveltejs/kit";
 
-export const load: PageServerLoad = async ({ params, request }) => {
+export const load: PageServerLoad = async ({ params, fetch }) => {
   const userName = params.user_name;
-  const cookieHeader = request.headers.get("cookie") || "";
 
   try {
-    const currentUser = await getCurrentUserServer(cookieHeader);
+    const currentUser = await getCurrentUserServer(fetch);
 
     // 認証チェック
     if (!currentUser) {

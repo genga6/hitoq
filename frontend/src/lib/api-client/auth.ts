@@ -65,9 +65,9 @@ export const deleteUser = async (userId: string): Promise<void> => {
 };
 
 // Server-side authentication APIs
-export const getCurrentUserServer = async (cookieHeader: string) => {
+export const getCurrentUserServer = async (fetcher: typeof fetch) => {
   try {
-    const user = await fetchApiWithCookies<Profile>("/auth/me", cookieHeader, {
+    const user = await fetchApiWithCookies<Profile>("/auth/me", fetcher, {
       method: "GET",
     });
     return user;
@@ -87,10 +87,10 @@ export const getCurrentUserServer = async (cookieHeader: string) => {
 };
 
 export const refreshAccessTokenServer = async (
-  cookieHeader: string,
+  fetcher: typeof fetch,
 ): Promise<boolean> => {
   try {
-    await fetchApiWithCookies<void>("/auth/refresh", cookieHeader, {
+    await fetchApiWithCookies<void>("/auth/refresh", fetcher, {
       method: "POST",
     });
     return true;

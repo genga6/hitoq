@@ -11,28 +11,24 @@ const UNAUTHORIZED_RESULT: UnauthenticatedState = {
   userName: null,
 };
 
-export const load: LayoutServerLoad = async ({ cookies }) => {
+export const load: LayoutServerLoad = async ({ cookies, fetch }) => {
   try {
     const accessToken = cookies.get("access_token");
     if (!accessToken) return UNAUTHORIZED_RESULT;
 
-    const cookieHeader = `access_token=${accessToken}`;
-    let user = await getCurrentUserServer(cookieHeader);
+    let user = await getCurrentUserServer(fetch);
     if (user) return { isLoggedIn: true, user: user, userName: user.userName };
 
-    // If the access token is invalid, retry with the refresh token
     const refreshToken = cookies.get("refresh_token");
     if (!refreshToken) return UNAUTHORIZED_RESULT;
 
-    const refreshCookieHeader = `refresh_token=${refreshToken}`;
-    const refreshSuccess = await refreshAccessTokenServer(refreshCookieHeader);
+    const refreshSuccess = await refreshAccessTokenServer(fetch);
     if (!refreshSuccess) return UNAUTHORIZED_RESULT;
 
     const newAccessToken = cookies.get("access_token");
     if (!newAccessToken) return UNAUTHORIZED_RESULT;
 
-    const newCookieHeader = `access_token=${newAccessToken}`;
-    user = await getCurrentUserServer(newCookieHeader);
+    user = await getCurrentUserServer(fetch);
     if (!user) return UNAUTHORIZED_RESULT;
 
     return { isLoggedIn: true, user: user, userName: user.userName };

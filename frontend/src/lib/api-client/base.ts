@@ -35,18 +35,14 @@ export async function fetchApiWithAuth<T>(
   return response.json();
 }
 
-// サーバーサイド用のfetch関数（Cookieを手動で渡す）
+// サーバーサイド用のfetch関数
 export async function fetchApiWithCookies<T>(
   path: string,
-  cookieHeader: string,
+  fetcher: typeof fetch,
   options?: RequestInit,
 ): Promise<T> {
-  const response = await fetch(`${API_BASE_URL}${path}`, {
+  const response = await fetcher(`${API_BASE_URL}${path}`, {
     ...options,
-    headers: {
-      ...options?.headers,
-      Cookie: cookieHeader,
-    },
   });
 
   // No need to parse JSON if the response is empty (204 No Content)
