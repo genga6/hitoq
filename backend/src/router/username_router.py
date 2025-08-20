@@ -9,6 +9,7 @@ from src.schema.composite_schema import (
     ProfilePageData,
     QnAPageData,
 )
+from src.schema.user import Username
 from src.service import message_service, qna_service, user_service
 from src.service.categories import get_all_categories
 
@@ -19,7 +20,7 @@ username_router = APIRouter(
 
 
 @username_router.get("/profile", response_model=ProfilePageData)
-def read_profile_page_data(user_name: str, db: Session = Depends(get_db)):
+def read_profile_page_data(user_name: Username, db: Session = Depends(get_db)):
     user = user_service.get_user_by_username(db, user_name=user_name)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
@@ -30,7 +31,7 @@ def read_profile_page_data(user_name: str, db: Session = Depends(get_db)):
 
 
 @username_router.get("/qna", response_model=QnAPageData)
-def read_qna_page_data(user_name: str, db: Session = Depends(get_db)):
+def read_qna_page_data(user_name: Username, db: Session = Depends(get_db)):
     user = user_service.get_user_by_username(db, user_name=user_name)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
@@ -79,7 +80,7 @@ def read_qna_page_data(user_name: str, db: Session = Depends(get_db)):
 
 
 @username_router.get("/messages", response_model=MessagesPageData)
-def read_messages_page_data(user_name: str, db: Session = Depends(get_db)):
+def read_messages_page_data(user_name: Username, db: Session = Depends(get_db)):
     user = user_service.get_user_by_username(db, user_name=user_name)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
