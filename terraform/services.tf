@@ -125,8 +125,7 @@ resource "render_web_service" "hitoq_frontend" {
 
   # Custom domains for frontend
   custom_domains = [
-    { name = "hitoq.net" },
-    { name = "www.hitoq.net" }
+    { name = "hitoq.net" }
   ]
 }
 
