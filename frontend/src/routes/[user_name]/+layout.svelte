@@ -14,9 +14,9 @@
 
   let isBlockedByCurrentUser = $state(false);
 
-  // Record visit when profile is available
+  // Record visit when profile is available and not owner
   $effect(() => {
-    if (data?.profile?.userId) {
+    if (data?.profile?.userId && !data.isOwner) {
       trackUserVisit(data.profile.userId);
     }
   });
