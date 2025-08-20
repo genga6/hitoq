@@ -34,6 +34,15 @@
   });
 </script>
 
+<!-- ===== DEBUG INFO START ===== -->
+<div style="position: fixed; top: 10px; left: 10px; background: rgba(0,0,0,0.8); color: white; padding: 10px; z-index: 9999; border: 2px solid red;">
+  <p><strong>DEBUG INFO</strong></p>
+  <p>isOwner: {data.isOwner}</p>
+  <p>Current User: {data.currentUser?.userName}</p>
+  <p>Profile User: {data.profile?.userName}</p>
+</div>
+<!-- ===== DEBUG INFO END ===== -->
+
 <main class="flex min-h-screen justify-center p-4 md:p-6">
   <div class="card w-full max-w-4xl space-y-3 p-3 sm:space-y-4 sm:p-4 md:space-y-6 md:p-6">
     {#if data?.profile}
