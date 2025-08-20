@@ -3,9 +3,8 @@ import { getQnAPageData } from "$lib/api-client/qna";
 import { getCurrentUserServer } from "$lib/api-client/auth";
 import { error } from "@sveltejs/kit";
 
-export const load: PageServerLoad = async ({ params, request }) => {
+export const load: PageServerLoad = async ({ params, fetch }) => {
   const userName = params.user_name;
-  const cookieHeader = request.headers.get("cookie") || "";
 
   try {
     const rawData = await getQnAPageData(userName);
@@ -16,7 +15,7 @@ export const load: PageServerLoad = async ({ params, request }) => {
     let currentUser = null;
     let isLoggedIn = false;
     try {
-      currentUser = await getCurrentUserServer(cookieHeader);
+      currentUser = await getCurrentUserServer(fetch);
       isOwner = currentUser?.userName === userName;
       isLoggedIn = !!currentUser;
     } catch {

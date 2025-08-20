@@ -6,7 +6,7 @@ import type { PageServerLoad } from "./$types";
 
 export const load: PageServerLoad = async ({
   params,
-  request,
+  fetch,
 }): Promise<
   MessagesPageData & {
     currentUser: unknown;
@@ -15,13 +15,12 @@ export const load: PageServerLoad = async ({
   }
 > => {
   const { user_name } = params;
-  const cookieHeader = request.headers.get("cookie") || "";
 
   // ログイン状態をチェック
   let currentUser = null;
   let isLoggedIn = false;
   try {
-    currentUser = await getCurrentUserServer(cookieHeader);
+    currentUser = await getCurrentUserServer(fetch);
     isLoggedIn = !!currentUser;
   } catch {
     // 非ログインユーザーでもメッセージログは閲覧可能
@@ -31,7 +30,7 @@ export const load: PageServerLoad = async ({
   // isOwnerを計算
   const isOwner = isLoggedIn && currentUser?.userName === user_name;
 
-  const messagesData = await getMessagesPageDataServer(user_name, cookieHeader);
+  const messagesData = await getMessagesPageDataServer(user_name, fetch);
 
   return {
     ...messagesData,
