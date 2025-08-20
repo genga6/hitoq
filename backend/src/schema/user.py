@@ -1,17 +1,16 @@
 from datetime import datetime
 from typing import Annotated
 
-from fastapi import Path
 from pydantic import Field, StringConstraints
 
 from src.db.tables import NotificationLevelEnum
 from src.schema.common import OrmBaseModel
 
-# パスパラメータ用のユーザー名バリデーション型
+# ユーザー名バリデーション型
 Username = Annotated[
     str,
     StringConstraints(pattern=r"^[a-zA-Z0-9_-]{3,30}$"),
-    Path(
+    Field(
         description="Username (3-30 characters, alphanumeric, underscore, hyphen only)"
     ),
 ]
