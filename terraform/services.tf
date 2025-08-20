@@ -85,6 +85,11 @@ resource "render_web_service" "hitoq_backend" {
       value = var.cors_allow_headers
     }
   }
+
+  # Custom domain for backend API
+  custom_domains = [
+    { name = "api.hitoq.net" }
+  ]
 }
 
 # Frontend Web Service
@@ -117,6 +122,12 @@ resource "render_web_service" "hitoq_frontend" {
       value = var.public_api_base_url
     }
   }
+
+  # Custom domains for frontend
+  custom_domains = [
+    { name = "hitoq.net" },
+    { name = "www.hitoq.net" }
+  ]
 }
 
 # Output important URLs
