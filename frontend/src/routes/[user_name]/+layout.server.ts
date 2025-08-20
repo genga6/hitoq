@@ -8,6 +8,16 @@ export const load: LayoutServerLoad = async ({
   request,
   setHeaders,
 }) => {
+  // ===== DEBUG LOG START =====
+  const cookieHeaderForDebug = request.headers.get("cookie") || "";
+  console.log("--- DEBUG: /routes/[user_name]/+layout.server.ts ---");
+  console.log("Received Cookie header:", !!cookieHeaderForDebug);
+  console.log(
+    "Cookie header contains 'access_token':",
+    cookieHeaderForDebug.includes("access_token"),
+  );
+  // ===== DEBUG LOG END =====
+
   const userName = params.user_name;
   const cookieHeader = request.headers.get("cookie") || "";
 
