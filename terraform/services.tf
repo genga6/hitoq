@@ -127,10 +127,6 @@ resource "render_web_service" "hitoq_frontend" {
   custom_domains = [
     { name = "hitoq.net" }
   ]
-
-  lifecycle {
-    ignore_changes = [custom_domains]
-  }
 }
 
 # Output important URLs
