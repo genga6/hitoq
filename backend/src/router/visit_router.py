@@ -23,14 +23,10 @@ def record_visit_endpoint(
     except HTTPException:
         pass
 
-    visit = visit_service.record_visit(
+    visit_service.record_visit(
         db=db, visited_user_id=user_id, visitor_user_id=visitor_user_id
     )
-
-    if not visit:
-        raise HTTPException(status_code=400, detail="Visit not recorded")
-
-    return {"message": "Visit recorded successfully"}
+    return {"message": "Visit processed successfully"}
 
 
 @visit_router.get("/visits", response_model=list[VisitRead])
