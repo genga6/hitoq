@@ -206,9 +206,28 @@ async def auth_twitter_callback(
         )
 
         if user_response.status_code != 200:
-            raise HTTPException(status_code=400, detail="Invalid user data")
+            logger.error(
+                f"Twitter API user request failed. Status: {user_response.status_code}, "
+                f"Response: {user_response.text}"
+            )
+            if user_response.status_code == 429:
+                raise HTTPException(
+                    status_code=429,
+                    detail="Twitter API rate limit exceeded. Please try again later.",
+                )
+            else:
+                raise HTTPException(status_code=400, detail="Invalid user data")
 
-        user_data = user_response.json()["data"]
+        user_response_json = user_response.json()
+        logger.info(f"Twitter API response: {user_response_json}")
+
+        if "data" not in user_response_json:
+            logger.error(
+                f"Missing 'data' field in Twitter response: {user_response_json}"
+            )
+            raise HTTPException(status_code=400, detail="Invalid user data structure")
+
+        user_data = user_response_json["data"]
         profile_image_url = user_data.get("profile_image_url")
 
         # By removing `_normal`, we got the original size URL
