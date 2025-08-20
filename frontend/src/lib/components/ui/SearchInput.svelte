@@ -100,7 +100,20 @@
         <div class="py-1">
           {#each candidates as candidate (candidate.userId)}
             <button
-              onclick={() => onSelectCandidate(candidate)}
+              onclick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onSelectCandidate(candidate);
+              }}
+              onmousedown={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onSelectCandidate(candidate);
+              }}
+              ontouchstart={(e) => {
+                e.stopPropagation();
+                onSelectCandidate(candidate);
+              }}
               class="theme-search-result"
             >
               <img
