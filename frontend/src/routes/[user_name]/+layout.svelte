@@ -3,7 +3,7 @@
   import TabNavigation from "./components/TabNavigation.svelte";
   import BlockedUserMessage from "./components/BlockedUserMessage.svelte";
   import type { Snippet } from "svelte";
-  import { trackUserVisit, checkBlockStatus } from "$lib/utils/userVisitTracking";
+  import { checkBlockStatus } from "$lib/utils/userVisitTracking";
   import type { LayoutData } from "./$types";
 
   interface Props {
@@ -14,12 +14,7 @@
 
   let isBlockedByCurrentUser = $state(false);
 
-  // Record visit when profile is available and not owner
-  $effect(() => {
-    if (data?.profile?.userId && !data.isOwner) {
-      trackUserVisit(data.profile.userId);
-    }
-  });
+  
 
   // Check block status when needed
   $effect(() => {

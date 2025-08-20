@@ -6,6 +6,7 @@ import {
 } from "$lib/api-client/auth";
 import { error } from "@sveltejs/kit";
 import type { Profile } from "$lib/types";
+import { trackUserVisit } from "$lib/utils/userVisitTracking";
 
 async function getAuthenticatedUser(
   cookies: Cookies,
@@ -54,6 +55,11 @@ export const load: LayoutServerLoad = async ({
   try {
     const profile = await getUserByUserName(userName);
     const isOwner = currentUser?.userName === userName;
+
+    // サーバーサイドで visit tracking を実行
+    if (profile?.userId && !isOwner) {
+      trackUserVisit(profile.userId, fetch);
+    }
 
     return {
       isOwner,
