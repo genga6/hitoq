@@ -1,9 +1,12 @@
-import { recordVisit } from "$lib/api-client/visits";
+import { recordVisitServer } from "$lib/api-client/visits";
 import { blocksApi } from "$lib/api-client";
 
-export const trackUserVisit = async (userId: string): Promise<void> => {
+export const trackUserVisit = async (
+  userId: string,
+  fetcher: typeof fetch,
+): Promise<void> => {
   try {
-    await recordVisit(userId);
+    await recordVisitServer(userId, fetcher);
   } catch (error) {
     // Silently fail - visit recording is not critical
     console.debug("Failed to record visit:", error);
