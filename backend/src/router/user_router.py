@@ -75,9 +75,7 @@ def read_user_by_username_endpoint(user_name: Username, db: Session = Depends(ge
 
 
 @user_router.get("/resolve-users-id", response_model=UserRead)
-def resolve_user_by_username(
-    user_name: Username = Query(...), db: Session = Depends(get_db)
-):
+def resolve_user_by_username(user_name: Username, db: Session = Depends(get_db)):
     user = user_service.get_user_by_username(db, user_name=user_name)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
