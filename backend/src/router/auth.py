@@ -221,6 +221,7 @@ async def auth_twitter_callback(
             user_name=user_data["username"],
             display_name=user_data["name"],
             bio=user_data.get("description"),
+            self_introduction=None,
             icon_url=high_res_url,
         )
         user = user_service.upsert_user(db, user_in=user_in)
@@ -240,6 +241,7 @@ async def auth_twitter_callback(
         response.set_cookie(
             key="access_token",
             value=access_token,
+            domain=".hitoq.net" if os.getenv("ENVIRONMENT") == "production" else None,
             path="/",
             max_age=ACCESS_TOKEN_EXPIRE_MINUTES * 60,  # 15分
             samesite="lax",
@@ -250,6 +252,7 @@ async def auth_twitter_callback(
         response.set_cookie(
             key="refresh_token",
             value=refresh_token,
+            domain=".hitoq.net" if os.getenv("ENVIRONMENT") == "production" else None,
             path="/",
             max_age=REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60,  # 7日
             samesite="lax",
@@ -282,6 +285,7 @@ async def refresh_token(request: Request, db: Session = Depends(get_db)):
     response.set_cookie(
         key="access_token",
         value=new_access_token,
+        domain=".hitoq.net" if os.getenv("ENVIRONMENT") == "production" else None,
         path="/",
         max_age=ACCESS_TOKEN_EXPIRE_MINUTES * 60,
         samesite="lax",
