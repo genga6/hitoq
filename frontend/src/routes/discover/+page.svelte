@@ -109,12 +109,7 @@
     }
   });
 
-  // 開発環境でのキャッシュデバッグ
-  if (import.meta.env.DEV) {
-    $effect(() => {
-      console.log(`Discover - Filter: ${currentFilter}, Users: ${users.length}, Offset: ${offset}, HasMore: ${hasMore}`);
-    });
-  }
+  
 </script>
 
 <svelte:head>

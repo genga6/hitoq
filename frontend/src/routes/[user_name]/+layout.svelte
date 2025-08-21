@@ -2,6 +2,7 @@
   import ProfileHeader from "./components/ProfileHeader.svelte";
   import TabNavigation from "./components/TabNavigation.svelte";
   import BlockedUserMessage from "./components/BlockedUserMessage.svelte";
+  import LoadingSpinner from "$lib/components/feedback/LoadingSpinner.svelte";
   import type { Snippet } from "svelte";
   import { checkBlockStatus } from "$lib/utils/userVisitTracking";
   import type { LayoutData } from "./$types";
@@ -13,8 +14,7 @@
   let { data, children }: Props = $props();
 
   let isBlockedByCurrentUser = $state(false);
-
-  
+  let isTabLoading = $state(false);
 
   // Check block status when needed
   $effect(() => {
@@ -27,6 +27,10 @@
       isBlockedByCurrentUser = blocked;
     });
   });
+
+  function handleLoadingChange(loading: boolean) {
+    isTabLoading = loading;
+  }
 </script>
 
 <main class="flex min-h-screen justify-center p-4 md:p-6">
@@ -51,8 +55,18 @@
           onUnblock={() => (isBlockedByCurrentUser = false)}
         />
       {:else}
-        <TabNavigation userName={data.profile.userName} isOwner={data.isOwner ?? false} />
-        {@render children?.()}
+        <TabNavigation 
+          userName={data.profile.userName} 
+          isOwner={data.isOwner ?? false} 
+          onLoadingChange={handleLoadingChange}
+        />
+        {#if isTabLoading}
+          <div class="flex justify-center py-12">
+            <LoadingSpinner size="medium" text="読み込み中..." />
+          </div>
+        {:else}
+          {@render children?.()}
+        {/if}
       {/if}
     {/if}
   </div>

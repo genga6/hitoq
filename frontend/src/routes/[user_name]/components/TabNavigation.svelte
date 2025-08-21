@@ -7,11 +7,12 @@
   type Props = {
     userName: Profile["userName"];
     isOwner: boolean;
+    onLoadingChange?: (loading: boolean) => void;
   };
-  const { userName, isOwner }: Props = $props();
+  const { userName, isOwner, onLoadingChange }: Props = $props();
 
   // UI即座更新用のローカル状態
-  // eslint-disable-next-line svelte/prefer-writable-derived
+   
   let localActiveTab: string = $state(page.url.pathname);
 
   // 実際に表示するアクティブタブ（UI即座更新 + URL同期）
@@ -32,22 +33,35 @@
     { id: `/${userName}/talk`, label: "トーク", href: `/${userName}/talk` }
   ]);
 
-  function handleTabChange(tabId: string) {
+  async function handleTabChange(tabId: string) {
+    // 既に同じタブの場合は何もしない
+    if (localActiveTab === tabId) return;
+
     // UI即座更新（オレンジバーをすぐに移動）
     localActiveTab = tabId;
     
-    // 非同期でページ遷移（ローディングはバックグラウンドで）
-    goto(tabId as `/${string}`, { 
-      replaceState: false,
-      noScroll: false,
-      keepFocus: false,
-      invalidateAll: false  // キャッシュ活用のため無効化しない
-    });
+    // ローディング開始
+    onLoadingChange?.(true);
+    
+    try {
+      // 非同期でページ遷移
+      await goto(tabId as `/${string}`, { 
+        replaceState: false,
+        noScroll: false,
+        keepFocus: false,
+        invalidateAll: false  // キャッシュ活用のため無効化しない
+      });
+    } finally {
+      // ローディング終了（URL変更完了後に$effectでも呼ばれる）
+      onLoadingChange?.(false);
+    }
   }
 
   // URL変更時にローカル状態を同期
   $effect(() => {
     localActiveTab = page.url.pathname;
+    // URL変更完了時にローディング終了を確実にする
+    onLoadingChange?.(false);
   });
 </script>
 

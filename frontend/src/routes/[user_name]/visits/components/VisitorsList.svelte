@@ -23,7 +23,6 @@
 
     getUserVisits(userId)
       .then((result) => {
-        console.log("取得した訪問者データ:", result);
         visits = result;
       })
       .catch((e) => {
@@ -36,16 +35,13 @@
 
   // フィルタリングされた訪問者リスト
   const filteredVisits = $derived.by(() => {
-    console.log("フィルタリング処理:", { activeFilter, visits, visitsLength: visits.length });
     if (activeFilter === "all") {
-      console.log("すべての訪問者を返す:", visits);
       return visits;
     } else {
       // データ構造に基づいて修正：is_anonymousが直接プロパティになっている
       const filtered = visits.filter(
         (visit) => !visit.is_anonymous && visit.visitor_user_id
       );
-      console.log("ログインユーザーのみフィルター結果:", filtered);
       return filtered;
     }
   });
