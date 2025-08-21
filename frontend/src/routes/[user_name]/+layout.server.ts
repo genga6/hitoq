@@ -41,13 +41,17 @@ export const load: LayoutServerLoad = async ({
   cookies,
   setHeaders,
   fetch,
+}: {
+  params: { user_name: string };
+  cookies: Cookies;
+  setHeaders: (headers: Record<string, string>) => void;
+  fetch: typeof globalThis.fetch;
 }) => {
   const userName = params.user_name;
 
+  // プロフィールデータは5分間キャッシュ（認証情報のみno-cache）
   setHeaders({
-    "Cache-Control": "no-cache, no-store, must-revalidate",
-    Pragma: "no-cache",
-    Expires: "0",
+    "Cache-Control": "public, max-age=300, s-maxage=300",
   });
 
   const currentUser = await getAuthenticatedUser(cookies, fetch);

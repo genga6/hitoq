@@ -24,9 +24,9 @@ export const load: PageServerLoad = async ({ params, fetch }) => {
       isLoggedIn = false;
     }
 
-    // Redirect non-owners to answers page
+    // Redirect non-owners to qna page
     if (!isOwner) {
-      throw redirect(302, `/${userName}/answers`);
+      throw redirect(302, `/${userName}/qna`);
     }
 
     return {

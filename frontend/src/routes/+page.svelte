@@ -21,7 +21,7 @@
   class="theme-bg-surface theme-text-secondary flex min-h-screen flex-col items-center justify-center p-4 md:p-8"
 >
   <h1
-    class="mb-6 bg-gradient-to-r from-orange-500 to-amber-500 bg-clip-text text-center text-4xl font-bold text-transparent md:text-5xl"
+    class="mb-6 text-center text-4xl font-bold theme-text-brand md:text-5xl bg-gradient-to-r from-orange-500 to-amber-500 bg-clip-text md:text-transparent"
   >
     「あの人どんな人？」から「友達」に。
   </h1>
