@@ -2,6 +2,7 @@
   import { discoverUsers } from "$lib/api-client/users";
   import UserCard from "./components/UserCard.svelte";
   import FilterTabs from "./components/FilterTabs.svelte";
+  import { discoverCache } from "$lib/utils/discoverCache";
   import type { Profile } from "$lib/types";
 
   let users = $state<Profile[]>([]);
@@ -20,7 +21,42 @@
     
     try {
       const currentOffset = reset ? 0 : offset;
+      
+      // キャッシュから取得を試行
+      if (reset) {
+        // リセット時は集約データを確認
+        const cached = discoverCache.getAggregated(currentFilter, currentOffset + limit, limit);
+        if (cached) {
+          users = cached.users.slice(0, limit);
+          offset = limit;
+          hasMore = cached.hasMore && cached.users.length > limit;
+          loading = false;
+          return;
+        }
+      } else {
+        // 追加読み込み時は特定のオフセットのデータを確認
+        const cachedUsers = discoverCache.get(currentFilter, currentOffset, limit);
+        if (cachedUsers) {
+          // 重複ユーザーを除外してから追加
+          const existingUserIds = new Set(users.map(u => u.userId));
+          const uniqueNewUsers = cachedUsers.filter(u => !existingUserIds.has(u.userId));
+          users = [...users, ...uniqueNewUsers];
+          offset += cachedUsers.length;
+          
+          // hasMoreの状態は集約データから確認
+          const aggregated = discoverCache.getAggregated(currentFilter, offset, limit);
+          hasMore = aggregated?.hasMore ?? (cachedUsers.length === limit);
+          loading = false;
+          return;
+        }
+      }
+      
+      // キャッシュにない場合はAPIから取得
       const newUsers = await discoverUsers(currentFilter, limit, currentOffset);
+      
+      // キャッシュに保存
+      const newHasMore = newUsers.length === limit;
+      discoverCache.set(currentFilter, currentOffset, limit, newUsers, newHasMore);
       
       if (reset) {
         users = newUsers;
@@ -33,7 +69,7 @@
         offset += newUsers.length; // サーバー側のオフセット管理のため、実際に受信したユーザー数で更新
       }
       
-      hasMore = newUsers.length === limit;
+      hasMore = newHasMore;
     } catch (err) {
       error = "ユーザーの読み込みに失敗しました";
       console.error("Failed to load users:", err);
@@ -56,6 +92,8 @@
 
   function handleShuffle() {
     if (currentFilter === "random" && !loading) {
+      // ランダムは毎回新しい結果が欲しいのでキャッシュをクリア
+      discoverCache.clearFilter("random");
       offset = 0;
       loadUsers(true);
     }
@@ -70,6 +108,13 @@
       loadUsers(true);
     }
   });
+
+  // 開発環境でのキャッシュデバッグ
+  if (import.meta.env.DEV) {
+    $effect(() => {
+      console.log(`Discover - Filter: ${currentFilter}, Users: ${users.length}, Offset: ${offset}, HasMore: ${hasMore}`);
+    });
+  }
 </script>
 
 <svelte:head>

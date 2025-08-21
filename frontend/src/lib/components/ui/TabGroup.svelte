@@ -18,9 +18,7 @@
   const { tabs, activeTab, onTabChange, variant = "filter", size = "md" }: Props = $props();
 
   function handleTabClick(tab: Tab) {
-    if (variant === "filter") {
-      onTabChange?.(tab.id);
-    }
+    onTabChange?.(tab.id);
   }
 
   const containerClasses = {
@@ -42,9 +40,9 @@
 
 <div class={containerClasses[variant]} role="tablist" aria-label="タブナビゲーション">
   {#each tabs as tab (tab.id)}
-    {#if variant === "navigation" && tab.href}
-      <a
-        href={tab.href}
+    {#if variant === "navigation"}
+      <button
+        onclick={() => handleTabClick(tab)}
         class="{tabClasses[variant][size]} {activeTab === tab.id
           ? 'theme-tab-active'
           : 'theme-tab-inactive'}"
@@ -56,7 +54,7 @@
           {tab.icon ? `${tab.icon} ` : ""}{tab.label}
           {tab.count !== undefined ? ` (${tab.count})` : ""}
         </span>
-      </a>
+      </button>
     {:else}
       <button
         onclick={() => handleTabClick(tab)}
