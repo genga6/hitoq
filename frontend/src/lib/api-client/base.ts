@@ -9,7 +9,11 @@ export async function fetchApi<T>(
   path: string,
   options?: RequestInit,
 ): Promise<T> {
-  const response = await fetch(`${API_BASE_URL}${path}`, options);
+  const fullUrl = `${API_BASE_URL}${path}`;
+  console.log("DEBUG: fetchApi - API_BASE_URL =", API_BASE_URL);
+  console.log("DEBUG: fetchApi - path =", path);
+  console.log("DEBUG: fetchApi - fullUrl =", fullUrl);
+  const response = await fetch(fullUrl, options);
   if (!response.ok) {
     const errorData = await response.json();
     throw new Error(errorData.detail || "API request failed");
