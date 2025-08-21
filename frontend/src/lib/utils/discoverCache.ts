@@ -111,13 +111,7 @@ class DiscoverCache {
   }
 
   // デバッグ用: キャッシュ状態を表示
-  debug(): void {
-    console.log("DiscoverCache状態:", {
-      totalKeys: Object.keys(this.cache).length,
-      cacheKeys: Object.keys(this.cache),
-      cacheData: this.cache,
-    });
-  }
+  debug(): void {}
 }
 
 // シングルトンインスタンス

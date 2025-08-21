@@ -2,6 +2,9 @@ import { PUBLIC_API_BASE_URL } from "$env/static/public";
 
 const API_BASE_URL = PUBLIC_API_BASE_URL;
 
+// 一時的なデバッグログ
+console.log("DEBUG: API_BASE_URL =", API_BASE_URL);
+
 export async function fetchApi<T>(
   path: string,
   options?: RequestInit,

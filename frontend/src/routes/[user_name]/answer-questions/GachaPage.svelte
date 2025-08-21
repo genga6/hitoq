@@ -192,7 +192,7 @@
         const parsed = JSON.parse(savedQuestions);
         if (Array.isArray(parsed)) {
           unansweredQAPairs = parsed;
-          console.log("復元した未回答質問数:", parsed.length);
+          
         }
       }
 
@@ -214,7 +214,7 @@
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(unansweredQAPairs));
       localStorage.setItem(STORAGE_KEY_INPUTS, JSON.stringify(questionInputs));
-      console.log("保存した未回答質問数:", unansweredQAPairs.length);
+      
     } catch (error) {
       console.error("localStorageへのデータ保存エラー:", error);
     }
