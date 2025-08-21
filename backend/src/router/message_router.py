@@ -18,7 +18,7 @@ message_router = APIRouter(
 )
 
 
-@message_router.post("/", response_model=MessageRead)
+@message_router.post("", response_model=MessageRead)
 def create_message(
     message: MessageCreate,
     db: Session = Depends(get_db),
@@ -32,7 +32,7 @@ def create_message(
     return db_message
 
 
-@message_router.get("/", response_model=list[MessageRead])
+@message_router.get("", response_model=list[MessageRead])
 def get_my_messages(
     skip: int = Query(0, ge=0, description="Offset"),
     limit: int = Query(50, ge=1, le=100, description="Limit"),
