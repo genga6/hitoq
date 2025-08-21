@@ -54,15 +54,20 @@ export const load: LayoutServerLoad = async ({
     "Cache-Control": "public, max-age=300, s-maxage=300",
   });
 
-  const currentUser = await getAuthenticatedUser(cookies, fetch);
-
   try {
-    const profile = await getUserByUserName(userName);
+    // 認証とプロフィール取得を並行実行
+    const [currentUser, profile] = await Promise.all([
+      getAuthenticatedUser(cookies, fetch),
+      getUserByUserName(userName),
+    ]);
+
     const isOwner = currentUser?.userName === userName;
 
-    // サーバーサイドで visit tracking を実行
+    // サーバーサイドで visit tracking を実行（非同期、待機しない）
     if (profile?.userId && !isOwner) {
-      trackUserVisit(profile.userId, fetch);
+      trackUserVisit(profile.userId, fetch).catch((err) =>
+        console.warn("Visit tracking failed:", err),
+      );
     }
 
     return {
