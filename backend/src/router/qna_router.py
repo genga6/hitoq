@@ -42,7 +42,7 @@ def create_new_answer(
         raise HTTPException(status_code=400, detail=str(e)) from e
 
 
-@questions_router.get("/", response_model=list[QuestionRead])
+@questions_router.get("", response_model=list[QuestionRead])
 def read_all_questions(db: Session = Depends(get_db)):
     return qna_service.get_all_questions(db=db)
 
