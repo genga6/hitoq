@@ -2,18 +2,11 @@ import { PUBLIC_API_BASE_URL } from "$env/static/public";
 
 const API_BASE_URL = PUBLIC_API_BASE_URL;
 
-// 一時的なデバッグログ
-console.log("DEBUG: API_BASE_URL =", API_BASE_URL);
-
 export async function fetchApi<T>(
   path: string,
   options?: RequestInit,
 ): Promise<T> {
-  const fullUrl = `${API_BASE_URL}${path}`;
-  console.log("DEBUG: fetchApi - API_BASE_URL =", API_BASE_URL);
-  console.log("DEBUG: fetchApi - path =", path);
-  console.log("DEBUG: fetchApi - fullUrl =", fullUrl);
-  const response = await fetch(fullUrl, options);
+  const response = await fetch(`${API_BASE_URL}${path}`, options);
   if (!response.ok) {
     const errorData = await response.json();
     throw new Error(errorData.detail || "API request failed");

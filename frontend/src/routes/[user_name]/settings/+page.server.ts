@@ -1,31 +1,26 @@
 import type { PageServerLoad } from "./$types";
-import { getCurrentUserServer } from "$lib/api-client/auth";
 import { error, redirect } from "@sveltejs/kit";
 
-export const load: PageServerLoad = async ({ params, fetch }) => {
-  const userName = params.user_name;
-
+export const load: PageServerLoad = async ({ parent }) => {
   try {
-    const currentUser = await getCurrentUserServer(fetch);
+    const { isOwner, isLoggedIn, profile } = await parent();
 
-    // 認証チェック
-    if (!currentUser) {
+    if (!isLoggedIn) {
       throw redirect(302, "/");
     }
 
-    // 本人確認
-    if (currentUser.userName !== userName) {
+    if (!isOwner) {
       throw error(403, "アクセス権限がありません");
     }
 
     return {
-      profile: currentUser,
+      profile,
     };
   } catch (e) {
-    if (e instanceof Error && e.message.includes("redirect")) {
-      throw e;
-    }
-    if (e instanceof Error && e.message.includes("403")) {
+    if (
+      e instanceof Error &&
+      (e.message.includes("redirect") || e.message.includes("403"))
+    ) {
       throw e;
     }
     console.error("Error loading settings page:", e);
