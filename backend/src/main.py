@@ -75,7 +75,7 @@ origins = [url.strip() for url in frontend_urls]
 
 allow_methods = os.getenv("CORS_ALLOW_METHODS", "GET,POST,PUT,DELETE,PATCH").split(",")
 allow_headers = os.getenv(
-    "CORS_ALLOW_HEADERS", "Content-Type,Authorization,Accept"
+    "CORS_ALLOW_HEADERS", "Content-Type,Authorization,Accept,X-CSRFToken"
 ).split(",")
 
 app.add_middleware(
