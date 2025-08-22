@@ -52,21 +52,6 @@ export const checkAuthStatus = async (): Promise<boolean> => {
   return user !== null;
 };
 
-export const getCsrfToken = async (): Promise<string | null> => {
-  try {
-    const response = await fetchApiWithAuth<{ csrf_token: string }>(
-      "/auth/csrf-token",
-      {
-        method: "GET",
-      },
-    );
-    return response.csrf_token;
-  } catch (error) {
-    console.error("CSRFトークンの取得に失敗しました:", error);
-    return null;
-  }
-};
-
 export const deleteUser = async (userId: string): Promise<void> => {
   await fetchApiWithAuth<void>(`/users/${userId}`, {
     method: "DELETE",
