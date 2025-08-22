@@ -73,10 +73,14 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 frontend_urls = os.getenv("FRONTEND_URLS", "http://localhost:5173").split(",")
 origins = [url.strip() for url in frontend_urls]
 
-allow_methods = os.getenv("CORS_ALLOW_METHODS", "GET,POST,PUT,DELETE,PATCH").split(",")
-allow_headers = os.getenv(
-    "CORS_ALLOW_HEADERS", "Content-Type,Authorization,Accept,X-CSRFToken"
+allow_methods = os.getenv(
+    "CORS_ALLOW_METHODS", "GET,POST,PUT,DELETE,PATCH,OPTIONS"
 ).split(",")
+allow_headers_raw = os.getenv(
+    "CORS_ALLOW_HEADERS", "Content-Type,Authorization,Accept,X-CSRFToken"
+)
+allow_headers = allow_headers_raw.split(",")
+
 
 app.add_middleware(
     CORSMiddleware,
