@@ -2,7 +2,25 @@ import { PUBLIC_API_BASE_URL } from "$env/static/public";
 
 const API_BASE_URL = PUBLIC_API_BASE_URL;
 
-// CSRFトークンをクッキーから取得する関数
+export async function getCsrfToken(): Promise<string | null> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/auth/csrf-token`, {
+      method: "GET",
+      credentials: "include", // Include cookies to set csrftoken cookie
+    });
+
+    if (!response.ok) {
+      throw new Error(`CSRF token request failed: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data.csrf_token;
+  } catch (error) {
+    console.error("CSRFトークンの取得に失敗しました:", error);
+    return null;
+  }
+}
+
 function getCsrfTokenFromCookie(): string | null {
   if (typeof document === "undefined") return null;
 

@@ -1,5 +1,6 @@
 <script lang="ts">
   import { sendMessage } from "$lib/api-client/messages";
+  import { replaceState } from "$app/navigation";
 
   import type { Message } from "$lib/types";
 
@@ -59,7 +60,7 @@
         url.searchParams.delete("compose");
         url.searchParams.delete("reference");
         url.searchParams.delete("type");
-        window.history.replaceState({}, "", url.toString());
+        replaceState(url.toString(), {});
       }
 
       // onSuccessコールバックが提供されている場合は新しいメッセージを渡して実行

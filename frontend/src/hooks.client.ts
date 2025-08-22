@@ -1,6 +1,6 @@
 import { handleErrorWithSentry, init } from "@sentry/sveltekit";
 import { PUBLIC_SENTRY_DSN, PUBLIC_ENVIRONMENT } from "$env/static/public";
-import { getCsrfToken } from "$lib/api-client/auth";
+import { getCsrfToken } from "$lib/api-client/base";
 
 init({
   dsn: PUBLIC_SENTRY_DSN,
