@@ -88,11 +88,11 @@ class TestAuthRouter:
 
     def test_refresh_token_success(self, client, csrf_headers):
         # リフレッシュトークンはCookieベースなので、有効なCookieなしでは401になる
-        response = client.post("/auth/refresh", headers=csrf_headers)
+        response = client.post("/auth/refresh-token", headers=csrf_headers)
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
     def test_refresh_token_missing_header(self, client, csrf_headers):
-        response = client.post("/auth/refresh", headers=csrf_headers)
+        response = client.post("/auth/refresh-token", headers=csrf_headers)
 
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
@@ -142,7 +142,7 @@ class TestAuthRouter:
         assert len(response_data["csrf_token"]) > 0
 
         # Cookieが設定されていることを確認
-        assert "csrftoken" in response.cookies
+        assert "csrf_token" in response.cookies
 
     def test_rate_limiting_login(self, client):
         # 複数回連続でアクセスして制限をテスト

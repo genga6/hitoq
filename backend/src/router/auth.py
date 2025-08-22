@@ -243,7 +243,7 @@ async def auth_twitter_callback(
         return response
 
 
-@auth_router.post("/refresh")
+@auth_router.post("/refresh-token")
 @limiter.limit("100/hour")  # Allow frequent refresh but prevent abuse
 async def refresh_token(request: Request, db: Session = Depends(get_db)):
     refresh_token = request.cookies.get("refresh_token")
@@ -288,7 +288,7 @@ async def get_csrf_token(request: Request):
 
     response = JSONResponse(content={"csrf_token": csrf_token})
     response.set_cookie(
-        key="csrftoken",
+        key="csrf_token",
         value=csrf_token,
         domain=".hitoq.net" if os.getenv("ENVIRONMENT") == "production" else None,
         path="/",
@@ -313,6 +313,6 @@ async def logout(request: Request):
     response = JSONResponse(content={"message": "Logged out successfully"})
     response.delete_cookie(key="access_token", path="/")
     response.delete_cookie(key="refresh_token", path="/")
-    response.delete_cookie(key="csrftoken", path="/")
+    response.delete_cookie(key="csrf_token", path="/")
 
     return response

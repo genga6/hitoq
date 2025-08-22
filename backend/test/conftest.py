@@ -310,7 +310,7 @@ def csrf_headers(client):
     """CSRFトークン付きヘッダーを生成し、クライアントにクッキーを設定するフィクスチャ"""
     csrf_token = TokenService.create_csrf_token()
     # TestClientにクッキーを設定
-    client.cookies.set("csrftoken", csrf_token)
+    client.cookies.set("csrf_token", csrf_token)
     return {"X-CSRFToken": csrf_token}
 
 
@@ -318,7 +318,7 @@ def csrf_headers(client):
 def csrf_client(client):
     """CSRF対応のテストクライアントを生成するフィクスチャ"""
     csrf_token = TokenService.create_csrf_token()
-    client.cookies.set("csrftoken", csrf_token)
+    client.cookies.set("csrf_token", csrf_token)
     return client
 
 
