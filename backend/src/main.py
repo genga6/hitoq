@@ -12,6 +12,7 @@ from starlette.middleware.sessions import SessionMiddleware
 
 from src.config.limiter import limiter
 from src.config.logging_config import configure_logging, get_logger
+from src.middleware.csrf import CSRFMiddleware
 from src.middleware.logging import LoggingMiddleware
 from src.router import auth
 from src.router.block_router import block_router
@@ -85,6 +86,10 @@ app.add_middleware(
     allow_headers=[header.strip() for header in allow_headers],
 )
 app.add_middleware(SessionMiddleware, secret_key=os.getenv("SESSION_SECRET_KEY"))
+
+if os.getenv("ENVIRONMENT") != "test":
+    app.add_middleware(CSRFMiddleware)
+
 app.add_middleware(LoggingMiddleware)
 
 app.include_router(username_router, tags=["Username"])

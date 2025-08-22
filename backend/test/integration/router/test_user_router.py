@@ -9,7 +9,7 @@ from src.router.user_router import get_current_user_optional
 
 @pytest.mark.integration
 class TestUserRouter:
-    def test_upsert_user_create_new(self, client, test_db_session):
+    def test_upsert_user_create_new(self, client, test_db_session, csrf_headers):
         user_data = {
             "user_id": "new_router_user",
             "user_name": "newrouteruser",
@@ -18,7 +18,7 @@ class TestUserRouter:
             "icon_url": "https://example.com/router_avatar.jpg",
         }
 
-        response = client.post("/users", json=user_data)
+        response = client.post("/users", json=user_data, headers=csrf_headers)
 
         assert response.status_code == status.HTTP_201_CREATED
         response_data = response.json()
@@ -28,7 +28,9 @@ class TestUserRouter:
         assert response_data["displayName"] == "New Router User"
         assert response_data["bio"] == "Created via router test"
 
-    def test_upsert_user_update_existing(self, client, test_db_session, create_user):
+    def test_upsert_user_update_existing(
+        self, client, test_db_session, create_user, csrf_headers
+    ):
         create_user(
             user_id="existing_router_user",
             user_name="existingrouteruser",
@@ -44,7 +46,7 @@ class TestUserRouter:
             "icon_url": "https://example.com/updated_avatar.jpg",
         }
 
-        response = client.post("/users", json=update_data)
+        response = client.post("/users", json=update_data, headers=csrf_headers)
 
         assert response.status_code == status.HTTP_201_CREATED
         response_data = response.json()
@@ -190,23 +192,23 @@ class TestUserRouter:
 
         assert len(response_data) == 0
 
-    def test_upsert_user_invalid_data(self, client):
+    def test_upsert_user_invalid_data(self, client, csrf_headers):
         invalid_data = {
             "user_id": "",  # 空のuser_id
             "user_name": "testuser",
             "display_name": "Test User",
         }
 
-        response = client.post("/users", json=invalid_data)
+        response = client.post("/users", json=invalid_data, headers=csrf_headers)
 
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
-    def test_upsert_user_missing_required_fields(self, client):
+    def test_upsert_user_missing_required_fields(self, client, csrf_headers):
         incomplete_data = {
             "user_id": "test_user",
             # user_name と display_name が不足
         }
 
-        response = client.post("/users", json=incomplete_data)
+        response = client.post("/users", json=incomplete_data, headers=csrf_headers)
 
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY

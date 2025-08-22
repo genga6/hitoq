@@ -2,7 +2,6 @@ import base64
 import hashlib
 import os
 import secrets
-from datetime import datetime, timedelta, timezone
 
 import httpx
 import jwt
@@ -17,6 +16,7 @@ from src.config.logging_config import get_logger
 from src.db.session import get_db
 from src.schema.user import UserCreate, UserRead
 from src.service import user_service
+from src.service.token_service import TokenService
 
 logger = get_logger(__name__)
 limiter = Limiter(key_func=get_remote_address)
@@ -36,52 +36,13 @@ FRONTEND_URL = os.getenv("FRONTEND_URLS", "http://localhost:5173").split(",")[0]
 ACCESS_TOKEN_EXPIRE_MINUTES = 15
 REFRESH_TOKEN_EXPIRE_DAYS = 7
 
-# リフレッシュトークンのブラックリスト（本番環境ではRedisなどを使用）
-blacklisted_tokens = set()
-
-
-def _create_access_token(user_id: str) -> str:
-    now = datetime.now(timezone.utc)
-    expire = now + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    payload = {"sub": user_id, "type": "access", "exp": expire}
-    return jwt.encode(payload, SECRET_KEY, algorithm="HS256")
-
-
-def _create_refresh_token(user_id: str) -> str:
-    now = datetime.now(timezone.utc)
-    expire = now + timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS)
-    payload = {
-        "sub": user_id,
-        "type": "refresh",
-        "exp": expire,
-        "iat": datetime.now(timezone.utc),
-    }
-    return jwt.encode(payload, SECRET_KEY, algorithm="HS256")
-
-
-def _verify_token(token: str, token_type: str = "access"):
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
-
-        if payload.get("type") != token_type:
-            raise HTTPException(status_code=401, detail="Invalid token type")
-
-        if token_type == "refresh" and token in blacklisted_tokens:
-            raise HTTPException(status_code=401, detail="Token has been revoked")
-
-        return payload
-    except jwt.ExpiredSignatureError as e:
-        raise HTTPException(status_code=401, detail="Token expired") from e
-    except jwt.InvalidTokenError as e:
-        raise HTTPException(status_code=401, detail="Invalid token") from e
-
 
 def _get_current_user(request: Request, db: Session = Depends(get_db)):
     token = request.cookies.get("access_token")
     if not token:
         raise HTTPException(status_code=401, detail="Not authenticated")
 
-    payload = _verify_token(token, "access")
+    payload = TokenService.verify_token(token, "access")
     user_id = payload.get("sub")
     if not user_id:
         raise HTTPException(status_code=401, detail="Invalid token")
@@ -252,8 +213,8 @@ async def auth_twitter_callback(
             client_ip=get_remote_address(request),
         )
 
-        access_token = _create_access_token(user.user_id)
-        refresh_token = _create_refresh_token(user.user_id)
+        access_token = TokenService.create_access_token(user.user_id)
+        refresh_token = TokenService.create_refresh_token(user.user_id)
 
         response = RedirectResponse(url=f"{FRONTEND_URL}/{user.user_name}")
 
@@ -289,7 +250,7 @@ async def refresh_token(request: Request, db: Session = Depends(get_db)):
     if not refresh_token:
         raise HTTPException(status_code=401, detail="Refresh token not found")
 
-    payload = _verify_token(refresh_token, "refresh")
+    payload = TokenService.verify_token(refresh_token, "refresh")
     user_id = payload.get("sub")
     if not user_id:
         raise HTTPException(status_code=401, detail="Invalid refresh token")
@@ -298,7 +259,7 @@ async def refresh_token(request: Request, db: Session = Depends(get_db)):
     if not user:
         raise HTTPException(status_code=401, detail="User not found")
 
-    new_access_token = _create_access_token(user.user_id)
+    new_access_token = TokenService.create_access_token(user.user_id)
 
     response = JSONResponse(content={"message": "Token refreshed successfully"})
     response.set_cookie(
@@ -320,17 +281,37 @@ async def get_current_user_info(current_user=Depends(_get_current_user)):
     return current_user
 
 
+@auth_router.get("/csrf-token")
+@limiter.limit("50/minute")  # Allow frequent CSRF token requests
+async def get_csrf_token(request: Request):
+    """CSRFトークンを取得する"""
+    csrf_token = TokenService.create_csrf_token()
+
+    response = JSONResponse(content={"csrf_token": csrf_token})
+    response.set_cookie(
+        key="csrftoken",
+        value=csrf_token,
+        max_age=24 * 60 * 60,  # 24時間
+        httponly=False,  # JavaScriptからアクセス可能
+        samesite="lax",
+        secure=os.getenv("COOKIE_SECURE", "false").lower() == "true",
+    )
+
+    return response
+
+
 @auth_router.post("/logout")
 @limiter.limit("30/minute")  # Reasonable limit for logout
 async def logout(request: Request):
     refresh_token = request.cookies.get("refresh_token")
 
     if refresh_token:
-        blacklisted_tokens.add(refresh_token)
+        TokenService.blacklist_refresh_token(refresh_token)
         logger.info("User logged out", client_ip=get_remote_address(request))
 
     response = JSONResponse(content={"message": "Logged out successfully"})
     response.delete_cookie(key="access_token", path="/")
     response.delete_cookie(key="refresh_token", path="/")
+    response.delete_cookie(key="csrftoken", path="/")
 
     return response
