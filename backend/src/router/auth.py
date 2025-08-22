@@ -293,7 +293,7 @@ async def get_csrf_token(request: Request):
         value=csrf_token,
         max_age=24 * 60 * 60,  # 24時間
         httponly=False,  # JavaScriptからアクセス可能
-        samesite="lax",
+        samesite="none" if os.getenv("ENVIRONMENT") == "production" else "lax",
         secure=os.getenv("COOKIE_SECURE", "false").lower() == "true",
     )
 
