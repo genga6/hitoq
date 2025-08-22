@@ -7,7 +7,7 @@ from src.service.token_service import TokenService
 logger = get_logger(__name__)
 
 CSRF_HEADER_NAME = "X-CSRFToken"
-CSRF_COOKIE_NAME = "csrftoken"
+CSRF_COOKIE_NAME = "csrf_token"
 
 
 class CSRFMiddleware(BaseHTTPMiddleware):
@@ -19,7 +19,7 @@ class CSRFMiddleware(BaseHTTPMiddleware):
             "/",
             "/auth/login/twitter",
             "/auth/callback/twitter",
-            "/auth/refresh",
+            "/auth/refresh-token",
             "/auth/csrf-token",
         }
 

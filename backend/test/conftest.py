@@ -301,30 +301,26 @@ def create_answer(test_db_session):
 
 @pytest.fixture
 def csrf_token():
-    """CSRFトークンを生成するフィクスチャ"""
     return TokenService.create_csrf_token()
 
 
 @pytest.fixture
 def csrf_headers(client):
-    """CSRFトークン付きヘッダーを生成し、クライアントにクッキーを設定するフィクスチャ"""
     csrf_token = TokenService.create_csrf_token()
     # TestClientにクッキーを設定
-    client.cookies.set("csrftoken", csrf_token)
+    client.cookies.set("csrf_token", csrf_token)
     return {"X-CSRFToken": csrf_token}
 
 
 @pytest.fixture
 def csrf_client(client):
-    """CSRF対応のテストクライアントを生成するフィクスチャ"""
     csrf_token = TokenService.create_csrf_token()
-    client.cookies.set("csrftoken", csrf_token)
+    client.cookies.set("csrf_token", csrf_token)
     return client
 
 
 @pytest.fixture
 def authenticated_csrf_headers(csrf_headers):
-    """認証 + CSRF トークン付きヘッダーを生成するフィクスチャ"""
     headers = csrf_headers.copy()
     headers["Authorization"] = "Bearer test_jwt_token_123"
     return headers
