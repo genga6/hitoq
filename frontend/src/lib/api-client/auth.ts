@@ -37,7 +37,7 @@ export const getCurrentUser = async () => {
 
 export const refreshAccessToken = async (): Promise<boolean> => {
   try {
-    await fetchApiWithAuth<void>("/auth/refresh", {
+    await fetchApiWithAuth<void>("/auth/refresh-token", {
       method: "POST",
     });
     return true;
@@ -62,7 +62,8 @@ export const deleteUser = async (userId: string): Promise<void> => {
     "access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT";
   document.cookie =
     "refresh_token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT";
-  document.cookie = "csrftoken=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT";
+  document.cookie =
+    "csrf_token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT";
 };
 
 // Server-side authentication APIs
@@ -91,7 +92,7 @@ export const refreshAccessTokenServer = async (
   fetcher: typeof fetch,
 ): Promise<boolean> => {
   try {
-    await fetchApiWithCookies<void>("/auth/refresh", fetcher, {
+    await fetchApiWithCookies<void>("/auth/refresh-token", fetcher, {
       method: "POST",
     });
     return true;

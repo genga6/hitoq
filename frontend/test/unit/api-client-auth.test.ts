@@ -111,7 +111,7 @@ describe("Auth API Client", () => {
 
       const result = await refreshAccessToken();
 
-      expect(fetchApiWithAuth).toHaveBeenCalledWith("/auth/refresh", {
+      expect(fetchApiWithAuth).toHaveBeenCalledWith("/auth/refresh-token", {
         method: "POST",
       });
       expect(result).toBe(true);
@@ -224,7 +224,7 @@ describe("Auth API Client", () => {
       const result = await refreshAccessTokenServer("session=abc123");
 
       expect(fetchApiWithCookies).toHaveBeenCalledWith(
-        "/auth/refresh",
+        "/auth/refresh-token",
         "session=abc123",
         {
           method: "POST",

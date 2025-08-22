@@ -6,7 +6,7 @@ export async function getCsrfToken(): Promise<string | null> {
   try {
     const response = await fetch(`${API_BASE_URL}/auth/csrf-token`, {
       method: "GET",
-      credentials: "include", // Include cookies to set csrftoken cookie
+      credentials: "include", // Include cookies to set csrf_token cookie
     });
 
     if (!response.ok) {
@@ -27,7 +27,7 @@ function getCsrfTokenFromCookie(): string | null {
   const cookies = document.cookie.split(";");
   for (const cookie of cookies) {
     const [name, value] = cookie.trim().split("=");
-    if (name === "csrftoken") {
+    if (name === "csrf_token") {
       return value;
     }
   }
