@@ -13,6 +13,7 @@ from src.db.session import get_db
 from src.db.tables import Answer, Base, ProfileItem, Question, User
 from src.main import app
 from src.service.config_manager import ConfigManager
+from src.service.token_service import TokenService
 
 
 @pytest.fixture(scope="session")
@@ -63,7 +64,7 @@ def client(test_db_session) -> Generator[TestClient, None, None]:
     os.environ.setdefault("JWT_SECRET_KEY", "test_secret_key")
     os.environ.setdefault("TWITTER_CLIENT_ID", "test_client_id")
     os.environ.setdefault("TWITTER_CLIENT_SECRET", "test_client_secret")
-    os.environ.setdefault("ENVIRONMENT", "testing")
+    os.environ.setdefault("ENVIRONMENT", "test")
     os.environ.setdefault("SESSION_SECRET_KEY", "test_session_secret")
     os.environ.setdefault("DB_USER", "test_user")
     os.environ.setdefault("DB_PASSWORD", "test_password")
@@ -216,7 +217,7 @@ def clean_environment():
             "JWT_SECRET_KEY": "test_secret_key",
             "TWITTER_CLIENT_ID": "test_client_id",
             "TWITTER_CLIENT_SECRET": "test_client_secret",
-            "ENVIRONMENT": "testing",
+            "ENVIRONMENT": "test",
             "SESSION_SECRET_KEY": "test_session_secret",
             "DB_USER": "test_user",
             "DB_PASSWORD": "test_password",
@@ -296,3 +297,34 @@ def create_answer(test_db_session):
         return answer
 
     return _create_answer
+
+
+@pytest.fixture
+def csrf_token():
+    """CSRFトークンを生成するフィクスチャ"""
+    return TokenService.create_csrf_token()
+
+
+@pytest.fixture
+def csrf_headers(client):
+    """CSRFトークン付きヘッダーを生成し、クライアントにクッキーを設定するフィクスチャ"""
+    csrf_token = TokenService.create_csrf_token()
+    # TestClientにクッキーを設定
+    client.cookies.set("csrftoken", csrf_token)
+    return {"X-CSRFToken": csrf_token}
+
+
+@pytest.fixture
+def csrf_client(client):
+    """CSRF対応のテストクライアントを生成するフィクスチャ"""
+    csrf_token = TokenService.create_csrf_token()
+    client.cookies.set("csrftoken", csrf_token)
+    return client
+
+
+@pytest.fixture
+def authenticated_csrf_headers(csrf_headers):
+    """認証 + CSRF トークン付きヘッダーを生成するフィクスチャ"""
+    headers = csrf_headers.copy()
+    headers["Authorization"] = "Bearer test_jwt_token_123"
+    return headers

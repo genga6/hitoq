@@ -86,50 +86,19 @@ class TestAuthRouter:
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
 
-    def test_refresh_token_success(self, client, test_db_session, create_user):
-        user = create_user(user_id="refresh_user", user_name="refreshuser")
+    def test_refresh_token_success(self, client, csrf_headers):
+        # リフレッシュトークンはCookieベースなので、有効なCookieなしでは401になる
+        response = client.post("/auth/refresh", headers=csrf_headers)
+        assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
-        def override_get_current_user():
-            return user
-
-        app.dependency_overrides[_get_current_user] = override_get_current_user
-        try:
-            response = client.post(
-                "/auth/refresh", headers={"Authorization": "Bearer valid_refresh_token"}
-            )
-            assert response.status_code in [
-                status.HTTP_200_OK,
-                status.HTTP_401_UNAUTHORIZED,
-            ]
-        finally:
-            app.dependency_overrides.pop(_get_current_user, None)
-
-    def test_refresh_token_missing_header(self, client):
-        response = client.post("/auth/refresh")
+    def test_refresh_token_missing_header(self, client, csrf_headers):
+        response = client.post("/auth/refresh", headers=csrf_headers)
 
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
-    def test_logout_success(self, client, test_db_session, create_user):
-        user = create_user(user_id="logout_user", user_name="logoutuser")
-
-        def override_get_current_user():
-            return user
-
-        app.dependency_overrides[_get_current_user] = override_get_current_user
-        try:
-            response = client.post(
-                "/auth/logout", headers={"Authorization": "Bearer valid_token"}
-            )
-            assert response.status_code in [
-                status.HTTP_200_OK,
-                status.HTTP_401_UNAUTHORIZED,
-            ]
-        finally:
-            app.dependency_overrides.pop(_get_current_user, None)
-
-    def test_logout_missing_header(self, client):
-        response = client.post("/auth/logout")
-
+    def test_logout_success(self, client, csrf_headers):
+        # ログアウトはCookieの有無に関わらず成功する
+        response = client.post("/auth/logout", headers=csrf_headers)
         assert response.status_code == status.HTTP_200_OK
 
     def test_me_endpoint_authenticated(self, client, test_db_session, create_user):
@@ -161,6 +130,20 @@ class TestAuthRouter:
 
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
+    def test_csrf_token_endpoint(self, client):
+        # CSRFトークンエンドポイントのテスト
+        response = client.get("/auth/csrf-token")
+
+        assert response.status_code == status.HTTP_200_OK
+        response_data = response.json()
+
+        assert "csrf_token" in response_data
+        assert isinstance(response_data["csrf_token"], str)
+        assert len(response_data["csrf_token"]) > 0
+
+        # Cookieが設定されていることを確認
+        assert "csrftoken" in response.cookies
+
     def test_rate_limiting_login(self, client):
         # 複数回連続でアクセスして制限をテスト
         responses = []
@@ -171,7 +154,6 @@ class TestAuthRouter:
         success_responses = [
             r for r in responses if r == status.HTTP_307_TEMPORARY_REDIRECT
         ]
-        [r for r in responses if r == status.HTTP_429_TOO_MANY_REQUESTS]
 
         # 少なくとも1つは成功している（制限がかからない可能性もあるのでテストは緩く）
         assert len(success_responses) >= 1

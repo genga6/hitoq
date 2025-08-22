@@ -10,7 +10,9 @@ from src.router.auth import _get_current_user
 
 @pytest.mark.integration
 class TestMessageRouter:
-    def test_create_message_success(self, client, test_db_session, create_user):
+    def test_create_message_success(
+        self, client, test_db_session, create_user, csrf_headers
+    ):
         sender = create_user(user_id="sender_user", user_name="senderuser")
         receiver = create_user(user_id="receiver_user", user_name="receiveruser")
 
@@ -21,7 +23,7 @@ class TestMessageRouter:
         }
 
         app.dependency_overrides[_get_current_user] = lambda: sender
-        response = client.post("/messages/", json=message_data)
+        response = client.post("/messages/", json=message_data, headers=csrf_headers)
         app.dependency_overrides = {}
 
         assert response.status_code == status.HTTP_200_OK
@@ -32,7 +34,9 @@ class TestMessageRouter:
         assert response_data["content"] == "こんにちは！テストメッセージです。"
         assert response_data["messageType"] == "comment"
 
-    def test_create_message_nonexistent_target_user(self, client, create_user):
+    def test_create_message_nonexistent_target_user(
+        self, client, create_user, csrf_headers
+    ):
         sender = create_user(user_id="invalid_sender", user_name="invalidsender")
 
         message_data = {
@@ -42,12 +46,12 @@ class TestMessageRouter:
         }
 
         app.dependency_overrides[_get_current_user] = lambda: sender
-        response = client.post("/messages/", json=message_data)
+        response = client.post("/messages/", json=message_data, headers=csrf_headers)
         app.dependency_overrides = {}
 
         assert response.status_code == status.HTTP_404_NOT_FOUND
 
-    def test_create_message_unauthenticated(self, client, create_user):
+    def test_create_message_unauthenticated(self, client, create_user, csrf_headers):
         receiver = create_user(user_id="unauth_receiver", user_name="unauthreceiver")
 
         message_data = {
@@ -56,11 +60,11 @@ class TestMessageRouter:
             "content": "未認証メッセージ",
         }
 
-        response = client.post("/messages/", json=message_data)
+        response = client.post("/messages/", json=message_data, headers=csrf_headers)
 
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
-    def test_create_message_invalid_data(self, client, create_user):
+    def test_create_message_invalid_data(self, client, create_user, csrf_headers):
         sender = create_user(user_id="invalid_data_sender", user_name="invaliddata")
         receiver = create_user(user_id="invalid_data_receiver", user_name="invalidrec")
 
@@ -71,7 +75,7 @@ class TestMessageRouter:
         }
 
         app.dependency_overrides[_get_current_user] = lambda: sender
-        response = client.post("/messages/", json=invalid_data)
+        response = client.post("/messages/", json=invalid_data, headers=csrf_headers)
         app.dependency_overrides = {}
 
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
@@ -141,7 +145,9 @@ class TestMessageRouter:
         response = client.get("/messages/")
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
-    def test_update_message_status_success(self, client, test_db_session, create_user):
+    def test_update_message_status_success(
+        self, client, test_db_session, create_user, csrf_headers
+    ):
         sender = create_user(user_id="status_sender", user_name="statussender")
         receiver = create_user(user_id="status_receiver", user_name="statusreceiver")
 
@@ -159,7 +165,9 @@ class TestMessageRouter:
         update_data = {"status": "read"}
 
         app.dependency_overrides[_get_current_user] = lambda: receiver
-        response = client.patch(f"/messages/{message.message_id}", json=update_data)
+        response = client.patch(
+            f"/messages/{message.message_id}", json=update_data, headers=csrf_headers
+        )
         app.dependency_overrides = {}
 
         assert response.status_code in [
@@ -167,7 +175,9 @@ class TestMessageRouter:
             status.HTTP_404_NOT_FOUND,
         ]
 
-    def test_reply_to_message_success(self, client, test_db_session, create_user):
+    def test_reply_to_message_success(
+        self, client, test_db_session, create_user, csrf_headers
+    ):
         sender = create_user(user_id="reply_sender", user_name="replysender")
         receiver = create_user(user_id="reply_receiver", user_name="replyreceiver")
 
@@ -191,7 +201,7 @@ class TestMessageRouter:
         }
 
         app.dependency_overrides[_get_current_user] = lambda: receiver
-        response = client.post("/messages/", json=reply_data)
+        response = client.post("/messages/", json=reply_data, headers=csrf_headers)
         app.dependency_overrides = {}
 
         # 返信機能が実装されている場合の成功レスポンスを確認
@@ -226,7 +236,7 @@ class TestMessageRouter:
             status.HTTP_404_NOT_FOUND,
         ]
 
-    def test_message_content_length_validation(self, client, create_user):
+    def test_message_content_length_validation(self, client, create_user, csrf_headers):
         sender = create_user(user_id="length_sender", user_name="lengthsender")
         receiver = create_user(user_id="length_receiver", user_name="lengthreceiver")
 
@@ -240,7 +250,7 @@ class TestMessageRouter:
         }
 
         app.dependency_overrides[_get_current_user] = lambda: sender
-        response = client.post("/messages/", json=message_data)
+        response = client.post("/messages/", json=message_data, headers=csrf_headers)
         app.dependency_overrides = {}
 
         # 長すぎる場合のエラーまたは成功レスポンスを確認
@@ -250,7 +260,7 @@ class TestMessageRouter:
         ]
 
     @pytest.mark.parametrize("msg_type", ["comment", "like"])
-    def test_message_type_validation(self, client, create_user, msg_type):
+    def test_message_type_validation(self, client, create_user, msg_type, csrf_headers):
         sender = create_user(user_id="type_sender", user_name="typesender")
         receiver = create_user(user_id="type_receiver", user_name="typereceiver")
 
@@ -261,7 +271,7 @@ class TestMessageRouter:
         }
 
         app.dependency_overrides[_get_current_user] = lambda: sender
-        response = client.post("/messages/", json=message_data)
+        response = client.post("/messages/", json=message_data, headers=csrf_headers)
         app.dependency_overrides = {}
 
         assert response.status_code == status.HTTP_200_OK

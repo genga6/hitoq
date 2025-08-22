@@ -11,7 +11,9 @@ from src.router.block_router import _get_current_user
 
 @pytest.mark.integration
 class TestBlockRouter:
-    def test_create_block_success(self, client, test_db_session, create_user):
+    def test_create_block_success(
+        self, client, test_db_session, create_user, csrf_headers
+    ):
         blocker = create_user(user_id="blocker_user", user_name="blockeruser")
         blocked = create_user(user_id="blocked_user", user_name="blockeduser")
 
@@ -23,7 +25,7 @@ class TestBlockRouter:
         app.dependency_overrides[_get_current_user] = override_get_current_user
 
         try:
-            response = client.post("/block", json=block_data)
+            response = client.post("/block", json=block_data, headers=csrf_headers)
 
             assert response.status_code == status.HTTP_200_OK
             response_data = response.json()
@@ -43,13 +45,13 @@ class TestBlockRouter:
         app.dependency_overrides[_get_current_user] = override_get_current_user_2
 
         try:
-            response = client.post("/block", json=block_data)
+            response = client.post("/block", json=block_data, headers=csrf_headers)
 
             assert response.status_code == status.HTTP_404_NOT_FOUND
         finally:
             app.dependency_overrides.pop(_get_current_user, None)
 
-    def test_create_block_self_block(self, client, create_user):
+    def test_create_block_self_block(self, client, create_user, csrf_headers):
         user = create_user(user_id="self_block_user", user_name="selfblockuser")
 
         block_data = {"blocked_user_id": user.user_id}
@@ -60,13 +62,15 @@ class TestBlockRouter:
         app.dependency_overrides[_get_current_user] = override_get_current_user
 
         try:
-            response = client.post("/block", json=block_data)
+            response = client.post("/block", json=block_data, headers=csrf_headers)
 
             assert response.status_code == status.HTTP_400_BAD_REQUEST
         finally:
             app.dependency_overrides.pop(_get_current_user, None)
 
-    def test_create_block_duplicate(self, client, test_db_session, create_user):
+    def test_create_block_duplicate(
+        self, client, test_db_session, create_user, csrf_headers
+    ):
         blocker = create_user(user_id="dup_blocker", user_name="dupblocker")
         blocked = create_user(user_id="dup_blocked", user_name="dupblocked")
 
@@ -86,7 +90,7 @@ class TestBlockRouter:
         app.dependency_overrides[_get_current_user] = override_get_current_user
 
         try:
-            response = client.post("/block", json=block_data)
+            response = client.post("/block", json=block_data, headers=csrf_headers)
 
             # 重複エラーを返すか既存ブロックを返すかは実装次第
             assert response.status_code in [
@@ -96,13 +100,13 @@ class TestBlockRouter:
         finally:
             app.dependency_overrides.pop(_get_current_user, None)
 
-    def test_create_block_unauthenticated(self, client, create_user):
+    def test_create_block_unauthenticated(self, client, create_user, csrf_headers):
         blocked = create_user(user_id="unauth_blocked", user_name="unauthblocked")
 
         block_data = {"blocked_user_id": blocked.user_id}
 
         # 認証なしでリクエスト（依存関係オーバーライドなし）
-        response = client.post("/block", json=block_data)
+        response = client.post("/block", json=block_data, headers=csrf_headers)
 
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
@@ -144,7 +148,9 @@ class TestBlockRouter:
         finally:
             app.dependency_overrides.pop(_get_current_user, None)
 
-    def test_unblock_user_success(self, client, test_db_session, create_user):
+    def test_unblock_user_success(
+        self, client, test_db_session, create_user, csrf_headers
+    ):
         blocker = create_user(user_id="unblock_blocker", user_name="unblockblocker")
         blocked = create_user(user_id="unblock_blocked", user_name="unblockblocked")
 
@@ -162,7 +168,7 @@ class TestBlockRouter:
         app.dependency_overrides[_get_current_user] = override_get_current_user
 
         try:
-            response = client.delete(f"/block/{blocked.user_id}")
+            response = client.delete(f"/block/{blocked.user_id}", headers=csrf_headers)
 
             assert response.status_code in [
                 status.HTTP_204_NO_CONTENT,
@@ -171,7 +177,7 @@ class TestBlockRouter:
         finally:
             app.dependency_overrides.pop(_get_current_user, None)
 
-    def test_create_report_success(self, client, create_user):
+    def test_create_report_success(self, client, create_user, csrf_headers):
         reporter = create_user(user_id="reporter_user", user_name="reporteruser")
         reported = create_user(user_id="reported_user", user_name="reporteduser")
 
@@ -187,7 +193,7 @@ class TestBlockRouter:
         app.dependency_overrides[_get_current_user] = override_get_current_user
 
         try:
-            response = client.post("/report", json=report_data)
+            response = client.post("/report", json=report_data, headers=csrf_headers)
 
             assert response.status_code == status.HTTP_200_OK
             response_data = response.json()
@@ -198,7 +204,7 @@ class TestBlockRouter:
         finally:
             app.dependency_overrides.pop(_get_current_user, None)
 
-    def test_create_report_self_report(self, client, create_user):
+    def test_create_report_self_report(self, client, create_user, csrf_headers):
         user = create_user(user_id="self_report_user", user_name="selfreportuser")
 
         report_data = {
@@ -213,13 +219,13 @@ class TestBlockRouter:
         app.dependency_overrides[_get_current_user] = override_get_current_user
 
         try:
-            response = client.post("/report", json=report_data)
+            response = client.post("/report", json=report_data, headers=csrf_headers)
 
             assert response.status_code == status.HTTP_400_BAD_REQUEST
         finally:
             app.dependency_overrides.pop(_get_current_user, None)
 
-    def test_create_report_nonexistent_user(self, client, create_user):
+    def test_create_report_nonexistent_user(self, client, create_user, csrf_headers):
         reporter = create_user(user_id="invalid_reporter", user_name="invalidreporter")
 
         report_data = {
@@ -234,7 +240,7 @@ class TestBlockRouter:
         app.dependency_overrides[_get_current_user] = override_get_current_user
 
         try:
-            response = client.post("/report", json=report_data)
+            response = client.post("/report", json=report_data, headers=csrf_headers)
 
             assert response.status_code == status.HTTP_404_NOT_FOUND
         finally:
@@ -273,7 +279,9 @@ class TestBlockRouter:
         finally:
             app.dependency_overrides.pop(_get_current_user, None)
 
-    def test_update_report_status_success(self, client, test_db_session, create_user):
+    def test_update_report_status_success(
+        self, client, test_db_session, create_user, csrf_headers
+    ):
         admin_user = create_user(user_id="status_admin", user_name="statusadmin")
         reporter = create_user(user_id="status_reporter", user_name="statusreporter")
         reported = create_user(user_id="status_reported", user_name="statusreported")
@@ -297,7 +305,9 @@ class TestBlockRouter:
         app.dependency_overrides[_get_current_user] = override_get_current_user
 
         try:
-            response = client.put(f"/reports/{report.report_id}", json=update_data)
+            response = client.put(
+                f"/reports/{report.report_id}", json=update_data, headers=csrf_headers
+            )
 
             # 管理者権限や実装状況に応じて異なるステータスコード
             assert response.status_code in [
@@ -308,7 +318,7 @@ class TestBlockRouter:
         finally:
             app.dependency_overrides.pop(_get_current_user, None)
 
-    def test_rate_limiting_block_creation(self, client, create_user):
+    def test_rate_limiting_block_creation(self, client, create_user, csrf_headers):
         limiter.reset()  # NOTE: Reset because other tests may have been executed before this func.
         blocker = create_user(user_id="rate_blocker", user_name="rateblocker")
         blocked = create_user(user_id="rate_blocked", user_name="rateblocked")
@@ -326,7 +336,7 @@ class TestBlockRouter:
         try:
             responses = []
             for _ in range(REQUEST_COUNT):
-                response = client.post("/block", json=block_data)
+                response = client.post("/block", json=block_data, headers=csrf_headers)
                 responses.append(response)
 
             success_responses = [

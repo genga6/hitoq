@@ -7,7 +7,7 @@ from fastapi import status
 @pytest.mark.integration
 class TestQnARouter:
     def test_create_answer_success(
-        self, client, test_db_session, create_user, create_question
+        self, client, test_db_session, create_user, create_question, csrf_headers
     ):
         user = create_user(user_id="answer_user", user_name="answeruser")
         question = create_question(text="テスト質問です", category_id="personality")
@@ -17,6 +17,7 @@ class TestQnARouter:
         response = client.post(
             f"/users/{user.user_id}/questions/{question.question_id}/answers",
             json=answer_data,
+            headers=csrf_headers,
         )
 
         assert response.status_code == status.HTTP_200_OK
@@ -26,7 +27,9 @@ class TestQnARouter:
         assert response_data["userId"] == user.user_id
         assert response_data["questionId"] == question.question_id
 
-    def test_create_answer_nonexistent_user(self, client, create_question):
+    def test_create_answer_nonexistent_user(
+        self, client, create_question, csrf_headers
+    ):
         question = create_question(text="テスト質問", category_id="personality")
 
         answer_data = {"answer_text": "存在しないユーザーの回答"}
@@ -35,23 +38,34 @@ class TestQnARouter:
         response = client.post(
             f"/users/nonexistent_user/questions/{question.question_id}/answers",
             json=answer_data,
+            headers=csrf_headers,
         )
 
         assert response.status_code == status.HTTP_404_NOT_FOUND
 
-    def test_create_answer_nonexistent_question(self, client, create_user):
+    def test_create_answer_nonexistent_question(
+        self, client, create_user, csrf_headers
+    ):
         user = create_user(user_id="test_user", user_name="testuser")
 
         answer_data = {"answer_text": "存在しない質問への回答"}
 
         response = client.post(
-            f"/users/{user.user_id}/questions/99999/answers", json=answer_data
+            f"/users/{user.user_id}/questions/99999/answers",
+            json=answer_data,
+            headers=csrf_headers,
         )
 
         assert response.status_code == status.HTTP_404_NOT_FOUND
 
     def test_create_answer_duplicate(
-        self, client, test_db_session, create_user, create_question, create_answer
+        self,
+        client,
+        test_db_session,
+        create_user,
+        create_question,
+        create_answer,
+        csrf_headers,
     ):
         user = create_user(user_id="dup_user", user_name="dupuser")
         question = create_question(text="重複テスト質問", category_id="personality")
@@ -64,12 +78,13 @@ class TestQnARouter:
         response = client.post(
             f"/users/{user.user_id}/questions/{question.question_id}/answers",
             json=answer_data,
+            headers=csrf_headers,
         )
 
         assert response.status_code in [status.HTTP_409_CONFLICT, status.HTTP_200_OK]
 
     def test_create_answer_empty_text_allowed(
-        self, client, create_user, create_question
+        self, client, create_user, create_question, csrf_headers
     ):
         user = create_user(user_id="empty_answer_user", user_name="emptyuser")
         question = create_question(text="空回答テスト", category_id="personality")
@@ -79,6 +94,7 @@ class TestQnARouter:
         response = client.post(
             f"/users/{user.user_id}/questions/{question.question_id}/answers",
             json=empty_answer_data,
+            headers=csrf_headers,
         )
 
         # 空の回答も許容される
@@ -146,7 +162,9 @@ class TestQnARouter:
             assert isinstance(category["id"], str)
             assert isinstance(category["name"], str)
 
-    def test_answer_text_length_validation(self, client, create_user, create_question):
+    def test_answer_text_length_validation(
+        self, client, create_user, create_question, csrf_headers
+    ):
         user = create_user(user_id="length_user", user_name="lengthuser")
         question = create_question(text="長さテスト質問", category_id="personality")
 
@@ -157,6 +175,7 @@ class TestQnARouter:
         response = client.post(
             f"/users/{user.user_id}/questions/{question.question_id}/answers",
             json=answer_data,
+            headers=csrf_headers,
         )
 
         assert response.status_code in [

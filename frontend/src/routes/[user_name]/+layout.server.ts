@@ -1,51 +1,14 @@
-import type { LayoutServerLoad, Cookies } from "@sveltejs/kit";
+import type { LayoutServerLoad } from "./$types";
 import { getUserByUserName } from "$lib/api-client/users";
-import {
-  getCurrentUserServer,
-  refreshAccessTokenServer,
-} from "$lib/api-client/auth";
 import { error } from "@sveltejs/kit";
-import type { Profile } from "$lib/types";
 import { trackUserVisit } from "$lib/utils/userVisitTracking";
-
-async function getAuthenticatedUser(
-  cookies: Cookies,
-  fetcher: typeof fetch,
-): Promise<Profile | null> {
-  try {
-    const accessToken = cookies.get("access_token");
-    if (!accessToken) return null;
-
-    let user = await getCurrentUserServer(fetcher);
-    if (user) return user;
-
-    const refreshToken = cookies.get("refresh_token");
-    if (!refreshToken) return null;
-
-    const refreshSuccess = await refreshAccessTokenServer(fetcher);
-    if (!refreshSuccess) return null;
-
-    const newAccessToken = cookies.get("access_token");
-    if (!newAccessToken) return null;
-
-    user = await getCurrentUserServer(fetcher);
-    return user;
-  } catch (e) {
-    console.error("getAuthenticatedUser failed:", e);
-    return null;
-  }
-}
+import { getAuthenticatedUser } from "$lib/utils/auth-server";
 
 export const load: LayoutServerLoad = async ({
   params,
   cookies,
   setHeaders,
   fetch,
-}: {
-  params: { user_name: string };
-  cookies: Cookies;
-  setHeaders: (headers: Record<string, string>) => void;
-  fetch: typeof globalThis.fetch;
 }) => {
   const userName = params.user_name;
 
@@ -75,8 +38,8 @@ export const load: LayoutServerLoad = async ({
       profile,
       isLoggedIn: !!currentUser,
     };
-  } catch (e) {
-    console.error("Error loading profile data for user:", userName, e);
+  } catch (err) {
+    console.error("Error loading profile data for user:", userName, err);
     throw error(404, "ユーザーが見つかりませんでした");
   }
 };
