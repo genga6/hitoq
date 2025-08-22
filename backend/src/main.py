@@ -84,6 +84,7 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=[method.strip() for method in allow_methods],
     allow_headers=[header.strip() for header in allow_headers],
+    expose_headers=["X-CSRFToken"],
 )
 app.add_middleware(SessionMiddleware, secret_key=os.getenv("SESSION_SECRET_KEY"))
 
