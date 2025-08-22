@@ -284,13 +284,14 @@ async def get_current_user_info(current_user=Depends(_get_current_user)):
 @auth_router.get("/csrf-token")
 @limiter.limit("50/minute")  # Allow frequent CSRF token requests
 async def get_csrf_token(request: Request):
-    """CSRFトークンを取得する"""
     csrf_token = TokenService.create_csrf_token()
 
     response = JSONResponse(content={"csrf_token": csrf_token})
     response.set_cookie(
         key="csrftoken",
         value=csrf_token,
+        domain=".hitoq.net" if os.getenv("ENVIRONMENT") == "production" else None,
+        path="/",
         max_age=24 * 60 * 60,  # 24時間
         httponly=False,  # JavaScriptからアクセス可能
         samesite="none" if os.getenv("ENVIRONMENT") == "production" else "lax",
