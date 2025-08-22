@@ -34,7 +34,6 @@ export async function fetchApiWithAuth<T>(
 ): Promise<T> {
   const headers = new Headers(options?.headers);
 
-  // CSRFトークンが必要なメソッドの場合、ヘッダーに追加
   if (
     options?.method &&
     ["POST", "PUT", "DELETE", "PATCH"].includes(options.method.toUpperCase())
@@ -63,14 +62,33 @@ export async function fetchApiWithAuth<T>(
   return response.json();
 }
 
-// サーバーサイド用のfetch関数
 export async function fetchApiWithCookies<T>(
   path: string,
   fetcher: typeof fetch,
   options?: RequestInit,
 ): Promise<T> {
+  const headers = new Headers(options?.headers);
+
+  if (
+    options?.method &&
+    ["POST", "PUT", "DELETE", "PATCH"].includes(options.method.toUpperCase())
+  ) {
+    try {
+      const csrfResponse = await fetcher(`${API_BASE_URL}/auth/csrf-token`);
+      if (csrfResponse.ok) {
+        const csrfData = await csrfResponse.json();
+        if (csrfData.csrf_token) {
+          headers.set("X-CSRFToken", csrfData.csrf_token);
+        }
+      }
+    } catch (error) {
+      console.debug("Failed to get CSRF token for server-side request:", error);
+    }
+  }
+
   const response = await fetcher(`${API_BASE_URL}${path}`, {
     ...options,
+    headers,
   });
 
   // No need to parse JSON if the response is empty (204 No Content)
