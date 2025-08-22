@@ -52,6 +52,21 @@ export const checkAuthStatus = async (): Promise<boolean> => {
   return user !== null;
 };
 
+export const getCsrfToken = async (): Promise<string | null> => {
+  try {
+    const response = await fetchApiWithAuth<{ csrf_token: string }>(
+      "/auth/csrf-token",
+      {
+        method: "GET",
+      },
+    );
+    return response.csrf_token;
+  } catch (error) {
+    console.error("CSRFトークンの取得に失敗しました:", error);
+    return null;
+  }
+};
+
 export const deleteUser = async (userId: string): Promise<void> => {
   await fetchApiWithAuth<void>(`/users/${userId}`, {
     method: "DELETE",
@@ -62,6 +77,7 @@ export const deleteUser = async (userId: string): Promise<void> => {
     "access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT";
   document.cookie =
     "refresh_token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT";
+  document.cookie = "csrftoken=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT";
 };
 
 // Server-side authentication APIs

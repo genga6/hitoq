@@ -2,6 +2,20 @@ import { PUBLIC_API_BASE_URL } from "$env/static/public";
 
 const API_BASE_URL = PUBLIC_API_BASE_URL;
 
+// CSRFトークンをクッキーから取得する関数
+function getCsrfTokenFromCookie(): string | null {
+  if (typeof document === "undefined") return null;
+
+  const cookies = document.cookie.split(";");
+  for (const cookie of cookies) {
+    const [name, value] = cookie.trim().split("=");
+    if (name === "csrftoken") {
+      return value;
+    }
+  }
+  return null;
+}
+
 export async function fetchApi<T>(
   path: string,
   options?: RequestInit,
@@ -18,9 +32,23 @@ export async function fetchApiWithAuth<T>(
   path: string,
   options?: RequestInit,
 ): Promise<T> {
+  const headers = new Headers(options?.headers);
+
+  // CSRFトークンが必要なメソッドの場合、ヘッダーに追加
+  if (
+    options?.method &&
+    ["POST", "PUT", "DELETE", "PATCH"].includes(options.method.toUpperCase())
+  ) {
+    const csrfToken = getCsrfTokenFromCookie();
+    if (csrfToken) {
+      headers.set("X-CSRFToken", csrfToken);
+    }
+  }
+
   const response = await fetch(`${API_BASE_URL}${path}`, {
     ...options,
     credentials: "include", // Automatically set cookies
+    headers,
   });
   if (!response.ok) {
     const errorData = await response.json();

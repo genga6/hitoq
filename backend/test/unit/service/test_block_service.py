@@ -378,7 +378,9 @@ class TestReportService:
             ReportStatusEnum.dismissed,
         ],
     )
-    def test_update_report_all_statuses(self, test_db_session, create_user, status):
+    def test_update_report_all_statuses(
+        self, test_db_session, create_user, status, csrf_headers
+    ):
         create_user(user_id="status_reporter", user_name="statusreporter")
         create_user(user_id="status_reported", user_name="statusreported")
 

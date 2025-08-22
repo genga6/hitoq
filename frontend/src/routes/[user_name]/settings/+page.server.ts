@@ -16,14 +16,14 @@ export const load: PageServerLoad = async ({ parent }) => {
     return {
       profile,
     };
-  } catch (e) {
+  } catch (error) {
     if (
-      e instanceof Error &&
-      (e.message.includes("redirect") || e.message.includes("403"))
+      error instanceof Error &&
+      (error.message.includes("redirect") || error.message.includes("403"))
     ) {
-      throw e;
+      throw error;
     }
-    console.error("Error loading settings page:", e);
+    console.error("Error loading settings page:", error);
     throw redirect(302, "/");
   }
 };
