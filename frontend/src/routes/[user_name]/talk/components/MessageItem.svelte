@@ -114,15 +114,25 @@
       parentMessageId: message.messageId
     };
 
-    await createMessage(replyMessage);
-    await invalidate(`talk:${profile.userName}:messages`);
+    // UI即座更新
     showReplyForm = false;
-
-    if (showThread) {
-      await loadThread();
-    }
-
+    isSubmittingReply = false;
     onMessageUpdate?.();
+
+    try {
+      await createMessage(replyMessage);
+      
+      // スレッドが表示されている場合は更新
+      if (showThread) {
+        await loadThread();
+      }
+      
+      await invalidate(`talk:${profile.userName}:messages`);
+    } catch (error) {
+      console.error("Failed to send reply:", error);
+      // エラー時はフォームを再表示
+      showReplyForm = true;
+    }
   }
 
   async function loadThread() {
@@ -153,20 +163,36 @@
       parentMessageId: threadMessage.messageId
     };
 
-    await createMessage(replyMessage);
-    await invalidate(`talk:${profile.userName}:messages`);
-    await loadThread();
+    // UI即座更新
     onMessageUpdate?.();
+
+    try {
+      await createMessage(replyMessage);
+      await loadThread();
+      await invalidate(`talk:${profile.userName}:messages`);
+    } catch (error) {
+      console.error("Failed to send thread reply:", error);
+    }
   }
 
   async function handleHeartToggle(messageId: string) {
     if (!currentUser || isTogglingHeart) return;
 
     isTogglingHeart = true;
+    
+    // 現在の状態を保存（エラー時のロールバック用）
+    const previousState = heartStates[messageId] || { liked: false, count: 0 };
+    
+    // Optimistic UI update
+    heartStates[messageId] = {
+      liked: !previousState.liked,
+      count: previousState.liked ? previousState.count - 1 : previousState.count + 1
+    };
+
     try {
       const result = await toggleHeartReaction(messageId);
 
-      // ハート状態を更新
+      // サーバーレスポンスで確定的に更新
       heartStates[messageId] = {
         liked: result.user_liked,
         count: result.like_count
@@ -178,10 +204,11 @@
       }
 
       await invalidate(`talk:${profile.userName}:messages`);
-      // メッセージリストを更新
       onMessageUpdate?.();
     } catch (error) {
       console.error("Failed to toggle heart:", error);
+      // エラー時にロールバック
+      heartStates[messageId] = previousState;
     } finally {
       isTogglingHeart = false;
     }
@@ -192,11 +219,12 @@
     if (!confirm("このメッセージを削除しますか？（返信も含めて削除されます）")) return;
 
     isEditingOrDeleting = true;
+    
+    // UI即座更新 - メッセージを即座に削除表示
+    onMessageDelete?.(messageId);
+    
     try {
       await deleteMessage(messageId);
-
-      // 即座にローカル状態から削除
-      onMessageDelete?.(messageId);
 
       // スレッドが表示されている場合は更新
       if (showThread) {
@@ -204,10 +232,11 @@
       }
 
       await invalidate(`talk:${profile.userName}:messages`);
-      // メッセージリストを更新
       onMessageUpdate?.();
     } catch (error) {
       console.error("Failed to delete message:", error);
+      // エラー時は親コンポーネントでリフレッシュが必要
+      onMessageUpdate?.();
     } finally {
       isEditingOrDeleting = false;
     }
