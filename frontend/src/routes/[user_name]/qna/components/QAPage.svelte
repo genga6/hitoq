@@ -168,30 +168,42 @@
 
     if (!answer) return;
 
+    // Optimistic UI update - 即座にローカル状態を更新
+    const answerGroupIndex = answerGroups.findIndex((g) => g.groupId === group.groupId);
+    const previousAnswer = answer.answerText; // エラー時のロールバック用
+
+    if (answerGroupIndex !== -1) {
+      const newAnswerGroups = [...answerGroups];
+      const updatedGroup = { ...newAnswerGroups[answerGroupIndex] };
+      const updatedAnswers = [...updatedGroup.answers];
+      updatedAnswers[questionIndex] = { ...updatedAnswers[questionIndex], answerText: newAnswer };
+      updatedGroup.answers = updatedAnswers;
+      newAnswerGroups[answerGroupIndex] = updatedGroup;
+      answerGroups = newAnswerGroups;
+    }
+
     try {
       if (answer.question.questionId > 0) {
         await createAnswer(userId, answer.question.questionId, newAnswer);
         
         // キャッシュを無効化して他のタブでも最新データを反映
-        await invalidate((url) => url.pathname.includes('/qna'));
+        await invalidate("qna:data");
       } else {
         console.warn("質問IDが無効なため、サーバーへの保存をスキップしました。");
       }
-
-      // ローカル状態を更新
-      const answerGroupIndex = answerGroups.findIndex((g) => g.groupId === group.groupId);
-
-      if (answerGroupIndex !== -1) {
-        const newAnswerGroups = [...answerGroups];
-        const updatedGroup = { ...newAnswerGroups[answerGroupIndex] };
-        const updatedAnswers = [...updatedGroup.answers];
-        updatedAnswers[questionIndex] = { ...updatedAnswers[questionIndex], answerText: newAnswer };
-        updatedGroup.answers = updatedAnswers;
-        newAnswerGroups[answerGroupIndex] = updatedGroup;
-        answerGroups = newAnswerGroups;
-      }
     } catch (error) {
       console.error("回答の保存に失敗しました:", error);
+      
+      // エラー時にロールバック
+      if (answerGroupIndex !== -1) {
+        const rollbackAnswerGroups = [...answerGroups];
+        const rollbackGroup = { ...rollbackAnswerGroups[answerGroupIndex] };
+        const rollbackAnswers = [...rollbackGroup.answers];
+        rollbackAnswers[questionIndex] = { ...rollbackAnswers[questionIndex], answerText: previousAnswer };
+        rollbackGroup.answers = rollbackAnswers;
+        rollbackAnswerGroups[answerGroupIndex] = rollbackGroup;
+        answerGroups = rollbackAnswerGroups;
+      }
     }
   }
 </script>

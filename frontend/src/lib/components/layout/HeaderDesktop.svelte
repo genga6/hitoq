@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { goto, invalidateAll } from '$app/navigation';
   import SearchInput from "../ui/SearchInput.svelte";
   import NotificationDropdown from "../notifications/NotificationDropdown.svelte";
   import UserMenu from "../ui/UserMenu.svelte";
@@ -53,7 +54,6 @@
   <!-- @ts-ignore: Svelte 5 onclick is not yet recognized by TypeScript -->
   <button
     onclick={async () => {
-      const { goto, invalidateAll } = await import('$app/navigation');
       await invalidateAll();
       await goto(isLoggedIn && currentUser ? `/${currentUser.userName}` : "/");
     }}
