@@ -130,6 +130,13 @@
     textarea.style.height = `${textarea.scrollHeight}px`;
   }
 
+  // valueの変更をtempValueに同期
+  $effect(() => {
+    if (!isEditing) {
+      tempValue = value;
+    }
+  });
+
   $effect(() => {
     const handleKeydown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
