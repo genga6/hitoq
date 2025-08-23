@@ -62,11 +62,36 @@ export async function fetchApiWithAuth<T>(
     }
   }
 
-  const response = await fetch(`${API_BASE_URL}${path}`, {
+  let response = await fetch(`${API_BASE_URL}${path}`, {
     ...options,
     credentials: "include", // Automatically set cookies
     headers,
   });
+
+  // If 401 Unauthorized, try to refresh token once
+  if (response.status === 401) {
+    try {
+      const refreshResponse = await fetch(
+        `${API_BASE_URL}/auth/refresh-token`,
+        {
+          method: "POST",
+          credentials: "include",
+        },
+      );
+
+      if (refreshResponse.ok) {
+        // Retry the original request
+        response = await fetch(`${API_BASE_URL}${path}`, {
+          ...options,
+          credentials: "include",
+          headers,
+        });
+      }
+    } catch (refreshError) {
+      console.debug("Token refresh failed:", refreshError);
+    }
+  }
+
   if (!response.ok) {
     const errorData = await response.json();
     throw new Error(errorData.detail || "API request failed");

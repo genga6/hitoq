@@ -1,6 +1,8 @@
 <script lang="ts">
   import type { UserAnswerGroup, UserAnswerGroupBackend, CategoryInfo } from "$lib/types/qna";
   import AnsweredQuestions from "./AnsweredQuestions.svelte";
+  import { invalidate } from "$app/navigation";
+  import { createAnswer } from "$lib/api-client/qna";
 
   const {
     initialAnswerGroups = [],
@@ -168,8 +170,10 @@
 
     try {
       if (answer.question.questionId > 0) {
-        const { createAnswer } = await import("$lib/api-client/qna");
         await createAnswer(userId, answer.question.questionId, newAnswer);
+        
+        // キャッシュを無効化して他のタブでも最新データを反映
+        await invalidate("qna:data");
       } else {
         console.warn("質問IDが無効なため、サーバーへの保存をスキップしました。");
       }

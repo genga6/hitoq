@@ -30,10 +30,15 @@ def record_visit(
 
     if existing_visit:
         # Update existing visit timestamp
-        existing_visit.visited_at = datetime.now(timezone.utc)
-        db.commit()
-        db.refresh(existing_visit)
-        return existing_visit
+        try:
+            existing_visit.visited_at = datetime.now(timezone.utc)
+            db.commit()
+            db.refresh(existing_visit)
+            return existing_visit
+        except Exception as e:
+            db.rollback()
+            print(f"Failed to update visit: {e}")
+            return None
 
     # Create new visit record
     visit = Visit(
@@ -43,10 +48,15 @@ def record_visit(
         visited_at=datetime.now(timezone.utc),
     )
 
-    db.add(visit)
-    db.commit()
-    db.refresh(visit)
-    return visit
+    try:
+        db.add(visit)
+        db.commit()
+        db.refresh(visit)
+        return visit
+    except Exception as e:
+        db.rollback()
+        print(f"Failed to record visit: {e}")
+        return None
 
 
 def get_user_visits(db: Session, user_id: str, limit: int = 50) -> list[Visit]:

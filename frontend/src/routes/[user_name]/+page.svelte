@@ -4,6 +4,7 @@
   import type { ProfileItem } from "$lib/types";
   import type { PageData } from "./$types";
   import { updateProfileItemValue, updateUserSelfIntroduction } from "$lib/utils/profileUpdates";
+import { invalidate } from "$app/navigation";
 
   type Props = {
     data: PageData;
@@ -40,6 +41,7 @@
         const newItems = [...profileItems];
         newItems[index] = updatedItem;
         profileItems = newItems;
+        await invalidate(`user:${data.profile.userName}:profile`);
         return true;
       } catch (error) {
         console.error("プロフィール項目の更新に失敗しました:", error);
@@ -51,6 +53,7 @@
     try {
       await updateUserSelfIntroduction(data.profile.userId, newValue);
       selfIntroduction = newValue;
+      await invalidate(`user:${data.profile.userName}:profile`);
       return true;
     } catch (error) {
       console.error("自己紹介の更新に失敗しました:", error);

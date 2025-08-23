@@ -55,12 +55,7 @@ export const recordVisitServer = async (
   userId: string,
   fetcher: typeof fetch,
 ): Promise<void> => {
-  try {
-    await fetchApiWithCookies<void>(`/users/${userId}/visit`, fetcher, {
-      method: "POST",
-    });
-  } catch (error) {
-    // Silently fail - visit recording is not critical
-    console.debug("Failed to record visit (server):", error);
-  }
+  await fetchApiWithCookies<void>(`/users/${userId}/visit`, fetcher, {
+    method: "POST",
+  });
 };

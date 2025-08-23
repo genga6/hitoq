@@ -8,8 +8,19 @@ export const trackUserVisit = async (
   try {
     await recordVisitServer(userId, fetcher);
   } catch (error) {
-    // Silently fail - visit recording is not critical
-    console.debug("Failed to record visit:", error);
+    // Check if error is about self-visit (which is expected behavior)
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    const isSelfVisitError =
+      errorMessage.includes("Cannot visit your own profile") ||
+      errorMessage.includes("Self visit not allowed");
+
+    // Only log non-self-visit errors to avoid confusion
+    if (!isSelfVisitError) {
+      console.warn("Failed to record visit (server):", {
+        userId,
+        error: errorMessage,
+      });
+    }
   }
 };
 

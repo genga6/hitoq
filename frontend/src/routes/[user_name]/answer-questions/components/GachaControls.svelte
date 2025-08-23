@@ -34,7 +34,8 @@
       <span class="theme-text-secondary text-sm">質問数</span>
       <select
         bind:value={currentQuestionCount}
-        class="theme-border theme-bg-surface theme-text-primary rounded px-3 py-1 text-sm"
+        class="theme-border theme-bg-surface theme-text-primary rounded px-3 py-1 text-sm [appearance:none] [background-image:none] [&::-webkit-appearance]:none [&::-moz-appearance]:none"
+        style="background-image: none !important;"
       >
         {#each [1, 2, 3, 4, 5] as num (num)}
           <option value={num}>{num}問</option>

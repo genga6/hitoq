@@ -16,17 +16,28 @@ visit_router = APIRouter(
 def record_visit_endpoint(
     user_id: str, request: Request, db: Session = Depends(get_db)
 ):
-    visitor_user_id = None
     try:
-        current_user = _get_current_user(request, db)
-        visitor_user_id = current_user.user_id
-    except HTTPException:
-        pass
+        visitor_user_id = None
+        try:
+            current_user = _get_current_user(request, db)
+            visitor_user_id = current_user.user_id
+        except HTTPException:
+            pass
 
-    visit_service.record_visit(
-        db=db, visited_user_id=user_id, visitor_user_id=visitor_user_id
-    )
-    return {"message": "Visit processed successfully"}
+        # Skip self-visits silently (this is expected behavior)
+        if visitor_user_id == user_id:
+            return {
+                "message": "Visit processed successfully"
+            }  # Self-visit, no recording needed
+
+        visit_service.record_visit(
+            db=db, visited_user_id=user_id, visitor_user_id=visitor_user_id
+        )
+        return {"message": "Visit processed successfully"}
+    except Exception as e:
+        # Log non-self-visit errors only
+        print(f"Visit recording failed: {e}")
+        return {"message": "Visit processed successfully"}  # Still return success
 
 
 @visit_router.get("/visits", response_model=list[VisitRead])

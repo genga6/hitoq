@@ -9,16 +9,17 @@ export const load: LayoutServerLoad = async ({
   cookies,
   setHeaders,
   fetch,
+  depends,
 }) => {
   const userName = params.user_name;
+  depends(`user:${userName}:profile`);
 
-  // プロフィールデータは5分間キャッシュ（認証情報のみno-cache）
   setHeaders({
-    "Cache-Control": "public, max-age=300, s-maxage=300",
+    "Cache-Control":
+      "private, max-age=60, s-maxage=60, stale-while-revalidate=3600",
   });
 
   try {
-    // 認証とプロフィール取得を並行実行
     const [currentUser, profile] = await Promise.all([
       getAuthenticatedUser(cookies, fetch),
       getUserByUserName(userName),
@@ -27,11 +28,15 @@ export const load: LayoutServerLoad = async ({
     const isOwner = currentUser?.userName === userName;
 
     // サーバーサイドで visit tracking を実行（非同期、待機しない）
-    if (profile?.userId && !isOwner) {
-      trackUserVisit(profile.userId, fetch).catch((err) =>
-        console.warn("Visit tracking failed:", err),
-      );
-    }
+    const visitTrackingPromise =
+      profile?.userId && !isOwner
+        ? trackUserVisit(profile.userId, fetch).catch((err) =>
+            console.warn("Visit tracking failed:", err),
+          )
+        : Promise.resolve();
+
+    // Visit tracking完了を待つ（エラーは無視）
+    await visitTrackingPromise;
 
     return {
       isOwner,

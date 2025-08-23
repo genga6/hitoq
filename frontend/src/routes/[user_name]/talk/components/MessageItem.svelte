@@ -8,6 +8,7 @@
     toggleHeartReaction,
     getHeartStates
   } from "$lib/api-client/messages";
+  import { invalidate } from "$app/navigation";
   import MessageActions from "./MessageActions.svelte";
   import ReplyForm from "./ReplyForm.svelte";
   import ThreadView from "./ThreadView.svelte";
@@ -93,6 +94,7 @@
     if (message.status === "unread" && isLoggedIn && isProfileOwner) {
       try {
         await markMessageAsRead(message.messageId);
+        await invalidate(`talk:${profile.userName}:messages`);
         // UIの更新は親コンポーネントに任せる（リアクティブ更新）
       } catch (error) {
         console.error("Failed to mark message as read:", error);
@@ -113,6 +115,7 @@
     };
 
     await createMessage(replyMessage);
+    await invalidate(`talk:${profile.userName}:messages`);
     showReplyForm = false;
 
     if (showThread) {
@@ -151,6 +154,7 @@
     };
 
     await createMessage(replyMessage);
+    await invalidate(`talk:${profile.userName}:messages`);
     await loadThread();
     onMessageUpdate?.();
   }
@@ -173,6 +177,7 @@
         await loadThread();
       }
 
+      await invalidate(`talk:${profile.userName}:messages`);
       // メッセージリストを更新
       onMessageUpdate?.();
     } catch (error) {
@@ -198,6 +203,7 @@
         await loadThread();
       }
 
+      await invalidate(`talk:${profile.userName}:messages`);
       // メッセージリストを更新
       onMessageUpdate?.();
     } catch (error) {
