@@ -10,9 +10,9 @@ from src.config.logging_config import get_logger
 
 logger = get_logger(__name__)
 
-# Token expiration settings
-ACCESS_TOKEN_EXPIRE_MINUTES = 15
-REFRESH_TOKEN_EXPIRE_DAYS = 7
+# Token expiration settings (Twitter-aligned)
+ACCESS_TOKEN_EXPIRE_MINUTES = 120  # 2 hours
+REFRESH_TOKEN_EXPIRE_DAYS = 180  # 6 months
 CSRF_TOKEN_EXPIRE_HOURS = 24
 
 # リフレッシュトークンのブラックリスト（本番環境ではRedisなどを使用）

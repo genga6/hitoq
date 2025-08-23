@@ -2,7 +2,7 @@
   import type { MessagesPageData, Message } from "$lib/types";
   import MessageList from "./components/MessageList.svelte";
   import MessageForm from "$lib/components/domain/messaging/MessageForm.svelte";
-  import { invalidateAll } from "$app/navigation";
+  import { invalidate } from "$app/navigation";
 
   import type { BaseUser } from "$lib/types";
 
@@ -23,7 +23,7 @@
 
   async function handleMessageUpdate() {
     // Refresh the page data to show updated messages and reply counts
-    await invalidateAll();
+    await invalidate(`talk:${data.profile.userName}:messages`);
   }
 
   function handleMessageSuccess(newMessage: Message) {

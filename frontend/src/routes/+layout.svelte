@@ -24,7 +24,7 @@
   }
 
   const { data, children }: Props = $props();
-  let isLoggedIn = $state(data?.isLoggedIn ?? false);
+  let isLoggedIn = $state(data?.isLoggedIn);
   let currentUser = $state(data?.user ?? null);
   let currentTheme = $state<Theme>("system");
 
@@ -86,7 +86,7 @@
         }
       };
 
-      const interval = setInterval(refreshToken, 30 * 60 * 1000); // 30 minutes
+      const interval = setInterval(refreshToken, 90 * 60 * 1000); // 90 minutes (before 2-hour expiry)
       return () => clearInterval(interval);
     }
   });

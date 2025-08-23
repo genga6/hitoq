@@ -2,6 +2,7 @@
   import { useClickOutside } from "$lib/utils/useClickOutside";
   import SearchInput from "../ui/SearchInput.svelte";
   import NotificationDropdown from "../notifications/NotificationDropdown.svelte";
+  import { goto, invalidateAll } from "$app/navigation";
   import type { UserCandidate } from "$lib/types";
 
   type Props = {
@@ -80,10 +81,8 @@
       </svg>
     </button>
 
-    <!-- @ts-ignore: Svelte 5 onclick is not yet recognized by TypeScript -->
     <button
       onclick={async () => {
-        const { goto, invalidateAll } = await import('$app/navigation');
         await invalidateAll();
         await goto(isLoggedIn && currentUser ? `/${currentUser.userName}` : "/");
       }}

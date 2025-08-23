@@ -6,6 +6,7 @@ export const load: PageServerLoad = async ({
   params,
   fetch,
   parent,
+  depends,
 }): Promise<
   MessagesPageData & {
     isLoggedIn: boolean;
@@ -13,6 +14,7 @@ export const load: PageServerLoad = async ({
   }
 > => {
   const { user_name } = params;
+  depends(`talk:${user_name}:messages`);
   const { isOwner, isLoggedIn } = await parent();
 
   const messagesData = await getMessagesPageDataServer(user_name, fetch);

@@ -33,8 +33,8 @@ TWITTER_USER_ME_URL = "https://api.twitter.com/2/users/me"  # https://docs.x.com
 # Use first URL from FRONTEND_URLS as primary frontend URL
 FRONTEND_URL = os.getenv("FRONTEND_URLS", "http://localhost:5173").split(",")[0].strip()
 
-ACCESS_TOKEN_EXPIRE_MINUTES = 15
-REFRESH_TOKEN_EXPIRE_DAYS = 7
+ACCESS_TOKEN_EXPIRE_MINUTES = 120  # 2 hours (Twitter-aligned)
+REFRESH_TOKEN_EXPIRE_DAYS = 180  # 6 months (Twitter-aligned)
 
 
 def _get_current_user(request: Request, db: Session = Depends(get_db)):

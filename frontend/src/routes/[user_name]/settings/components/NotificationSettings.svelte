@@ -1,12 +1,14 @@
 <script lang="ts">
+  import { invalidate } from "$app/navigation";
   import { updateCurrentUser } from "$lib/api-client/users";
   import type { NotificationLevel } from "$lib/types";
 
   interface Props {
     initialLevel: NotificationLevel;
+    userName: string;
   }
 
-  const { initialLevel }: Props = $props();
+  const { initialLevel, userName }: Props = $props();
 
   let notificationLevel = $state<NotificationLevel>(initialLevel);
   let loadingNotification = $state(false);
@@ -19,6 +21,7 @@
     try {
       notificationLevel = newLevel;
       await updateCurrentUser({ notificationLevel: newLevel });
+      await invalidate(`user:${userName}:profile`);
     } catch (e) {
       console.error("Failed to update notification level:", e);
       // Revert the change

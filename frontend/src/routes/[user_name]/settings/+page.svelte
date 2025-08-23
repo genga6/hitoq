@@ -25,7 +25,7 @@
 
   <div class="space-y-0">
     <PrivacySettings userId={data.profile.userId} />
-    <NotificationSettings initialLevel={data.profile.notificationLevel} />
+    <NotificationSettings initialLevel={data.profile.notificationLevel} userName={data.profile.userName} />
     <ThemeSettings />
     <AccountDeletion userId={data.profile.userId} />
   </div>

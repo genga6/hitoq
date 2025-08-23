@@ -1,5 +1,6 @@
 <script lang="ts">
   import { getVisitsVisibility, updateVisitsVisibility } from "$lib/api-client/visits";
+  import { invalidate } from "$app/navigation";
 
   interface Props {
     userId: string;
@@ -29,6 +30,9 @@
     savingVisibility = true;
     try {
       await updateVisitsVisibility(userId, visitsVisible);
+      
+      // 足跡表示設定変更後、関連データのキャッシュを無効化
+      await invalidate("privacy:visits-visibility");
     } catch (e) {
       console.error("Failed to update visits visibility:", e);
       // Revert the change

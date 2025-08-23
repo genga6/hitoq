@@ -6,6 +6,7 @@
   import ToastContainer from "$lib/components/ui/ToastContainer.svelte";
   import { toasts } from "$lib/stores/toast";
   import { fly } from "svelte/transition";
+  import { invalidate } from "$app/navigation";
 
   type Props = {
     categories: Record<string, CategoryInfo>;
@@ -145,6 +146,9 @@
 
       // 質問に対する回答を作成
       await createAnswer(userId, pair.question.questionId, inputValue.trim());
+      
+      // キャッシュを無効化して他のタブでも最新データを反映
+      await invalidate("qna:data");
 
       // 成功したら未回答リストから削除（フェードアウト効果付き）
       const questionElement = document.querySelector(
