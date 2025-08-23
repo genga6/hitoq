@@ -25,7 +25,7 @@
     {#if isOwner}
       <Editable value={item.value} {onSave} inputType="input" validationType="profileValue">
         <div class="relative">
-          <p class="theme-text-primary text-base break-words">
+          <p class="theme-text-primary text-base break-words font-semibold">
             {#if item.value}
               {item.value}
             {:else}
@@ -36,7 +36,7 @@
       </Editable>
     {:else}
       <div class="relative">
-        <p class="theme-text-primary text-base break-words">
+        <p class="theme-text-primary text-base break-words font-semibold">
           {#if item.value}
             {item.value}
           {:else}
