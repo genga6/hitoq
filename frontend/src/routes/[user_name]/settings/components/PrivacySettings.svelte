@@ -27,7 +27,11 @@
   });
 
   const handleVisibilityChange = async () => {
+    const previousValue = visitsVisible;
+    
+    // Optimistic UI update - UI is already updated by bind:checked
     savingVisibility = true;
+    
     try {
       await updateVisitsVisibility(userId, visitsVisible);
       
@@ -35,8 +39,8 @@
       await invalidate("privacy:visits-visibility");
     } catch (e) {
       console.error("Failed to update visits visibility:", e);
-      // Revert the change
-      visitsVisible = !visitsVisible;
+      // Revert the change on error
+      visitsVisible = previousValue;
     } finally {
       savingVisibility = false;
     }

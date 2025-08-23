@@ -15,16 +15,18 @@
   let savingNotification = $state(false);
 
   const handleNotificationLevelChange = async (newLevel: NotificationLevel) => {
-    savingNotification = true;
     const previousLevel = notificationLevel;
+    
+    // Optimistic UI update - immediately change the UI
+    notificationLevel = newLevel;
+    savingNotification = true;
 
     try {
-      notificationLevel = newLevel;
       await updateCurrentUser({ notificationLevel: newLevel });
       await invalidate(`user:${userName}:profile`);
     } catch (e) {
       console.error("Failed to update notification level:", e);
-      // Revert the change
+      // Revert the change on error
       notificationLevel = previousLevel;
     } finally {
       savingNotification = false;

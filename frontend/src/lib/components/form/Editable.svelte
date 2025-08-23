@@ -73,16 +73,32 @@
   async function confirmEdit() {
     if (!isEditing || !isValid) return;
 
-    const result = onSave(tempValue);
+    // Optimistic UI update - immediately exit edit mode
+    const previousValue = value;
+    const newValue = tempValue;
+    isEditing = false;
 
-    // Handle both sync and async results
-    if (result instanceof Promise) {
-      const asyncResult = await result;
-      if (asyncResult !== false) {
-        isEditing = false;
+    try {
+      const result = onSave(newValue);
+
+      // Handle both sync and async results
+      if (result instanceof Promise) {
+        const asyncResult = await result;
+        if (asyncResult === false) {
+          // Revert on failure
+          tempValue = previousValue;
+          isEditing = true;
+        }
+      } else if (result === false) {
+        // Revert on failure
+        tempValue = previousValue;
+        isEditing = true;
       }
-    } else if (result !== false) {
-      isEditing = false;
+    } catch (error) {
+      // Revert on error
+      tempValue = previousValue;
+      isEditing = true;
+      console.error('Save failed:', error);
     }
   }
 

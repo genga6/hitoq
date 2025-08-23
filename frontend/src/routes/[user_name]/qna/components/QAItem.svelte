@@ -38,11 +38,12 @@
 
   async function handleAnswerSave(newAnswer: string): Promise<boolean> {
     try {
+      // Update parent component's state immediately (optimistic UI)
       onUpdate(newAnswer);
-      isEditing = false;
       return true;
     } catch (error) {
       console.error("回答の保存に失敗しました:", error);
+      // Revert would need to be handled by parent component
       return false;
     }
   }

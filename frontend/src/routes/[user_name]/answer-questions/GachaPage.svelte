@@ -80,13 +80,16 @@
 
       unansweredQAPairs = [...newUnansweredPairs, ...unansweredQAPairs];
       
-      // 少し遅延させてアニメーション効果を演出
-      setTimeout(() => {
-        unansweredQAPairs = unansweredQAPairs.map(pair => ({
-          ...pair,
-          isNew: false
-        }));
-      }, 2000);
+      newUnansweredPairs.forEach((newPair) => {
+        setTimeout(() => {
+          unansweredQAPairs = unansweredQAPairs.map(pair => 
+            pair.groupId === newPair.groupId 
+              ? { ...pair, isNew: false }
+              : pair
+          );
+          saveToStorage();
+        }, 2500);
+      });
       
       saveToStorage();
 
@@ -141,6 +144,26 @@
 
     if (!inputValue.trim()) return;
 
+    // Optimistic UI update - immediately remove from list with animation
+    const questionElement = document.querySelector(
+      `[data-question-id="${pair.groupId}"]`
+    ) as HTMLElement;
+    if (questionElement) {
+      questionElement.style.transition = "opacity 0.3s ease-out, transform 0.3s ease-out";
+      questionElement.style.opacity = "0";
+      questionElement.style.transform = "translateY(-10px)";
+    }
+
+    // Store current state for potential revert
+    const previousPairs = [...unansweredQAPairs];
+    const previousInput = questionInputs[questionKey];
+
+    setTimeout(() => {
+      unansweredQAPairs = unansweredQAPairs.filter((p) => p.groupId !== pair.groupId);
+      questionInputs[questionKey] = "";
+      saveToStorage();
+    }, 300);
+
     try {
       const { createAnswer } = await import("$lib/api-client/qna");
 
@@ -149,35 +172,28 @@
       
       // キャッシュを無効化して他のタブでも最新データを反映
       await invalidate("qna:data");
-
-      // 成功したら未回答リストから削除（フェードアウト効果付き）
-      const questionElement = document.querySelector(
-        `[data-question-id="${pair.groupId}"]`
-      ) as HTMLElement;
-      if (questionElement) {
-        questionElement.style.transition = "opacity 0.3s ease-out, transform 0.3s ease-out";
-        questionElement.style.opacity = "0";
-        questionElement.style.transform = "translateY(-10px)";
-
-        setTimeout(() => {
-          unansweredQAPairs = unansweredQAPairs.filter((p) => p.groupId !== pair.groupId);
-          questionInputs[questionKey] = "";
-          saveToStorage();
-        }, 300);
-      } else {
-        unansweredQAPairs = unansweredQAPairs.filter((p) => p.groupId !== pair.groupId);
-        questionInputs[questionKey] = "";
-        saveToStorage();
-      }
     } catch (error) {
       console.error("回答保存エラー:", error);
+      
+      // Revert optimistic update on error
+      unansweredQAPairs = previousPairs;
+      questionInputs[questionKey] = previousInput;
+      saveToStorage();
+      
+      // Reset element visibility
+      if (questionElement) {
+        questionElement.style.opacity = "1";
+        questionElement.style.transform = "translateY(0)";
+      }
+      
       alert("回答の保存に失敗しました。");
     }
   }
 
   function handleSkip(pair: UnansweredQAPair) {
-    // 未回答リストから削除
+    // スキップした質問をローカルの未回答リストから削除
     unansweredQAPairs = unansweredQAPairs.filter((p) => p.groupId !== pair.groupId);
+    
     // 入力値をクリア
     const questionKey = `${pair.groupId}-${pair.questionIndex}`;
     questionInputs[questionKey] = "";
@@ -195,8 +211,11 @@
       if (savedQuestions) {
         const parsed = JSON.parse(savedQuestions);
         if (Array.isArray(parsed)) {
-          unansweredQAPairs = parsed;
-          
+          // localStorageから読み込んだデータのisNewフラグは常にfalseにする
+          unansweredQAPairs = parsed.map(pair => ({
+            ...pair,
+            isNew: false
+          }));
         }
       }
 

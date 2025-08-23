@@ -31,6 +31,12 @@ import { invalidate } from "$app/navigation";
       const item = profileItems[index];
       if (!item) return false;
 
+      // Optimistic UI update - immediately update local state
+      const previousItems = [...profileItems];
+      const newItems = [...profileItems];
+      newItems[index] = { ...item, value: newValue };
+      profileItems = newItems;
+
       try {
         const updatedItem = await updateProfileItemValue(
           data.profile.userId,
@@ -38,25 +44,33 @@ import { invalidate } from "$app/navigation";
           newValue
         );
 
-        const newItems = [...profileItems];
-        newItems[index] = updatedItem;
-        profileItems = newItems;
+        // Update with server response
+        const finalItems = [...profileItems];
+        finalItems[index] = updatedItem;
+        profileItems = finalItems;
         await invalidate(`user:${data.profile.userName}:profile`);
         return true;
       } catch (error) {
         console.error("プロフィール項目の更新に失敗しました:", error);
+        // Revert on error
+        profileItems = previousItems;
         return false;
       }
     };
 
   const handleSelfIntroductionSave = async (newValue: string): Promise<boolean> => {
+    // Optimistic UI update - immediately update local state
+    const previousValue = selfIntroduction;
+    selfIntroduction = newValue;
+
     try {
       await updateUserSelfIntroduction(data.profile.userId, newValue);
-      selfIntroduction = newValue;
       await invalidate(`user:${data.profile.userName}:profile`);
       return true;
     } catch (error) {
       console.error("自己紹介の更新に失敗しました:", error);
+      // Revert on error
+      selfIntroduction = previousValue;
       return false;
     }
   };
@@ -84,7 +98,7 @@ import { invalidate } from "$app/navigation";
         <div class="relative">
           {#if selfIntroduction}
             <p
-              class="theme-text-primary text-base leading-relaxed break-words whitespace-pre-wrap"
+              class="theme-text-primary text-base leading-relaxed break-words whitespace-pre-wrap font-semibold"
             >
               {selfIntroduction}
             </p>
@@ -103,7 +117,7 @@ import { invalidate } from "$app/navigation";
       <div class="relative">
         {#if selfIntroduction}
           <p
-            class="theme-text-primary text-base leading-relaxed break-words whitespace-pre-wrap"
+            class="theme-text-primary text-base leading-relaxed break-words whitespace-pre-wrap font-semibold"
           >
             {selfIntroduction}
           </p>
