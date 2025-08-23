@@ -173,7 +173,7 @@
         await createAnswer(userId, answer.question.questionId, newAnswer);
         
         // キャッシュを無効化して他のタブでも最新データを反映
-        await invalidate("qna:data");
+        await invalidate((url) => url.pathname.includes('/qna'));
       } else {
         console.warn("質問IDが無効なため、サーバーへの保存をスキップしました。");
       }
