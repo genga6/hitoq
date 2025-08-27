@@ -58,6 +58,20 @@ export async function markMessageAsRead(messageId: string): Promise<Message> {
   }
 }
 
+export async function markAllNotificationsAsRead(): Promise<void> {
+  try {
+    await fetchApiWithAuth("/messages/notifications/mark-all-read", {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+  } catch (error) {
+    console.error("Failed to mark all notifications as read:", error);
+    throw error;
+  }
+}
+
 export async function getUnreadCount(): Promise<{ unreadCount: number }> {
   try {
     return await fetchApiWithAuth("/messages/unread-count");

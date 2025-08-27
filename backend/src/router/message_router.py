@@ -100,6 +100,17 @@ def get_notification_count(
     return {"notification_count": count}
 
 
+@message_router.patch("/notifications/mark-all-read")
+def mark_all_notifications_as_read(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(_get_current_user),
+):
+    updated_count = message_service.mark_all_notifications_as_read(
+        db, current_user.user_id
+    )
+    return {"updated_count": updated_count}
+
+
 @message_router.get("/{message_id}/thread", response_model=list[MessageRead])
 def get_message_thread(
     message_id: str,

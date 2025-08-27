@@ -16,20 +16,15 @@
       displayName: string;
       iconUrl?: string;
     };
-    isLoggedIn?: boolean;
   };
 
-  const { message, currentUser, profileUser, isLoggedIn = false }: Props = $props();
+  const { message, currentUser, profileUser }: Props = $props();
   
   // currentUserを明示的に使用（将来の拡張で使用予定）
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const _currentUser = currentUser;
-  
-  // プロフィールページの所有者（受信者）かどうかを判定
-  const isProfileOwner = currentUser?.userId === profileUser?.userId;
-  
-  // 未読状態の表示判定: プロフィール所有者でログイン中の場合のみ未読を表示
-  const shouldShowAsUnread = message.status === 'unread' && isLoggedIn && currentUser && isProfileOwner;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const _profileUser = profileUser;
 </script>
 
 <!-- ヘッダー -->
@@ -49,9 +44,6 @@
         <span class="theme-text-muted text-xs truncate">
           @{message.fromUser?.userName || "unknown"}
         </span>
-        {#if shouldShowAsUnread}
-          <span class="inline-flex h-1.5 w-1.5 rounded-full bg-orange-500 flex-shrink-0" title="未読"></span>
-        {/if}
       </div>
     </div>
     

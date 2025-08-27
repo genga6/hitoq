@@ -162,6 +162,31 @@ def get_notifications_for_user(
     return notifications
 
 
+def mark_all_notifications_as_read(db: Session, user_id: str) -> int:
+    """Mark all notification messages as read for a user based on their notification level."""
+    user = db.query(User).filter(User.user_id == user_id).first()
+    if not user:
+        return 0
+
+    if user.notification_level == NotificationLevelEnum.none:
+        return 0
+
+    query = db.query(Message).filter(
+        Message.to_user_id == user_id, Message.status == MessageStatusEnum.unread
+    )
+
+    if user.notification_level == NotificationLevelEnum.important:
+        query = query.filter(Message.message_type == MessageTypeEnum.comment)
+
+    # Update all matching messages to read status
+    updated_count = query.update(
+        {Message.status: MessageStatusEnum.read}, synchronize_session="fetch"
+    )
+
+    db.commit()
+    return updated_count
+
+
 def get_message_thread(db: Session, message_id: str, user_id: str) -> list[Message]:
     """Get a message thread with hierarchical structure like Twitter."""
     root_message = db.query(Message).filter(Message.message_id == message_id).first()

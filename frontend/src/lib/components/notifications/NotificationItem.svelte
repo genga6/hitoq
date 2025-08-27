@@ -98,7 +98,7 @@
           {formatTimeAgo(notification.createdAt)}
         </span>
         {#if notification.status === "unread"}
-          <div class="h-2 w-2 rounded-full bg-blue-500"></div>
+          <div class="h-2 w-2 rounded-full bg-orange-500"></div>
         {/if}
       </div>
     </div>

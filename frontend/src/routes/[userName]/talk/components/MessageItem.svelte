@@ -1,7 +1,6 @@
 <script lang="ts">
   import type { Message, MessageCreate } from "$lib/types";
   import {
-    markMessageAsRead,
     createMessage,
     getMessageThread,
     deleteMessage,
@@ -40,7 +39,6 @@
 
   const isSentByCurrentUser = currentUser?.userId === message.fromUserId;
   const isProfileOwner = currentUser?.userId === profile.userId;
-  const shouldShowAsUnread = message.status === 'unread' && isLoggedIn && currentUser && isProfileOwner;
 
   let showReplyForm = $state(false);
   let showThread = $state(false);
@@ -87,16 +85,6 @@
     }
   }
 
-  async function handleMarkAsRead() {
-    if (message.status === "unread" && isLoggedIn && isProfileOwner) {
-      try {
-        await markMessageAsRead(message.messageId);
-        await invalidate(`talk:${profile.userName}:messages`);
-      } catch (error) {
-        console.error("Failed to mark message as read:", error);
-      }
-    }
-  }
 
   async function handleReply(content: string) {
     if (!content.trim() || !currentUser) return;
@@ -229,12 +217,7 @@
 </script>
 
 <div
-  class="theme-border border-b p-3 mx-1 sm:p-4 sm:mx-2
-        {shouldShowAsUnread ? 'bg-orange-50 dark:bg-orange-900/20' : ''}"
-  role="button"
-  tabindex="0"
-  onclick={handleMarkAsRead}
-  onkeydown={(e) => e.key === "Enter" && handleMarkAsRead()}
+  class="theme-border border-b p-3 mx-1 sm:p-4 sm:mx-2 relative"
 >
   <MessageHeader 
     {message} 
