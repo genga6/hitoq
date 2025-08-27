@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { Visit } from "$lib/api-client/visits";
+  import type { Visit } from "$lib/types/visits";
 
   interface Props {
     visit: Visit;
@@ -9,18 +9,18 @@
   const { visit, formatDate }: Props = $props();
 </script>
 
-{#if visit.visitor_info && !visit.visitor_info.is_anonymous && visit.visitor_info.user_name}
+{#if visit.visitorInfo && !visit.visitorInfo.isAnonymous && visit.visitorInfo.userName}
   <!-- クリック可能なログインユーザー -->
   <a
-    href="/{visit.visitor_info.user_name}"
+    href="/{visit.visitorInfo.userName}"
     class="group theme-border theme-visitor-hover relative block cursor-pointer border-b transition-all duration-200"
   >
     <div class="relative flex items-center space-x-2 p-2 sm:space-x-3 sm:p-3">
       <div class="flex-shrink-0">
         <div class="relative">
           <img
-            src={visit.visitor_info.icon_url || "/default-avatar.svg"}
-            alt={visit.visitor_info.display_name}
+            src={visit.visitorInfo.iconUrl || "/default-avatar.svg"}
+            alt={visit.visitorInfo.displayName}
             class="h-8 w-8 rounded-lg border border-white object-cover shadow-sm sm:h-10 sm:w-10"
           />
         </div>
@@ -30,13 +30,13 @@
           <h3
             class="theme-text-primary truncate text-xs font-semibold transition-colors group-hover:text-orange-700 sm:text-sm"
           >
-            {visit.visitor_info.display_name}
+            {visit.visitorInfo.displayName}
           </h3>
         </div>
         <div class="mt-0.5">
           <span
             class="theme-text-muted block truncate text-xs transition-colors group-hover:text-orange-600"
-            >@{visit.visitor_info.user_name}</span
+            >@{visit.visitorInfo.userName}</span
           >
         </div>
       </div>
@@ -51,7 +51,7 @@
           ></path>
         </svg>
         <p class="theme-text-muted text-xs whitespace-nowrap">
-          {formatDate(visit.visited_at)}
+          {formatDate(visit.visitedAt)}
         </p>
       </div>
     </div>
@@ -60,7 +60,7 @@
   <!-- クリック不可能な訪問者（匿名または削除済み） -->
   <div class="group theme-border relative border-b transition-all duration-200">
     <div class="relative flex items-center space-x-2 p-2 sm:space-x-3 sm:p-3">
-      {#if visit.visitor_info?.is_anonymous}
+      {#if visit.visitorInfo?.isAnonymous}
         <div class="flex-shrink-0">
           <div
             class="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-gray-200 to-gray-300 shadow-sm sm:h-10 sm:w-10"
@@ -106,7 +106,7 @@
             ></path>
           </svg>
           <p class="theme-text-muted text-xs whitespace-nowrap">
-            {formatDate(visit.visited_at)}
+            {formatDate(visit.visitedAt)}
           </p>
         </div>
       {:else}
@@ -155,7 +155,7 @@
             ></path>
           </svg>
           <p class="theme-text-muted text-xs whitespace-nowrap">
-            {formatDate(visit.visited_at)}
+            {formatDate(visit.visitedAt)}
           </p>
         </div>
       {/if}

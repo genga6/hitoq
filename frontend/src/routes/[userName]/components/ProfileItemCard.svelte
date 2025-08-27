@@ -1,15 +1,31 @@
 <script lang="ts">
-  import type { ProfileItem } from "$lib/types";
   import Editable from "$lib/components/form/Editable.svelte";
+  import type { ValidationType } from "$lib/utils/validation";
+  import type { Snippet } from "svelte";
 
-  interface Props {
-    item: ProfileItem;
+  type Props = {
+    label: string;
+    value: string;
     isOwner: boolean;
-    showDivider?: boolean;
     onSave: (newValue: string) => Promise<boolean>;
-  }
+    inputType?: "input" | "textarea";
+    validationType?: ValidationType;
+    placeholder?: string;
+    showDivider?: boolean;
+    children?: Snippet;
+  };
 
-  const { item, isOwner, showDivider = false, onSave }: Props = $props();
+  const {
+    label,
+    value,
+    isOwner,
+    onSave,
+    inputType = "input",
+    validationType = "profileValue",
+    placeholder,
+    showDivider = false,
+    children,
+  }: Props = $props();
 </script>
 
 <div
@@ -19,30 +35,34 @@
 >
   <div class="p-6 md:p-0">
     <div class="relative">
-      <p class="theme-text-secondary mb-2 text-sm font-semibold tracking-wide">{item.label}</p>
+      <p class="theme-text-secondary mb-2 text-sm font-semibold tracking-wide">{label}</p>
     </div>
 
     {#if isOwner}
-      <Editable value={item.value} {onSave} inputType="input" validationType="profileValue">
+      <Editable {value} {onSave} {inputType} {validationType} {placeholder}>
         <div class="relative">
-          <p class="theme-text-primary text-base break-words font-semibold">
-            {#if item.value}
-              {item.value}
-            {:else}
-              <span class="theme-text-muted text-base italic">ー</span>
-            {/if}
-          </p>
+          {#if value}
+            <p class="theme-text-primary text-base break-words font-semibold whitespace-pre-wrap">
+              {value}
+            </p>
+          {:else if children}
+            {@render children()}
+          {:else}
+            <span class="theme-text-muted text-base italic">ー</span>
+          {/if}
         </div>
       </Editable>
     {:else}
       <div class="relative">
-        <p class="theme-text-primary text-base break-words font-semibold">
-          {#if item.value}
-            {item.value}
-          {:else}
-            <span class="theme-text-muted text-base italic">ー</span>
-          {/if}
-        </p>
+        {#if value}
+          <p class="theme-text-primary text-base break-words font-semibold whitespace-pre-wrap">
+            {value}
+          </p>
+        {:else if children}
+          {@render children()}
+        {:else}
+          <span class="theme-text-muted text-base italic">ー</span>
+        {/if}
       </div>
     {/if}
 

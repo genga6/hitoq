@@ -3,7 +3,7 @@ import { getUserByUserName } from "$lib/api-client/users";
 import { error } from "@sveltejs/kit";
 
 export const load: PageServerLoad = async ({ params }) => {
-  const userName = params.user_name;
+  const userName = params.userName;
 
   try {
     const profile = await getUserByUserName(userName);

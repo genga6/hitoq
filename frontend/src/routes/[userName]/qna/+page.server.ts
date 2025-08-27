@@ -3,7 +3,7 @@ import { getQnAPageData } from "$lib/api-client/qna";
 import { error } from "@sveltejs/kit";
 
 export const load: PageServerLoad = async ({ params, parent, depends }) => {
-  const userName = params.user_name;
+  const userName = params.userName;
 
   // キャッシュ無効化の識別子を登録
   depends("qna:data");

@@ -3,7 +3,7 @@ import { getProfilePageData } from "$lib/api-client/profile";
 import { error } from "@sveltejs/kit";
 
 export const load: PageServerLoad = async ({ params, parent, depends }) => {
-  const userName = params.user_name;
+  const userName = params.userName;
   depends(`user:${userName}:profile`);
 
   try {

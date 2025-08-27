@@ -11,7 +11,7 @@ export const load: LayoutServerLoad = async ({
   fetch,
   depends,
 }) => {
-  const userName = params.user_name;
+  const userName = params.userName;
   depends(`user:${userName}:profile`);
 
   setHeaders({

@@ -13,11 +13,11 @@ export const load: PageServerLoad = async ({
     isOwner: boolean;
   }
 > => {
-  const { user_name } = params;
-  depends(`talk:${user_name}:messages`);
+  const { userName } = params;
+  depends(`talk:${userName}:messages`);
   const { isOwner, isLoggedIn } = await parent();
 
-  const messagesData = await getMessagesPageDataServer(user_name, fetch);
+  const messagesData = await getMessagesPageDataServer(userName, fetch);
 
   return {
     ...messagesData,

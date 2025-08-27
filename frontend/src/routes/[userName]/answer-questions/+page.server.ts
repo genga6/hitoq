@@ -3,7 +3,7 @@ import { getQnAPageData } from "$lib/api-client/qna";
 import { error, redirect } from "@sveltejs/kit";
 
 export const load: PageServerLoad = async ({ params, parent, depends }) => {
-  const userName = params.user_name;
+  const userName = params.userName;
 
   depends("qna:data");
 

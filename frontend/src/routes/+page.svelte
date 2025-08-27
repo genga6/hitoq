@@ -6,7 +6,6 @@
   let { data }: { data: PageData } = $props();
 
   $effect(() => {
-    // If the user is logged in, redirect to the profile page
     if (data?.isLoggedIn && data?.userName) {
       goto(`/${data.userName}`);
     }

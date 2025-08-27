@@ -14,7 +14,7 @@
   import ErrorToast from "$lib/components/feedback/ErrorToast.svelte";
   import type { Snippet } from "svelte";
 
-  import { themeStore, updateThemeClass, watchSystemTheme, type Theme } from "$lib/stores/theme";
+  import { updateThemeClass, watchSystemTheme, type Theme } from "$lib/stores/theme";
   import "../app.css";
   import type { LayoutData } from "./$types";
 
@@ -24,7 +24,7 @@
   }
 
   const { data, children }: Props = $props();
-  let isLoggedIn = $state(data?.isLoggedIn);
+  let isLoggedIn = $state(data?.isLoggedIn ?? false);
   let currentUser = $state(data?.user ?? null);
   let currentTheme = $state<Theme>("system");
 
@@ -49,14 +49,6 @@
       goto("/");
     } catch (error) {
       console.error("Logout failed:", error);
-    }
-  };
-
-  const handleThemeChange = (theme: Theme) => {
-    currentTheme = theme;
-    themeStore.set(theme);
-    if (browser) {
-      localStorage.setItem("hitoq-theme", theme);
     }
   };
 
@@ -105,10 +97,8 @@
     <Header
       {isLoggedIn}
       {currentUser}
-      {currentTheme}
       onLogin={login}
       onLogout={logout}
-      onThemeChange={handleThemeChange}
     />
 
     <main class="flex-1">

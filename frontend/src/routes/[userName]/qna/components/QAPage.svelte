@@ -3,6 +3,7 @@
   import AnsweredQuestions from "./AnsweredQuestions.svelte";
   import { invalidate } from "$app/navigation";
   import { createAnswer } from "$lib/api-client/qna";
+  import { SvelteMap } from "svelte/reactivity";
 
   const {
     initialAnswerGroups = [],
@@ -11,7 +12,7 @@
     userId,
     profile,
     currentUser = null,
-    isLoggedIn = false
+    isLoggedIn = false,
   } = $props<{
     initialAnswerGroups?: UserAnswerGroupBackend[];
     categories?: Record<string, CategoryInfo>;
@@ -33,63 +34,63 @@
     values: {
       id: "values",
       label: "価値観",
-      description: "人生観、考え方、大切にしていること"
+      description: "人生観、考え方、大切にしていること",
     },
     personality: {
       id: "personality",
       label: "性格・特徴",
-      description: "自分の性格、特徴、個性について"
+      description: "自分の性格、特徴、個性について",
     },
     relationships: {
       id: "relationships",
       label: "人間関係",
-      description: "友人、家族、コミュニケーションについて"
+      description: "友人、家族、コミュニケーションについて",
     },
     romance: {
       id: "romance",
       label: "恋愛",
-      description: "恋愛観、パートナーシップについて"
+      description: "恋愛観、パートナーシップについて",
     },
     childhood: {
       id: "childhood",
       label: "子供時代",
-      description: "幼少期の思い出、体験、遊び"
+      description: "幼少期の思い出、体験、遊び",
     },
     school: {
       id: "school",
       label: "学生時代",
-      description: "学校生活、青春の思い出"
+      description: "学校生活、青春の思い出",
     },
     career: {
       id: "career",
       label: "キャリア",
-      description: "仕事、働き方、キャリアプラン"
+      description: "仕事、働き方、キャリアプラン",
     },
     lifestyle: {
       id: "lifestyle",
       label: "ライフスタイル",
-      description: "日常の過ごし方、健康、ファッション、インテリア"
+      description: "日常の過ごし方、健康、ファッション、インテリア",
     },
     activities: {
       id: "activities",
       label: "アクティビティ",
-      description: "旅行、グルメ、アウトドア活動"
+      description: "旅行、グルメ、アウトドア活動",
     },
     entertainment: {
       id: "entertainment",
       label: "エンタメ",
-      description: "映画、音楽、ゲーム、読書、創作、趣味"
+      description: "映画、音楽、ゲーム、読書、創作、趣味",
     },
     goals: {
       id: "goals",
       label: "目標",
-      description: "学習、成長、将来の目標、夢"
+      description: "学習、成長、将来の目標、夢",
     },
     hypothetical: {
       id: "hypothetical",
       label: "もしも",
-      description: "仮定の質問、想像の世界、「もし〜だったら」"
-    }
+      description: "仮定の質問、想像の世界、「もし〜だったら」",
+    },
   };
 
   const categories =
@@ -100,20 +101,32 @@
   }
 
   // State
-  let answerGroups = $state<(UserAnswerGroup & { groupId: string })[]>([
-    ...(initialAnswerGroups || []).map((group: UserAnswerGroupBackend) => ({
-      groupId: generateGroupId(),
+  let answerGroups = $state<(UserAnswerGroup & { groupId: string })[]>([]);
+  let selectedCategories = $state<string[]>([]);
+  let isSaving = $state(false);
+  const groupIdMap = new SvelteMap<string, string>();
+
+  function getGroupId(templateId: string): string {
+    if (!groupIdMap.has(templateId)) {
+      groupIdMap.set(templateId, generateGroupId());
+    }
+    return groupIdMap.get(templateId)!;
+  }
+
+  $effect(() => {
+    if (isSaving) return;
+
+    answerGroups = (initialAnswerGroups || []).map((group: UserAnswerGroupBackend) => ({
+      groupId: getGroupId(group.templateId),
       templateId: group.templateId,
       templateTitle: group.templateTitle,
       answers: group.answers.map((answer) => ({
         question: answer.question,
         answerText: answer.answerText,
-        answerId: answer.answerId
-      }))
-    }))
-  ]);
-
-  let selectedCategories = $state<string[]>([]);
+        answerId: answer.answerId,
+      })),
+    }));
+  });
 
   // Derived values
   const allDisplayGroups = $derived([...answerGroups]);
@@ -131,7 +144,7 @@
         answerId: qa.answerId,
         categoryInfo: (() => {
           return qa.question.categoryId ? categories[qa.question.categoryId] : null;
-        })()
+        })(),
       }))
     )
   );
@@ -168,7 +181,8 @@
 
     if (!answer) return;
 
-    // Optimistic UI update - 即座にローカル状態を更新
+    isSaving = true;
+
     const answerGroupIndex = answerGroups.findIndex((g) => g.groupId === group.groupId);
     const previousAnswer = answer.answerText; // エラー時のロールバック用
 
@@ -185,7 +199,7 @@
     try {
       if (answer.question.questionId > 0) {
         await createAnswer(userId, answer.question.questionId, newAnswer);
-        
+
         // キャッシュを無効化して他のタブでも最新データを反映
         await invalidate("qna:data");
       } else {
@@ -193,23 +207,27 @@
       }
     } catch (error) {
       console.error("回答の保存に失敗しました:", error);
-      
+
       // エラー時にロールバック
       if (answerGroupIndex !== -1) {
         const rollbackAnswerGroups = [...answerGroups];
         const rollbackGroup = { ...rollbackAnswerGroups[answerGroupIndex] };
         const rollbackAnswers = [...rollbackGroup.answers];
-        rollbackAnswers[questionIndex] = { ...rollbackAnswers[questionIndex], answerText: previousAnswer };
+        rollbackAnswers[questionIndex] = {
+          ...rollbackAnswers[questionIndex],
+          answerText: previousAnswer,
+        };
         rollbackGroup.answers = rollbackAnswers;
         rollbackAnswerGroups[answerGroupIndex] = rollbackGroup;
         answerGroups = rollbackAnswerGroups;
       }
+    } finally {
+      isSaving = false;
     }
   }
 </script>
 
 <div>
-
   <!-- 回答済みQ&Aエリア -->
   <AnsweredQuestions
     {answeredQAPairs}

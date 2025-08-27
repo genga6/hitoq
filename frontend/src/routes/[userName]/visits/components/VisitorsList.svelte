@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { getUserVisits, type Visit } from "$lib/api-client/visits";
+  import { getUserVisits } from "$lib/api-client/visits";
+  import type { Visit } from "$lib/types/visits";
   import { formatRelativeTime } from "$lib/utils/dateFormat";
   import VisitorItem from "./VisitorItem.svelte";
   import EmptyState from "$lib/components/feedback/EmptyState.svelte";
@@ -38,9 +39,8 @@
     if (activeFilter === "all") {
       return visits;
     } else {
-      // データ構造に基づいて修正：is_anonymousが直接プロパティになっている
       const filtered = visits.filter(
-        (visit) => !visit.is_anonymous && visit.visitor_user_id
+        (visit) => !visit.isAnonymous && visit.visitorUserId
       );
       return filtered;
     }
@@ -49,9 +49,7 @@
   // トグルオプションの設定
   const allCount = $derived(visits.length);
   const loggedInCount = $derived(
-    visits.filter(
-      (visit) => !visit.is_anonymous && visit.visitor_user_id
-    ).length
+    visits.filter((visit) => !visit.isAnonymous && visit.visitorUserId).length
   );
 
   const filterOptions = $derived([
@@ -59,14 +57,14 @@
       id: "all",
       label: "すべての訪問者",
       shortLabel: "すべて",
-      count: allCount
+      count: allCount,
     },
     {
       id: "loggedIn",
       label: "ログインユーザーのみ",
       shortLabel: "ログイン済み",
-      count: loggedInCount
-    }
+      count: loggedInCount,
+    },
   ]);
 
   function handleFilterChange(filterId: string) {
@@ -91,9 +89,9 @@
     </div>
 
     <!-- フィルタリング -->
-    <ToggleGroup 
-      options={filterOptions} 
-      activeOption={activeFilter} 
+    <ToggleGroup
+      options={filterOptions}
+      activeOption={activeFilter}
       onOptionChange={handleFilterChange}
       ariaLabel="訪問者フィルター"
     />
@@ -125,7 +123,7 @@
     />
   {:else}
     <div class="space-y-2">
-      {#each filteredVisits as visit, index (visit.visit_id)}
+      {#each filteredVisits as visit, index (visit.visitId)}
         {#if index < 10}
           <!-- Load first 10 items immediately -->
           <VisitorItem {visit} formatDate={formatRelativeTime} />

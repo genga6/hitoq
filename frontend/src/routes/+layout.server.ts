@@ -1,10 +1,13 @@
-import type { LayoutServerLoad } from "./$types";
+import type { LayoutServerLoad, LayoutServerLoadEvent } from "./$types";
 import {
   getAuthenticatedUser,
   createAuthResponse,
 } from "$lib/utils/auth-server";
 
-export const load: LayoutServerLoad = async ({ cookies, fetch }) => {
+export const load: LayoutServerLoad = async ({
+  cookies,
+  fetch,
+}: LayoutServerLoadEvent) => {
   try {
     const user = await getAuthenticatedUser(cookies, fetch);
     return createAuthResponse(user);

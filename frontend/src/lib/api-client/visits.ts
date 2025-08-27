@@ -1,22 +1,5 @@
 import { fetchApi, fetchApiWithAuth, fetchApiWithCookies } from "./base";
-
-// Visit related interfaces
-export interface VisitorInfo {
-  user_id?: string;
-  user_name?: string;
-  display_name?: string;
-  icon_url?: string;
-  is_anonymous: boolean;
-}
-
-export interface Visit {
-  visit_id: number;
-  visitor_user_id?: string;
-  visited_user_id: string;
-  is_anonymous: boolean;
-  visited_at: string;
-  visitor_info?: VisitorInfo;
-}
+import type { Visit } from "$lib/types/visits";
 
 export const recordVisit = async (userId: string): Promise<void> => {
   await fetchApiWithAuth<void>(`/users/${userId}/visit`, {

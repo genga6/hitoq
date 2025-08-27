@@ -201,7 +201,6 @@ async def auth_twitter_callback(
             user_name=user_data["username"],
             display_name=user_data["name"],
             bio=user_data.get("description"),
-            self_introduction=None,
             icon_url=high_res_url,
         )
         user = user_service.upsert_user(db, user_in=user_in)

@@ -42,10 +42,7 @@
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { userId, displayName, bio, iconUrl } = profile;
 
-  // メッセージの送受信関係を判定
   const isSentByCurrentUser = currentUser?.userId === message.fromUserId;
-  
-  // プロフィールページの所有者（受信者）かどうかを判定
   const isProfileOwner = currentUser?.userId === profile.userId;
   
   // 未読状態の表示判定: プロフィール所有者でログイン中の場合のみ未読を表示
@@ -56,16 +53,13 @@
   let isSubmittingReply = $state(false);
   let threadMessages = $state<Message[]>([]);
 
-  // 削除機能
   let isEditingOrDeleting = $state(false);
 
-  // ハートリアクション機能
   let heartStates = $state<Record<string, { liked: boolean; count: number }>>({});
   let isTogglingHeart = $state(false);
 
-  // ハート状態を初期化
   $effect(() => {
-    if (currentUser) {
+    if (currentUser && !isTogglingHeart) {
       loadHeartStates();
     }
   });
@@ -79,7 +73,6 @@
       heartStates = { ...heartStates, ...result.heart_states };
     } catch (error) {
       console.error("Failed to load heart states:", error);
-      // フォールバック: 初期値設定
       messageIds.forEach((id) => {
         if (!heartStates[id]) {
           heartStates[id] = { liked: false, count: 0 };

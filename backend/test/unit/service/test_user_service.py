@@ -115,7 +115,6 @@ class TestUserService:
         update_data = UserUpdate(
             display_name="Updated Name",
             bio="Updated bio",
-            self_introduction="New self introduction",
             notification_level=NotificationLevelEnum.important,
         )
 
@@ -123,7 +122,6 @@ class TestUserService:
 
         assert result.display_name == "Updated Name"
         assert result.bio == "Updated bio"
-        assert result.self_introduction == "New self introduction"
         assert result.notification_level == NotificationLevelEnum.important
 
     def test_update_user_not_found(self, test_db_session):

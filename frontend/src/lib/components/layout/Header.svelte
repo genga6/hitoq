@@ -17,8 +17,7 @@
     onLogout: () => Promise<void>;
   };
 
-  const { isLoggedIn, currentUser, onLogin, onLogout }: Props =
-    $props();
+  const { isLoggedIn, currentUser, onLogin, onLogout }: Props = $props();
 
   let searchQuery = $state("");
   let candidates = $state<UserCandidate[]>([]);
