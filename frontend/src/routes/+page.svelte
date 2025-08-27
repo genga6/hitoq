@@ -6,8 +6,8 @@
   let { data }: { data: PageData } = $props();
 
   $effect(() => {
-    if (data?.isLoggedIn && data?.userName) {
-      goto(`/${data.userName}`);
+    if (data?.isLoggedIn && data.user?.userName) {
+      goto(`/${data.user.userName}`);
     }
   });
 

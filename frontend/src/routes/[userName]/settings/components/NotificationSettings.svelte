@@ -10,29 +10,21 @@
 
   const { initialLevel, userName }: Props = $props();
 
-  let notificationLevel = $state<NotificationLevel>(initialLevel);
+  let notificationLevel = $derived.by(() => initialLevel);
   let savingNotification = $state(false);
 
-  $effect(() => {
-    if (!savingNotification) {
-      notificationLevel = initialLevel;
-    }
-  });
-
   const handleNotificationLevelChange = async (newLevel: NotificationLevel) => {
-    const previousLevel = notificationLevel;
-
-    // Optimistic UI update - immediately change the UI
-    notificationLevel = newLevel;
     savingNotification = true;
 
     try {
       await updateCurrentUser({ notificationLevel: newLevel });
+      // Invalidate tells SvelteKit to re-run the load function, which will
+      // fetch the new state from the server and pass it down as `initialLevel`.
       await invalidate(`user:${userName}:profile`);
     } catch (e) {
       console.error("Failed to update notification level:", e);
-      // Revert the change on error
-      notificationLevel = previousLevel;
+      // Since we are not doing optimistic updates, we don't need to revert the UI.
+      // We could show a toast message to the user here.
     } finally {
       savingNotification = false;
     }

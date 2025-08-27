@@ -336,10 +336,10 @@ class TestMessageService:
         )
 
         result = message_service.toggle_heart_reaction(
-            test_db_session, "liker", original_message.message_id, "author"
+            test_db_session, "liker", original_message.message_id
         )
 
-        assert result["action"] == "added"
+        assert result["user_liked"] is True
         assert result["like_count"] == 1
 
     def test_toggle_heart_reaction_remove(self, test_db_session, create_user):
@@ -356,14 +356,14 @@ class TestMessageService:
         )
 
         message_service.toggle_heart_reaction(
-            test_db_session, "liker", original_message.message_id, "author"
+            test_db_session, "liker", original_message.message_id
         )
 
         result = message_service.toggle_heart_reaction(
-            test_db_session, "liker", original_message.message_id, "author"
+            test_db_session, "liker", original_message.message_id
         )
 
-        assert result["action"] == "removed"
+        assert result["user_liked"] is False
         assert result["like_count"] == 0
 
     def test_get_message_likes(self, test_db_session, create_user):
@@ -381,10 +381,10 @@ class TestMessageService:
         )
 
         message_service.toggle_heart_reaction(
-            test_db_session, "liker1", original_message.message_id, "author"
+            test_db_session, "liker1", original_message.message_id
         )
         message_service.toggle_heart_reaction(
-            test_db_session, "liker2", original_message.message_id, "author"
+            test_db_session, "liker2", original_message.message_id
         )
 
         result = message_service.get_message_likes(
@@ -419,14 +419,14 @@ class TestMessageService:
         )
 
         message_service.toggle_heart_reaction(
-            test_db_session, "user", message1.message_id, "author"
+            test_db_session, "user", message1.message_id
         )
 
         result = message_service.get_heart_states_for_messages(
             test_db_session, "user", [message1.message_id, message2.message_id]
         )
 
-        assert result[message1.message_id]["liked"] is True
-        assert result[message1.message_id]["count"] == 1
-        assert result[message2.message_id]["liked"] is False
-        assert result[message2.message_id]["count"] == 0
+        assert result[message1.message_id]["user_liked"] is True
+        assert result[message1.message_id]["like_count"] == 1
+        assert result[message2.message_id]["user_liked"] is False
+        assert result[message2.message_id]["like_count"] == 0

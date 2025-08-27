@@ -77,7 +77,7 @@ export async function getNotifications(): Promise<Message[]> {
 }
 
 export async function getNotificationCount(): Promise<{
-  notification_count: number;
+  notificationCount: number;
 }> {
   try {
     return await fetchApiWithAuth("/messages/notification-count");
@@ -127,7 +127,7 @@ export async function deleteMessage(messageId: string): Promise<void> {
 
 export async function toggleHeartReaction(
   messageId: string,
-): Promise<{ action: string; like_count: number; user_liked: boolean }> {
+): Promise<{ likeCount: number; userLiked: boolean }> {
   try {
     return await fetchApiWithAuth(`/messages/${messageId}/heart`, {
       method: "POST",
@@ -150,7 +150,7 @@ export async function getMessageLikes(
 }
 
 export async function getHeartStates(messageIds: string[]): Promise<{
-  heart_states: Record<string, { liked: boolean; count: number }>;
+  heartStates: Record<string, { liked: boolean; count: number }>;
 }> {
   try {
     return await fetchApiWithAuth(`/messages/heart-states`, {

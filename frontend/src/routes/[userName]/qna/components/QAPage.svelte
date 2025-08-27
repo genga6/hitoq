@@ -29,7 +29,6 @@
     isLoggedIn?: boolean;
   }>();
 
-  // 新しい12カテゴリのフォールバック情報
   const fallbackCategories: Record<string, CategoryInfo> = {
     values: {
       id: "values",
@@ -100,7 +99,6 @@
     return `group-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
   }
 
-  // State
   let answerGroups = $state<(UserAnswerGroup & { groupId: string })[]>([]);
   let selectedCategories = $state<string[]>([]);
   let isSaving = $state(false);
@@ -162,7 +160,6 @@
     return answered;
   });
 
-  // Event handlers
   function toggleCategory(category: string) {
     if (selectedCategories.includes(category)) {
       selectedCategories = selectedCategories.filter((c) => c !== category);
@@ -184,7 +181,7 @@
     isSaving = true;
 
     const answerGroupIndex = answerGroups.findIndex((g) => g.groupId === group.groupId);
-    const previousAnswer = answer.answerText; // エラー時のロールバック用
+    const previousAnswer = answer.answerText;
 
     if (answerGroupIndex !== -1) {
       const newAnswerGroups = [...answerGroups];
@@ -199,8 +196,6 @@
     try {
       if (answer.question.questionId > 0) {
         await createAnswer(userId, answer.question.questionId, newAnswer);
-
-        // キャッシュを無効化して他のタブでも最新データを反映
         await invalidate("qna:data");
       } else {
         console.warn("質問IDが無効なため、サーバーへの保存をスキップしました。");
@@ -208,7 +203,6 @@
     } catch (error) {
       console.error("回答の保存に失敗しました:", error);
 
-      // エラー時にロールバック
       if (answerGroupIndex !== -1) {
         const rollbackAnswerGroups = [...answerGroups];
         const rollbackGroup = { ...rollbackAnswerGroups[answerGroupIndex] };
@@ -228,7 +222,6 @@
 </script>
 
 <div>
-  <!-- 回答済みQ&Aエリア -->
   <AnsweredQuestions
     {answeredQAPairs}
     {selectedCategories}

@@ -12,13 +12,7 @@
   const { data }: Props = $props();
   const isOwner = $derived(data.isOwner);
 
-  let profileItems = $state<ProfileItem[]>([]);
-  let isSaving = $state(false);
-
-  $effect(() => {
-    if (isSaving) return;
-    profileItems = [...(data.profileItems || [])].sort((a, b) => a.displayOrder - b.displayOrder);
-  });
+  let profileItems = $derived([...(data.profileItems || [])].sort((a, b) => a.displayOrder - b.displayOrder));
 
   const updateProfileItemValue = async (
     userId: string,
@@ -28,24 +22,18 @@
     return updateProfileItem(userId, profileItemId, { value: newValue });
   };
 
-  const createSaveHandler = (item: ProfileItem, index: number) => {
+  const createSaveHandler = (item: ProfileItem) => {
     return async (newValue: string): Promise<boolean> => {
-      isSaving = true;
-      const previousItems = [...profileItems];
-
-      // Optimistic UI
-      profileItems[index] = { ...item, value: newValue };
-
       try {
         await updateProfileItemValue(data.profile.userId, item.profileItemId, newValue);
+
+        // Wait for the data to be re-fetched and the prop to be updated
         await invalidate(`user:${data.profile.userName}:profile`);
+
         return true;
       } catch (error) {
         console.error("プロフィールの更新に失敗しました:", error);
-        profileItems = previousItems; // Revert on error
         return false;
-      } finally {
-        isSaving = false;
       }
     };
   };
@@ -56,12 +44,11 @@
     <!-- 自己紹介 -->
     {@const introItem = profileItems.find(p => p.label === '自己紹介')}
     {#if introItem}
-      {@const introIndex = profileItems.indexOf(introItem)}
       <ProfileItemCard
         label={introItem.label}
         value={introItem.value}
         {isOwner}
-        onSave={createSaveHandler(introItem, introIndex)}
+        onSave={createSaveHandler(introItem)}
         inputType="textarea"
         validationType="selfIntroduction"
         placeholder="自己紹介を書いてみましょう..."
@@ -83,12 +70,11 @@
     <!-- その他のプロフィール項目 -->
     <div class="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-8">
       {#each profileItems.filter(p => p.label !== '自己紹介') as item, index (item.profileItemId)}
-        {@const originalIndex = profileItems.indexOf(item)}
         <ProfileItemCard
           label={item.label}
           value={item.value}
           {isOwner}
-          onSave={createSaveHandler(item, originalIndex)}
+          onSave={createSaveHandler(item)}
           showDivider={index < profileItems.length - 2}
         >
           <span class="theme-text-muted text-base italic">ー</span>

@@ -34,7 +34,6 @@
       });
   });
 
-  // フィルタリングされた訪問者リスト
   const filteredVisits = $derived.by(() => {
     if (activeFilter === "all") {
       return visits;
@@ -46,7 +45,6 @@
     }
   });
 
-  // トグルオプションの設定
   const allCount = $derived(visits.length);
   const loggedInCount = $derived(
     visits.filter((visit) => !visit.isAnonymous && visit.visitorUserId).length
@@ -73,7 +71,6 @@
 </script>
 
 <div class="space-y-3">
-  <!-- ヘッダー部分 -->
   <div class="mb-3 flex items-center justify-between">
     <div class="flex items-center space-x-2">
       <svg
@@ -88,7 +85,6 @@
       <h2 class="text-md theme-text-secondary font-medium">最近の訪問者</h2>
     </div>
 
-    <!-- フィルタリング -->
     <ToggleGroup
       options={filterOptions}
       activeOption={activeFilter}

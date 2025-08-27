@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { MessagesPageData, Message } from "$lib/types";
   import MessageList from "./components/MessageList.svelte";
-  import MessageForm from "$lib/components/domain/messaging/MessageForm.svelte";
+  import MessageForm from "./components/MessageForm.svelte";
   import { invalidate } from "$app/navigation";
 
   import type { BaseUser } from "$lib/types";
@@ -22,18 +22,15 @@
 
 
   async function handleMessageUpdate() {
-    // Refresh the page data to show updated messages and reply counts
     await invalidate(`talk:${data.profile.userName}:messages`);
   }
 
   function handleMessageSuccess(newMessage: Message) {
-    // 新しいメッセージをローカル状態に追加
     localMessages = [newMessage, ...localMessages];
     showMessageForm = false;
   }
 
   function handleMessageDelete(messageId: string) {
-    // 削除されたメッセージIDを記録
     deletedMessageIds = new Set([...deletedMessageIds, messageId]);
   }
 
@@ -41,8 +38,6 @@
     showMessageForm = !showMessageForm;
   }
 
-
-  // サーバーからのメッセージとローカルメッセージを統合
   const serverMessages = data.messages && data.messages.length > 0
     ? data.messages.filter((msg) => msg.messageType !== "like")
     : [];
@@ -50,25 +45,18 @@
   const profile = data.profile;
 
   // このユーザー宛てのメッセージ（インタラクション）のみを表示
-  // ローカルメッセージとサーバーメッセージを統合し、重複を除去
   const filteredMessages = $derived.by(() => {
     const serverFiltered = serverMessages.filter((msg) => msg.toUserId === profile.userId);
     const localFiltered = localMessages.filter((msg) => msg.toUserId === profile.userId);
-    
-    
-    // 重複を除去（messageId で判定）
     const combined = [...localFiltered, ...serverFiltered];
+    
     const uniqueMessages = combined.filter((message, index, array) => 
       array.findIndex(m => m.messageId === message.messageId) === index
     );
-    
-    // 削除されたメッセージを除外
+
     const notDeletedMessages = uniqueMessages.filter((message) => 
       !deletedMessageIds.has(message.messageId)
     );
-    
-    
-    // 作成日時で降順ソート（新しいものが上）
     return notDeletedMessages.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   });
 </script>

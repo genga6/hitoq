@@ -5,13 +5,8 @@ export const load: PageServerLoad = async ({ parent }) => {
   try {
     const { isOwner, isLoggedIn, profile } = await parent();
 
-    if (!isLoggedIn) {
-      throw redirect(302, "/");
-    }
-
-    if (!isOwner) {
-      throw error(403, "アクセス権限がありません");
-    }
+    if (!isLoggedIn) throw redirect(302, "/");
+    if (!isOwner) throw error(403, "アクセス権限がありません");
 
     return {
       profile,

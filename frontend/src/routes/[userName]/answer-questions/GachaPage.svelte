@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { CategoryInfo } from "$lib/types";
   import type { Question } from "$lib/types";
-  import QuestionAnswerCard from "$lib/components/domain/qna/QuestionAnswerCard.svelte";
+  import QuestionAnswerCard from "../qna/components/QuestionAnswerCard.svelte";
   import GachaControls from "./components/GachaControls.svelte";
   import ToastContainer from "$lib/components/ui/ToastContainer.svelte";
   import { toasts } from "$lib/stores/toast";

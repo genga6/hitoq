@@ -1,8 +1,9 @@
 <script lang="ts">
   import type { CategoryInfo } from "$lib/types";
-  import Editable from "../../form/Editable.svelte";
+  import Editable from "$lib/components/form/Editable.svelte";
+  import TextareaForm from "$lib/components/form/TextareaForm.svelte";
   import { sendMessage } from "$lib/api-client/messages";
-  import TextareaForm from "../../form/TextareaForm.svelte";
+
 
   const {
     question,

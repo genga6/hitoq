@@ -7,7 +7,7 @@
 
   type Props = {
     threadMessages: Message[];
-    heartStates: Record<string, { liked: boolean; count: number }>;
+    heartStates: Record<string, { userLiked: boolean; likeCount: number }>;
     currentUser?: {
       userId: string;
       userName: string;
@@ -56,9 +56,9 @@
   </div>
 
   <div class="max-h-64 overflow-y-auto">
-    {#each threadMessages as threadMessage, index (threadMessage.messageId)}
+    {#each threadMessages as threadMessage (threadMessage.messageId)}
       <div
-        class="py-2 {index > 0 ? 'border-t border-gray-200 dark:border-gray-600' : ''}"
+        class="py-2"
         style="margin-left: {(threadMessage.threadDepth || 1) * 12}px"
       >
         <!-- 親メッセージへの接続線 -->
@@ -84,8 +84,7 @@
               <span class="theme-text-muted flex-shrink-0 text-sm">
                 {formatAbsoluteTime(threadMessage.createdAt)}
               </span>
-
-              <!-- 深度インジケーター -->
+              
               {#if threadMessage.threadDepth && threadMessage.threadDepth > 1}
                 <span class="rounded bg-gray-100 dark:bg-gray-700 px-1 text-xs text-gray-400 dark:text-gray-300">
                   L{threadMessage.threadDepth}
@@ -102,6 +101,7 @@
               <!-- 削除ボタン（自分のメッセージまたはisOwnerの場合） -->
               {#if currentUser?.userId === threadMessage.fromUserId || isOwner}
                 <div class="ml-2 flex items-center gap-1">
+                  <!-- svelte-ignore a11y_consider_explicit_label -->
                   <button
                     onclick={() => onDelete(threadMessage.messageId)}
                     disabled={isEditingOrDeleting}
@@ -119,11 +119,13 @@
             <!-- アクションボタン -->
             {#if currentUser}
               <MessageActions
-                messageId={threadMessage.messageId}
-                heartState={heartStates[threadMessage.messageId] || { liked: false, count: 0 }}
+                heartState={{
+                  liked: heartStates[threadMessage.messageId]?.userLiked || false,
+                  count: heartStates[threadMessage.messageId]?.likeCount || 0
+                }}
                 onReplyClick={() => toggleThreadReplyForm(threadMessage.messageId)}
                 onHeartToggle={() => onHeartToggle(threadMessage.messageId)}
-                {isTogglingHeart}
+                {isTogglingHeart} isThreadMessage={true}
               />
             {/if}
 

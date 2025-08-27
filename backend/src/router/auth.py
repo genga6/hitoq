@@ -223,9 +223,11 @@ async def auth_twitter_callback(
             domain=".hitoq.net" if os.getenv("ENVIRONMENT") == "production" else None,
             path="/",
             max_age=ACCESS_TOKEN_EXPIRE_MINUTES * 60,  # 15分
-            samesite="none" if os.getenv("ENVIRONMENT") == "production" else "lax",
+            samesite="none",
             httponly=True,
-            secure=os.getenv("COOKIE_SECURE", "false").lower() == "true",
+            secure=True
+            if os.getenv("ENVIRONMENT") != "production"
+            else os.getenv("COOKIE_SECURE", "false").lower() == "true",
         )
 
         response.set_cookie(
@@ -234,9 +236,11 @@ async def auth_twitter_callback(
             domain=".hitoq.net" if os.getenv("ENVIRONMENT") == "production" else None,
             path="/",
             max_age=REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60,  # 7日
-            samesite="none" if os.getenv("ENVIRONMENT") == "production" else "lax",
+            samesite="none",
             httponly=True,
-            secure=os.getenv("COOKIE_SECURE", "false").lower() == "true",
+            secure=True
+            if os.getenv("ENVIRONMENT") != "production"
+            else os.getenv("COOKIE_SECURE", "false").lower() == "true",
         )
 
         return response
@@ -267,9 +271,11 @@ async def refresh_token(request: Request, db: Session = Depends(get_db)):
         domain=".hitoq.net" if os.getenv("ENVIRONMENT") == "production" else None,
         path="/",
         max_age=ACCESS_TOKEN_EXPIRE_MINUTES * 60,
-        samesite="none" if os.getenv("ENVIRONMENT") == "production" else "lax",
+        samesite="none",
         httponly=True,
-        secure=os.getenv("COOKIE_SECURE", "false").lower() == "true",
+        secure=True
+        if os.getenv("ENVIRONMENT") != "production"
+        else os.getenv("COOKIE_SECURE", "false").lower() == "true",
     )
 
     return response
@@ -293,8 +299,10 @@ async def get_csrf_token(request: Request):
         path="/",
         max_age=24 * 60 * 60,  # 24時間
         httponly=False,  # JavaScriptからアクセス可能
-        samesite="none" if os.getenv("ENVIRONMENT") == "production" else "lax",
-        secure=os.getenv("COOKIE_SECURE", "false").lower() == "true",
+        samesite="none",
+        secure=True
+        if os.getenv("ENVIRONMENT") != "production"
+        else os.getenv("COOKIE_SECURE", "false").lower() == "true",
     )
 
     return response

@@ -16,16 +16,21 @@
   let isBlockedByCurrentUser = $state(false);
   let isTabLoading = $state(false);
 
-  // Check block status when needed
-  $effect(() => {
+  async function refreshBlockStatus() {
     if (!data?.profile?.userId || data?.isOwner || !data?.isLoggedIn) {
       isBlockedByCurrentUser = false;
       return;
     }
-
-    checkBlockStatus(data.profile.userId).then((blocked) => {
+    try {
+      const blocked = await checkBlockStatus(data.profile.userId);
       isBlockedByCurrentUser = blocked;
-    });
+    } catch (e) {
+      console.error("Failed to refresh block status", e);
+    }
+  }
+
+  $effect(() => {
+    refreshBlockStatus();
   });
 
   function handleLoadingChange(loading: boolean) {
@@ -45,14 +50,14 @@
         userId={data.profile.userId}
         isOwner={data.isOwner ?? false}
         isLoggedIn={data.isLoggedIn ?? false}
-        onBlockStatusChange={(blocked) => (isBlockedByCurrentUser = blocked)}
+        onBlockStatusChange={refreshBlockStatus}
       />
 
       {#if isBlockedByCurrentUser}
         <BlockedUserMessage
           userName={data.profile.userName}
           userId={data.profile.userId}
-          onUnblock={() => (isBlockedByCurrentUser = false)}
+          onUnblock={refreshBlockStatus}
         />
       {:else}
         <TabNavigation 

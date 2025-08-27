@@ -71,8 +71,8 @@ export const blocksApi = {
     return response;
   },
 
-  async checkIsBlocked(userId: string): Promise<{ is_blocked: boolean }> {
-    const response = await fetchApiWithAuth<{ is_blocked: boolean }>(
+  async checkIsBlocked(userId: string): Promise<{ isBlocked: boolean }> {
+    const response = await fetchApiWithAuth<{ isBlocked: boolean }>(
       `/is-blocked/${userId}`,
     );
     return response;

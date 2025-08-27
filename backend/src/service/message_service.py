@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session, joinedload
 
 from src.db.tables import (
     Message,
+    MessageLike,
     MessageStatusEnum,
     MessageTypeEnum,
     NotificationLevelEnum,
@@ -259,6 +260,34 @@ def get_message_thread(db: Session, message_id: str, user_id: str) -> list[Messa
     return sort_messages_hierarchically(thread_messages)
 
 
+def _get_full_thread_count(db: Session, root_message_id: str) -> int:
+    from sqlalchemy import text
+
+    # This CTE is similar to get_message_thread, but only counts
+    thread_count_data = db.execute(
+        text("""
+            WITH RECURSIVE thread_tree AS (
+                SELECT m.message_id
+                FROM messages m 
+                WHERE m.parent_message_id = :root_id
+                AND NOT (m.message_type = 'like' AND m.content = '❤️')
+                
+                UNION ALL
+                
+                SELECT m.message_id
+                FROM messages m
+                INNER JOIN thread_tree tt ON m.parent_message_id = tt.message_id
+                WHERE NOT (m.message_type = 'like' AND m.content = '❤️')
+            )
+            SELECT count(*) FROM thread_tree
+            """),
+        {"root_id": root_message_id},
+    ).scalar_one_or_none()
+
+    return thread_count_data if thread_count_data is not None else 0
+
+
+# Modify get_messages_with_replies
 def get_messages_with_replies(
     db: Session, user_id: str, skip: int = 0, limit: int = 50
 ) -> list[Message]:
@@ -279,13 +308,8 @@ def get_messages_with_replies(
 
     # Add reply count to each message
     for message in messages:
-        reply_count = (
-            db.query(Message)
-            .filter(Message.parent_message_id == message.message_id)
-            .count()
-        )
-        # Add reply_count as an attribute (will be handled in schema)
-        message.reply_count = reply_count
+        # Calculate full thread count instead of just direct replies
+        message.reply_count = _get_full_thread_count(db, message.message_id)
 
     return messages
 
@@ -310,13 +334,8 @@ def get_conversation_messages_for_user(
 
     # Add reply count to each message
     for message in messages:
-        reply_count = (
-            db.query(Message)
-            .filter(Message.parent_message_id == message.message_id)
-            .count()
-        )
-        # Add reply_count as an attribute (will be handled in schema)
-        message.reply_count = reply_count
+        # Calculate full thread count instead of just direct replies
+        message.reply_count = _get_full_thread_count(db, message.message_id)
 
     return messages
 
@@ -371,66 +390,58 @@ def get_user_heart_reaction(
     )
 
 
-def toggle_heart_reaction(
-    db: Session, user_id: str, target_message_id: str, to_user_id: str
-) -> dict:
-    """Toggle heart reaction for a message. Returns action taken and like count."""
-    import uuid
+def toggle_heart_reaction(db: Session, user_id: str, target_message_id: str) -> dict:
+    """Toggle heart reaction for a message. Returns user_liked status and like count."""
 
-    existing_reaction = get_user_heart_reaction(db, user_id, target_message_id)
-
-    if existing_reaction:
-        # Remove existing reaction
-        db.delete(existing_reaction)
-        db.commit()
-        action = "removed"
-    else:
-        # Add new reaction
-        new_reaction = Message(
-            message_id=str(uuid.uuid4()),
-            from_user_id=user_id,
-            to_user_id=to_user_id,
-            message_type=MessageTypeEnum.like,
-            content="❤️",
-            parent_message_id=target_message_id,
-            status=MessageStatusEnum.unread,
-        )
-        db.add(new_reaction)
-        db.commit()
-        action = "added"
-
-    # Count total heart reactions for this message
-    like_count = (
-        db.query(Message)
+    # Check if user already liked this message
+    existing_like = (
+        db.query(MessageLike)
         .filter(
-            Message.parent_message_id == target_message_id,
-            Message.message_type == MessageTypeEnum.like,
-            Message.content == "❤️",
+            MessageLike.user_id == user_id,
+            MessageLike.message_id == target_message_id,
         )
+        .first()
+    )
+
+    if existing_like:
+        # Remove existing like
+        db.delete(existing_like)
+        user_liked = False
+    else:
+        # Add new like
+        new_like = MessageLike(
+            message_id=target_message_id,
+            user_id=user_id,
+        )
+        db.add(new_like)
+        user_liked = True
+
+    db.commit()
+
+    # Count total likes for this message
+    like_count = (
+        db.query(MessageLike)
+        .filter(MessageLike.message_id == target_message_id)
         .count()
     )
 
-    return {"action": action, "like_count": like_count}
+    return {"user_liked": user_liked, "like_count": like_count}
 
 
 def get_message_likes(db: Session, message_id: str) -> list[dict]:
     """Get list of users who liked a specific message."""
     likes = (
-        db.query(Message)
-        .options(joinedload(Message.from_user))
-        .filter(
-            Message.parent_message_id == message_id,
-            Message.message_type == MessageTypeEnum.like,
-            Message.content == "❤️",
-        )
-        .order_by(Message.created_at.desc())
+        db.query(MessageLike)
+        .options(joinedload(MessageLike.user))
+        .filter(MessageLike.message_id == message_id)
+        .order_by(MessageLike.created_at.desc())
         .all()
     )
 
     return [
-        UserRead.model_validate(like.from_user).model_dump(by_alias=True)
+        UserRead.model_validate(like.user).model_dump(by_alias=True)
         for like in likes
-        if like.from_user
+        if like.user
     ]
 
 
@@ -443,12 +454,10 @@ def get_heart_states_for_messages(
 
     # Get user's likes for these messages
     user_likes = (
-        db.query(Message.parent_message_id)
+        db.query(MessageLike.message_id)
         .filter(
-            Message.from_user_id == user_id,
-            Message.parent_message_id.in_(message_ids),
-            Message.message_type == MessageTypeEnum.like,
-            Message.content == "❤️",
+            MessageLike.user_id == user_id,
+            MessageLike.message_id.in_(message_ids),
         )
         .all()
     )
@@ -456,15 +465,9 @@ def get_heart_states_for_messages(
 
     # Get total like counts for these messages
     like_counts = (
-        db.query(
-            Message.parent_message_id, func.count(Message.message_id).label("count")
-        )
-        .filter(
-            Message.parent_message_id.in_(message_ids),
-            Message.message_type == MessageTypeEnum.like,
-            Message.content == "❤️",
-        )
-        .group_by(Message.parent_message_id)
+        db.query(MessageLike.message_id, func.count(MessageLike.like_id).label("count"))
+        .filter(MessageLike.message_id.in_(message_ids))
+        .group_by(MessageLike.message_id)
         .all()
     )
 
@@ -472,16 +475,12 @@ def get_heart_states_for_messages(
     result = {}
     for message_id in message_ids:
         count = next(
-            (
-                item.count
-                for item in like_counts
-                if item.parent_message_id == message_id
-            ),
+            (item.count for item in like_counts if item.message_id == message_id),
             0,
         )
         result[message_id] = {
-            "liked": message_id in user_liked_messages,
-            "count": count,
+            "user_liked": message_id in user_liked_messages,
+            "like_count": count,
         }
 
     return result

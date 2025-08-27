@@ -86,9 +86,9 @@
     onkeydown={handleKeydown}
     tabindex="-1"
   >
-    <div class="w-full {sizeClasses[size]} rounded-lg bg-white shadow-xl">
+    <div class="w-full {sizeClasses[size]} rounded-lg theme-bg-surface shadow-xl">
       {#if title || closable}
-        <div class="flex items-center justify-between border-b border-gray-200 p-4">
+        <div class="flex items-center justify-between border-b theme-border p-4">
           {#if title}
             <h3 id="modal-title" class="theme-text-primary text-lg font-semibold">{title}</h3>
           {:else}
@@ -99,7 +99,7 @@
             <button
               type="button"
               onclick={handleClose}
-              class="inline-flex h-8 w-8 items-center justify-center rounded-md text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 focus:ring-2 focus:ring-gray-300 focus:outline-none"
+              class="inline-flex h-8 w-8 items-center justify-center rounded-md theme-text-muted transition-colors theme-hover-bg focus:ring-2 focus:ring-gray-300 focus:outline-none"
               aria-label="閉じる"
             >
               <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

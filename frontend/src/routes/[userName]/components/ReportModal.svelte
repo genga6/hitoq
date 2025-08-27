@@ -46,8 +46,8 @@
 
     try {
       const reportData: ReportCreate = {
-        reported_user_id: userId,
-        report_type: reportType,
+        reportedUserId: userId,
+        reportType: reportType,
         description: description.trim() || undefined
       };
 
@@ -67,7 +67,7 @@
 <Modal {isOpen} title="ユーザーを通報" onClose={handleClose} size="md">
   {#if success}
     <div class="py-4 text-center">
-      <div class="mb-2 text-lg font-medium text-green-600">通報を送信しました</div>
+      <div class="mb-2 text-lg font-medium text-green-600 dark:text-green-400">通報を送信しました</div>
       <p class="theme-text-secondary">運営チームが内容を確認いたします。</p>
     </div>
   {:else}
@@ -101,7 +101,7 @@
       </div>
 
       {#if error}
-        <div class="mb-4 text-sm text-red-500">{error}</div>
+        <div class="mb-4 text-sm text-red-500 dark:text-red-400">{error}</div>
       {/if}
 
       <div class="flex gap-3">
@@ -111,7 +111,7 @@
         <button
           type="submit"
           disabled={loading}
-          class="flex-1 rounded-md bg-red-500 px-4 py-2 text-white transition-colors hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-50"
+          class="flex-1 rounded-md bg-red-500 px-4 py-2 text-white transition-colors hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {loading ? "送信中..." : "通報する"}
         </button>

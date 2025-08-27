@@ -5,6 +5,8 @@ from src.db.session import get_db
 from src.db.tables import User
 from src.router.auth import _get_current_user
 from src.schema.message import (
+    HeartReactionResponse,
+    HeartStatesResponse,
     MessageCreate,
     MessageRead,
     MessageUpdate,
@@ -157,7 +159,7 @@ def delete_message(
     return {"message": "Message deleted successfully"}
 
 
-@message_router.post("/{message_id}/heart")
+@message_router.post("/{message_id}/heart", response_model=HeartReactionResponse)
 def toggle_heart_reaction(
     message_id: str,
     db: Session = Depends(get_db),
@@ -167,15 +169,9 @@ def toggle_heart_reaction(
     if not target_message:
         raise HTTPException(status_code=404, detail="Message not found")
 
-    result = message_service.toggle_heart_reaction(
-        db, current_user.user_id, message_id, target_message.from_user_id
-    )
+    result = message_service.toggle_heart_reaction(db, current_user.user_id, message_id)
 
-    return {
-        "action": result["action"],
-        "like_count": result["like_count"],
-        "user_liked": result["action"] == "added",
-    }
+    return result
 
 
 @message_router.get("/{message_id}/likes")
@@ -192,7 +188,7 @@ def get_message_likes(
     return {"likes": likes}
 
 
-@message_router.post("/heart-states")
+@message_router.post("/heart-states", response_model=HeartStatesResponse)
 def get_heart_states(
     message_ids: list[str],
     db: Session = Depends(get_db),

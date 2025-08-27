@@ -3,6 +3,7 @@
   import EditIcon from "$lib/components/ui/EditIcon.svelte";
   import CommentForm from "./CommentForm.svelte";
   import MessageThread from "./MessageThread.svelte";
+  import ActionButtons from "./ActionButtons.svelte";
   import type { BaseUser, Message, CategoryInfo } from "$lib/types";
 
   const {
@@ -58,8 +59,6 @@
     isEditing = false;
   }
 
-
-
   function showCommentInput() {
     showCommentForm = true;
   }
@@ -74,27 +73,31 @@
 </script>
 
 <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
-<div 
+<div
   class="group relative theme-bg-surface rounded-2xl p-6 theme-border theme-visitor-hover transition-all duration-300 {isOwner && answer ? 'cursor-pointer' : ''}"
-  role={isOwner && answer ? "button" : undefined}
+  role={isOwner && answer ? 'button' : undefined}
   tabindex={isOwner && answer ? 0 : -1}
-  onclick={(e) => {
-    // インタラクションボタンのクリックを除外
-    if (e.target instanceof Element && e.target.closest('.interaction-buttons')) {
-      return;
-    }
-    startEditing();
-  }}
-  onkeydown={(e) => {
-    if (isOwner && answer && (e.key === 'Enter' || e.key === ' ')) {
-      e.preventDefault();
-      // インタラクションボタンのフォーカスを除外
-      if (e.target instanceof Element && e.target.closest('.interaction-buttons')) {
-        return;
+  onclick={isOwner && answer
+    ? (e) => {
+        // インタラクションボタンのクリックを除外
+        if (e.target instanceof Element && e.target.closest('.interaction-buttons')) {
+          return;
+        }
+        startEditing();
       }
-      startEditing();
-    }
-  }}
+    : undefined}
+  onkeydown={isOwner && answer
+    ? (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          // インタラクションボタンのフォーカスを除外
+          if (e.target instanceof Element && e.target.closest('.interaction-buttons')) {
+            return;
+          }
+          startEditing();
+        }
+      }
+    : undefined}
 >
   <!-- 質問エリア -->
   <div class="mb-2 {!isOwner && isLoggedIn && currentUser ? 'pr-20 sm:pr-16' : ''}">
@@ -150,49 +153,23 @@
   <!-- インタラクションボタン（いいね・コメント） -->
   {#if !isOwner && profileUserId && profileUserName && answer && isLoggedIn && currentUser}
     <div class="interaction-buttons absolute top-3 right-3 z-0 flex flex-col items-end gap-1 sm:flex-row sm:items-center sm:gap-1">
-      <!-- ハートボタン（いいね） -->
-      <button
-        onclick={() => {/* TODO: いいね機能 */}}
-        class="flex items-center gap-1 rounded-full px-2 py-1 text-xs sm:px-3 sm:py-1.5 sm:text-sm transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-800 theme-text-muted hover:text-red-500"
-        title="いいね"
-        aria-label="いいね"
-      >
-        <svg
-          class="h-3 w-3 transition-all duration-200 hover:scale-110 sm:h-4 sm:w-4"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-          />
-        </svg>
-      </button>
-
-      <!-- コメントボタン -->
-      <button
-        onclick={showCommentInput}
-        class="flex items-center gap-1 rounded-full px-2 py-1 text-xs sm:px-3 sm:py-1.5 sm:text-sm transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-800 theme-text-muted hover:text-blue-500"
-        title="コメント"
-        aria-label="コメントを追加"
-      >
-        <svg class="h-3 w-3 sm:h-4 sm:w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-          />
-        </svg>
-      </button>
+      <ActionButtons
+        {isOwner}
+        {profileUserId}
+        {profileUserName}
+        {answerId}
+        {answer}
+        {isLoggedIn}
+        {currentUser}
+        {relatedMessages}
+        onShowComment={showCommentInput}
+        onToggleMessages={() => { showMessagesThread = !showMessagesThread; }}
+      />
     </div>
   {/if}
 </div>
 
-<!-- コメントフォーム -->
+
 <CommentForm
   {showCommentForm}
   {profileUserId}

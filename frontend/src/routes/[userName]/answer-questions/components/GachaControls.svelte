@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { CategoryInfo } from "$lib/types";
-  import CategoryFilter from "$lib/components/domain/users/CategoryFilter.svelte";
+  import CategoryFilter from "../../qna/components/CategoryFilter.svelte";
 
   const {
     categories,

@@ -10,7 +10,6 @@
 </script>
 
 {#if visit.visitorInfo && !visit.visitorInfo.isAnonymous && visit.visitorInfo.userName}
-  <!-- クリック可能なログインユーザー -->
   <a
     href="/{visit.visitorInfo.userName}"
     class="group theme-border theme-visitor-hover relative block cursor-pointer border-b transition-all duration-200"

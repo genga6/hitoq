@@ -1,7 +1,7 @@
 <script lang="ts">
   import QAItem from "./QAItem.svelte";
   import HintTooltip from "$lib/components/ui/HintTooltip.svelte";
-  import CategoryFilter from "$lib/components/domain/users/CategoryFilter.svelte";
+  import CategoryFilter from "./CategoryFilter.svelte";
   import type { CategoryInfo, Question, BaseUser } from "$lib/types";
 
   interface AnsweredQAPair {
@@ -50,7 +50,6 @@
 <!-- 回答済みQ&Aエリア -->
 <div>
   <div class="mb-6">
-    <!-- タイトルとヒント -->
     <div class="mb-4">
       <div class="flex items-center gap-2">
         <h2 class="theme-text-primary text-lg font-semibold">回答済みQ&A</h2>
@@ -70,7 +69,6 @@
       </div>
     </div>
 
-    <!-- カテゴリフィルター -->
     <CategoryFilter
       {categories}
       {selectedCategories}
@@ -84,7 +82,6 @@
     <div class="space-y-4">
       {#each answeredQAPairs as pair (`answered-${pair.groupId}-${pair.question.questionId}-${pair.questionIndex}`)}
         <div class="theme-border border-b p-4">
-          <!-- Q&Aアイテム -->
           <QAItem
             question={pair.question.text}
             answer={pair.answerText}

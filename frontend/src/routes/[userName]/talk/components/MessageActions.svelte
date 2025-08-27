@@ -1,25 +1,26 @@
 <script lang="ts">
-  import HeartReaction from "./HeartReaction.svelte";
+  import HeartButton from "$lib/components/ui/HeartButton.svelte";
 
   type Props = {
-    messageId: string;
     replyCount?: number;
     heartState: { liked: boolean; count: number };
     onReplyClick: () => void;
     onThreadClick?: () => void;
     onHeartToggle: () => Promise<void>;
     isTogglingHeart?: boolean;
+    isThreadMessage?: boolean;
   };
 
   const {
-    messageId,
     replyCount,
     heartState,
     onReplyClick,
     onThreadClick,
     onHeartToggle,
-    isTogglingHeart = false
+    isTogglingHeart = false,
+    isThreadMessage = false
   }: Props = $props();
+
 </script>
 
 <div class="mt-2 flex items-center gap-2">
@@ -27,17 +28,18 @@
     💬 返信
   </button>
 
-  <HeartReaction
-    {messageId}
+  <HeartButton
     liked={heartState.liked}
     count={heartState.count}
     onToggle={onHeartToggle}
     isToggling={isTogglingHeart}
+    size="sm"
   />
 
-  {#if replyCount && replyCount > 0 && onThreadClick}
+  {#if !isThreadMessage && replyCount > 0 && onThreadClick}
     <button onclick={onThreadClick} class="theme-button-action">
-      📄 スレッド（{replyCount - 1}件）
+      📄 スレッド（{replyCount}件）
     </button>
   {/if}
+
 </div>

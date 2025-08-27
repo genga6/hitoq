@@ -1,22 +1,21 @@
 <script lang="ts">
   import { blocksApi } from "$lib/api-client";
-  import type { BlockCreate } from "$lib/types";
+  
   import ReportModal from "./ReportModal.svelte";
 
   let {
     userId,
     initialIsBlocked = false,
     class: className = "",
-    onBlockStatusChange = () => {}
+    onBlockStatusChange = async () => {}
   } = $props<{
     userId: string;
     initialIsBlocked?: boolean;
     class?: string;
-    onBlockStatusChange?: (blocked: boolean) => void;
+    onBlockStatusChange?: () => Promise<void>;
   }>();
 
-  let localBlockedState = $state<boolean | null>(null);
-  let isBlocked = $derived(localBlockedState !== null ? localBlockedState : initialIsBlocked);
+  let isBlocked = $derived(initialIsBlocked);
   let showReportModal = $state(false);
   let showDropdown = $state(false);
   let blockLoading = $state(false);
@@ -27,10 +26,8 @@
     error = null;
 
     try {
-      const blockData: BlockCreate = { blocked_user_id: userId };
-      await blocksApi.createBlock(blockData);
-      localBlockedState = true;
-      onBlockStatusChange(true);
+      await blocksApi.createBlock({ blocked_user_id: userId });
+      await onBlockStatusChange();
     } catch (err) {
       error = err instanceof Error ? err.message : "ブロックに失敗しました";
       console.error("Block error:", err);
@@ -45,8 +42,7 @@
 
     try {
       await blocksApi.removeBlock(userId);
-      localBlockedState = false;
-      onBlockStatusChange(false);
+      await onBlockStatusChange();
     } catch (err) {
       error = err instanceof Error ? err.message : "ブロック解除に失敗しました";
       console.error("Unblock error:", err);
@@ -63,7 +59,7 @@
 <div class="relative {className}">
   <button
     onclick={() => (showDropdown = !showDropdown)}
-    class="rounded-full p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700"
+    class="rounded-full p-2 text-gray-500 transition-colors ring-orange-400 hover:ring-2 focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 focus:outline-none"
     aria-label="ユーザーアクション"
   >
     <!-- 横方向の3点アイコン -->
@@ -76,7 +72,7 @@
 
   {#if showDropdown}
     <div
-      class="absolute right-0 z-50 mt-2 w-40 rounded-lg border border-gray-200 bg-white shadow-lg"
+      class="absolute right-0 z-50 mt-2 w-40 rounded-lg theme-border theme-bg-surface shadow-lg"
     >
       {#if isBlocked}
         <div class="px-4 py-2 text-sm text-gray-500">ブロック中</div>
@@ -86,7 +82,7 @@
             showDropdown = false;
           }}
           disabled={blockLoading}
-          class="block w-full px-4 py-2 text-left hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
+          class="block w-full px-4 py-2 text-left theme-hover-bg disabled:cursor-not-allowed disabled:opacity-50 theme-text-primary border border-gray-200 dark:border-gray-700"
         >
           {blockLoading ? "解除中..." : "ブロック解除"}
         </button>
@@ -97,7 +93,7 @@
             showDropdown = false;
           }}
           disabled={blockLoading}
-          class="block w-full px-4 py-2 text-left hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
+          class="block w-full px-4 py-2 text-left theme-hover-bg disabled:cursor-not-allowed disabled:opacity-50 theme-text-primary border border-gray-200 dark:border-gray-700"
         >
           {blockLoading ? "ブロック中..." : "ブロック"}
         </button>
@@ -108,7 +104,7 @@
           showReportModal = true;
           showDropdown = false;
         }}
-        class="block w-full px-4 py-2 text-left hover:bg-gray-100"
+        class="block w-full px-4 py-2 text-left theme-hover-bg theme-text-primary border theme-border"
       >
         通報する
       </button>

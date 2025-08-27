@@ -67,8 +67,8 @@
 <button
   onclick={handleClick}
   class="w-full text-left transition-colors hover:bg-gray-50 dark:hover:bg-gray-800"
-  class:bg-blue-50={notification.status === "unread"}
-  class:dark:bg-blue-950={notification.status === "unread"}
+  class:bg-gray-100={notification.status === "unread"}
+  class:dark:bg-gray-800={notification.status === "unread"}
 >
   <div class="flex items-start space-x-3 px-4 py-3">
     <div class="flex-shrink-0">

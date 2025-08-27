@@ -5,11 +5,11 @@
     createMessage,
     getMessageThread,
     deleteMessage,
-    toggleHeartReaction,
     getHeartStates
   } from "$lib/api-client/messages";
   import { invalidate } from "$app/navigation";
   import MessageActions from "./MessageActions.svelte";
+  import { handleHeartToggleLogic } from "$lib/utils/heartToggleUtil";
   import ReplyForm from "./ReplyForm.svelte";
   import ThreadView from "./ThreadView.svelte";
   import MessageHeader from "./MessageHeader.svelte";
@@ -23,7 +23,7 @@
       userId: string;
       userName: string;
       displayName: string;
-      bio?: string;
+      
       iconUrl?: string;
     };
     currentUser?: {
@@ -38,14 +38,8 @@
 
   const { message, profile, currentUser, isLoggedIn, onMessageUpdate, onMessageDelete }: Props = $props();
 
-  // プロフィール情報を明示的に使用（将来の拡張で使用予定）
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { userId, displayName, bio, iconUrl } = profile;
-
   const isSentByCurrentUser = currentUser?.userId === message.fromUserId;
   const isProfileOwner = currentUser?.userId === profile.userId;
-  
-  // 未読状態の表示判定: プロフィール所有者でログイン中の場合のみ未読を表示
   const shouldShowAsUnread = message.status === 'unread' && isLoggedIn && currentUser && isProfileOwner;
 
   let showReplyForm = $state(false);
@@ -53,10 +47,19 @@
   let isSubmittingReply = $state(false);
   let threadMessages = $state<Message[]>([]);
 
+  let displayReplyCount = $derived(showThread ? threadMessages.length : (message.replyCount || 0));
+
   let isEditingOrDeleting = $state(false);
 
-  let heartStates = $state<Record<string, { liked: boolean; count: number }>>({});
+  let heartStates = $state<Record<string, { userLiked: boolean; likeCount: number }>>({});
   let isTogglingHeart = $state(false);
+
+  // Derived heart state for the current message to ensure reactivity
+  let currentHeartState = $derived({
+    liked: heartStates[message.messageId]?.userLiked || false,
+    count: heartStates[message.messageId]?.likeCount || 0
+  });
+
 
   $effect(() => {
     if (currentUser && !isTogglingHeart) {
@@ -70,25 +73,25 @@
     const messageIds = [message.messageId, ...threadMessages.map((m) => m.messageId)];
     try {
       const result = await getHeartStates(messageIds);
-      heartStates = { ...heartStates, ...result.heart_states };
+      const states = result.heartStates || result.heart_states;
+      if (states) {
+        heartStates = { ...heartStates, ...states };
+      }
     } catch (error) {
       console.error("Failed to load heart states:", error);
       messageIds.forEach((id) => {
         if (!heartStates[id]) {
-          heartStates[id] = { liked: false, count: 0 };
+          heartStates[id] = { userLiked: false, likeCount: 0 };
         }
       });
     }
   }
 
-  // メッセージを既読にする
   async function handleMarkAsRead() {
-    // プロフィール所有者でログイン中の場合のみ既読処理
     if (message.status === "unread" && isLoggedIn && isProfileOwner) {
       try {
         await markMessageAsRead(message.messageId);
         await invalidate(`talk:${profile.userName}:messages`);
-        // UIの更新は親コンポーネントに任せる（リアクティブ更新）
       } catch (error) {
         console.error("Failed to mark message as read:", error);
       }
@@ -107,24 +110,31 @@
       parentMessageId: message.messageId
     };
 
-    // UI即座更新
+    // Optimistic UI: Clear form and set submitting state
     showReplyForm = false;
-    isSubmittingReply = false;
-    onMessageUpdate?.();
+    isSubmittingReply = true; // Start submitting
+
+    let optimisticallyAddedMessage: Message | null = null;
 
     try {
-      await createMessage(replyMessage);
-      
-      // スレッドが表示されている場合は更新
-      if (showThread) {
-        await loadThread();
+      const newMessage = await createMessage(replyMessage);
+
+      if (showThread && newMessage) {
+        optimisticallyAddedMessage = newMessage;
+        threadMessages = [newMessage, ...threadMessages];
       }
       
       await invalidate(`talk:${profile.userName}:messages`);
+
     } catch (error) {
       console.error("Failed to send reply:", error);
-      // エラー時はフォームを再表示
       showReplyForm = true;
+
+      if (showThread && optimisticallyAddedMessage) {
+        threadMessages = threadMessages.filter(m => m.messageId !== optimisticallyAddedMessage?.messageId);
+      }
+    } finally {
+      isSubmittingReply = false;
     }
   }
 
@@ -134,6 +144,9 @@
       showThread = true;
     } catch (error) {
       console.error("Failed to load thread:", error);
+
+      showThread = false;
+      threadMessages = [];
     }
   }
 
@@ -156,7 +169,6 @@
       parentMessageId: threadMessage.messageId
     };
 
-    // UI即座更新
     onMessageUpdate?.();
 
     try {
@@ -169,67 +181,47 @@
   }
 
   async function handleHeartToggle(messageId: string) {
-    if (!currentUser || isTogglingHeart) return;
-
-    isTogglingHeart = true;
-    
-    // 現在の状態を保存（エラー時のロールバック用）
-    const previousState = heartStates[messageId] || { liked: false, count: 0 };
-    
-    // Optimistic UI update
-    heartStates[messageId] = {
-      liked: !previousState.liked,
-      count: previousState.liked ? previousState.count - 1 : previousState.count + 1
-    };
-
-    try {
-      const result = await toggleHeartReaction(messageId);
-
-      // サーバーレスポンスで確定的に更新
-      heartStates[messageId] = {
-        liked: result.user_liked,
-        count: result.like_count
-      };
-
-      // スレッドが表示されている場合は更新
-      if (showThread) {
-        await loadThread();
-      }
-
-      await invalidate(`talk:${profile.userName}:messages`);
-      onMessageUpdate?.();
-    } catch (error) {
-      console.error("Failed to toggle heart:", error);
-      // エラー時にロールバック
-      heartStates[messageId] = previousState;
-    } finally {
-      isTogglingHeart = false;
-    }
+    await handleHeartToggleLogic(
+      messageId,
+      currentUser,
+      heartStates[messageId]?.userLiked || false,
+      (liked) => {
+        const newState = { ...heartStates[messageId], userLiked: liked };
+        heartStates = { ...heartStates, [messageId]: newState };
+      },
+      heartStates[messageId]?.likeCount || 0,
+      (count) => {
+        const newState = { ...heartStates[messageId], likeCount: count };
+        heartStates = { ...heartStates, [messageId]: newState };
+      },
+      isTogglingHeart,
+      (isToggling) => { isTogglingHeart = isToggling; },
+      `talk:${profile.userName}:messages`
+    );
   }
 
-
-  async function handleDelete(messageId: string) {
+  async function handleDelete(messageIdToDelete: string) {
     if (!confirm("このメッセージを削除しますか？（返信も含めて削除されます）")) return;
 
     isEditingOrDeleting = true;
     
-    // UI即座更新 - メッセージを即座に削除表示
-    onMessageDelete?.(messageId);
+    if (messageIdToDelete === message.messageId) {
+      onMessageDelete?.(messageIdToDelete);
+    } else {
+      threadMessages = threadMessages.filter(m => m.messageId !== messageIdToDelete);
+    }
     
     try {
-      await deleteMessage(messageId);
+      await deleteMessage(messageIdToDelete);
 
-      // スレッドが表示されている場合は更新
       if (showThread) {
         await loadThread();
       }
 
       await invalidate(`talk:${profile.userName}:messages`);
-      onMessageUpdate?.();
+
     } catch (error) {
       console.error("Failed to delete message:", error);
-      // エラー時は親コンポーネントでリフレッシュが必要
-      onMessageUpdate?.();
     } finally {
       isEditingOrDeleting = false;
     }
@@ -246,7 +238,6 @@
 >
   <MessageHeader 
     {message} 
-    {isSentByCurrentUser} 
     {currentUser}
     profileUser={{
       userId: profile.userId,
@@ -256,12 +247,10 @@
     }}
     {isLoggedIn}
   />
-  <!-- 親メッセージの表示（リプライの場合） -->
   {#if message.parentMessage}
     <ParentMessagePreview parentMessage={message.parentMessage} />
   {/if}
 
-  <!-- メッセージ内容 -->
   <MessageContent
     {message}
     {currentUser}
@@ -270,20 +259,16 @@
     onDelete={handleDelete}
   />
 
-  <!-- 参照している回答がある場合 -->
   {#if message.referenceAnswerId}
     <ReferenceAnswer
       referenceAnswerId={message.referenceAnswerId}
-      profileUserName={profile.userName}
     />
   {/if}
 
-  <!-- アクションボタン -->
   {#if isLoggedIn && currentUser}
     <MessageActions
-      messageId={message.messageId}
-      replyCount={message.replyCount}
-      heartState={heartStates[message.messageId] || { liked: false, count: 0 }}
+      replyCount={displayReplyCount}
+      heartState={currentHeartState}
       onReplyClick={toggleReplyForm}
       onThreadClick={loadThread}
       onHeartToggle={() => handleHeartToggle(message.messageId)}
@@ -291,7 +276,6 @@
     />
   {/if}
 
-  <!-- 返信フォーム -->
   {#if showReplyForm}
     <ReplyForm
       onSubmit={handleReply}
@@ -300,7 +284,6 @@
     />
   {/if}
 
-  <!-- スレッド表示 -->
   {#if showThread && threadMessages.length > 0}
     <ThreadView
       {threadMessages}

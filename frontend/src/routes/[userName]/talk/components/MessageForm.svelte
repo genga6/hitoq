@@ -18,7 +18,6 @@
   let error = $state("");
   let referenceQuestion = $state("");
 
-  // URLパラメータから初期値を設定
   $effect(() => {
     if (typeof window !== "undefined") {
       const params = new URLSearchParams(window.location.search);
@@ -54,7 +53,6 @@
       content = "";
       referenceQuestion = "";
 
-      // URLパラメータをクリア
       if (typeof window !== "undefined") {
         const url = new URL(window.location.href);
         url.searchParams.delete("compose");
@@ -63,11 +61,9 @@
         replaceState(url.toString(), {});
       }
 
-      // onSuccessコールバックが提供されている場合は新しいメッセージを渡して実行
       if (onSuccess) {
         onSuccess(newMessage);
       } else {
-        // ページをリロードして新しいメッセージを表示
         window.location.reload();
       }
     } catch (err) {

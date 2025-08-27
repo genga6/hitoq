@@ -26,21 +26,21 @@
       });
   });
 
-  const handleVisibilityChange = async () => {
-    const previousValue = visitsVisible;
-    
-    // Optimistic UI update - UI is already updated by bind:checked
+  const handleVisibilityChange = async (event: Event) => {
+    const target = event.target as HTMLInputElement;
+    const newValue = target.checked;
+
     savingVisibility = true;
-    
+
     try {
-      await updateVisitsVisibility(userId, visitsVisible);
-      
-      // 足跡表示設定変更後、関連データのキャッシュを無効化
+      await updateVisitsVisibility(userId, newValue);
+      visitsVisible = newValue;
+      // Invalidate to ensure other parts of the app are updated if necessary
       await invalidate("privacy:visits-visibility");
     } catch (e) {
       console.error("Failed to update visits visibility:", e);
-      // Revert the change on error
-      visitsVisible = previousValue;
+      // Revert the UI on error since we are not using optimistic updates in the same way
+      target.checked = !newValue;
     } finally {
       savingVisibility = false;
     }
