@@ -247,11 +247,6 @@ class Message(Base):
         DateTime(timezone=True), server_default=func.now()
     )
 
-    # 動的に設定される属性（DBには保存されない）
-    reply_count: int = 0
-    thread_depth: int = 0
-    thread_parent_id: str | None = None
-
     from_user: Mapped["User"] = relationship(
         "User", foreign_keys=[from_user_id], back_populates="messages_sent"
     )
@@ -273,6 +268,7 @@ class Message(Base):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+        # 動的に設定される属性（DBには保存されない）
         self.reply_count = 0
         self.thread_depth = 0
         self.thread_parent_id = None
