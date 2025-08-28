@@ -5,7 +5,7 @@ from typing import Literal
 from sqlalchemy import func, or_
 from sqlalchemy.orm import Session, joinedload
 
-from src.db.tables import Answer, Message, ProfileItem, User
+from src.db.tables import Answer, AnswerLike, Message, MessageLike, ProfileItem, User
 from src.schema.user import UserCreate
 from src.service.qna_service import initialize_default_questions
 from src.service.yaml_loader import load_default_labels
@@ -73,6 +73,31 @@ def delete_user(db: Session, user_id: str) -> bool:
     if not db_user:
         return False
 
+    # Delete all likes on messages sent by this user
+    user_messages = db.query(Message).filter(Message.from_user_id == user_id).all()
+    message_ids = [msg.message_id for msg in user_messages]
+    if message_ids:
+        db.query(MessageLike).filter(MessageLike.message_id.in_(message_ids)).delete(
+            synchronize_session=False
+        )
+
+    # Delete all likes on answers by this user
+    user_answers = db.query(Answer).filter(Answer.user_id == user_id).all()
+    answer_ids = [ans.answer_id for ans in user_answers]
+    if answer_ids:
+        db.query(AnswerLike).filter(AnswerLike.answer_id.in_(answer_ids)).delete(
+            synchronize_session=False
+        )
+
+    # Delete all likes made by this user
+    db.query(MessageLike).filter(MessageLike.user_id == user_id).delete(
+        synchronize_session=False
+    )
+    db.query(AnswerLike).filter(AnswerLike.user_id == user_id).delete(
+        synchronize_session=False
+    )
+
+    # Now delete the user (cascade will handle messages, answers, etc.)
     db.delete(db_user)
     db.commit()
     return True

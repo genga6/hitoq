@@ -19,8 +19,7 @@ export const logout = async () => {
     document.cookie =
       "refresh_token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT";
   }
-  // ページリロードの代わりにリダイレクトを使用
-  window.location.href = "/";
+  // Don't redirect here - let the calling component handle navigation
 };
 
 export const getCurrentUser = async () => {
