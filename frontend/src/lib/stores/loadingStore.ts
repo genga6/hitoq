@@ -3,11 +3,15 @@ import { writable } from "svelte/store";
 export interface LoadingState {
   globalLoading: boolean;
   operations: Record<string, boolean>;
+  optimistic: Record<string, boolean>;
+  failed: Record<string, string | null>;
 }
 
 const initialState: LoadingState = {
   globalLoading: false,
   operations: {},
+  optimistic: {},
+  failed: {},
 };
 
 function createLoadingStore() {
@@ -34,6 +38,40 @@ function createLoadingStore() {
       });
     },
 
+    // 楽観的UI状態管理
+    startOptimistic: (operationId: string) => {
+      update((state) => ({
+        ...state,
+        optimistic: { ...state.optimistic, [operationId]: true },
+        failed: { ...state.failed, [operationId]: null },
+      }));
+    },
+
+    finishOptimistic: (operationId: string) => {
+      update((state) => {
+        const { [operationId]: _, ...restOptimistic } = state.optimistic; // eslint-disable-line @typescript-eslint/no-unused-vars
+        return { ...state, optimistic: restOptimistic };
+      });
+    },
+
+    failOptimistic: (operationId: string, error?: string) => {
+      update((state) => {
+        const { [operationId]: _, ...restOptimistic } = state.optimistic; // eslint-disable-line @typescript-eslint/no-unused-vars
+        return {
+          ...state,
+          optimistic: restOptimistic,
+          failed: { ...state.failed, [operationId]: error || "Unknown error" },
+        };
+      });
+    },
+
+    clearFailed: (operationId: string) => {
+      update((state) => {
+        const { [operationId]: _, ...restFailed } = state.failed; // eslint-disable-line @typescript-eslint/no-unused-vars
+        return { ...state, failed: restFailed };
+      });
+    },
+
     isOperationLoading: (operationId: string): boolean => {
       let isLoading = false;
       const unsubscribe = subscribe((state) => {
@@ -41,6 +79,24 @@ function createLoadingStore() {
       });
       unsubscribe();
       return isLoading;
+    },
+
+    isOptimistic: (operationId: string): boolean => {
+      let isOptimistic = false;
+      const unsubscribe = subscribe((state) => {
+        isOptimistic = state.optimistic[operationId] || false;
+      });
+      unsubscribe();
+      return isOptimistic;
+    },
+
+    getFailedError: (operationId: string): string | null => {
+      let error = null;
+      const unsubscribe = subscribe((state) => {
+        error = state.failed[operationId] || null;
+      });
+      unsubscribe();
+      return error;
     },
 
     reset: () => {

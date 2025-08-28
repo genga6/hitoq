@@ -8,14 +8,15 @@ export const load: LayoutServerLoad = async ({
   fetch,
   depends,
   parent,
+  setHeaders,
 }) => {
   const userName = params.userName;
   depends(`user:${userName}:profile`);
 
-  // setHeaders({
-  //   "Cache-Control":
-  //     "private, max-age=60, s-maxage=60, stale-while-revalidate=3600"
-  // });
+  // 楽観的UIで即座更新するため、短時間キャッシュを設定
+  setHeaders({
+    "Cache-Control": "private, max-age=10, must-revalidate",
+  });
 
   try {
     const { user: currentUser } = await parent();

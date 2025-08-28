@@ -6,8 +6,8 @@
   import ToastContainer from "$lib/components/ui/ToastContainer.svelte";
   import { toasts } from "$lib/stores/toast";
   import { fly } from "svelte/transition";
-  import { invalidate } from "$app/navigation";
   import { getAllQuestions, getQuestionsByCategory, createAnswer } from "$lib/api-client/qna";
+  import { withOptimisticUpdate, createOperationId } from "$lib/utils/optimisticUI";
 
   type Props = {
     categories: Record<string, CategoryInfo>;
@@ -143,33 +143,40 @@
 
     if (!inputValue.trim()) return;
 
-    // Store current state for potential revert
+    const operationId = createOperationId('answer-save', pair.question.questionId.toString());
     const previousPairs = [...unansweredQAPairs];
     const previousInput = questionInputs[questionKey];
 
-    // Optimistic UI update - 即座にリストから削除
-    unansweredQAPairs = unansweredQAPairs.filter((p) => p.groupId !== pair.groupId);
-    questionInputs[questionKey] = "";
-    saveToStorage();
-
-    // 成功フィードバックを即座に表示
-    toasts.success("回答を保存しました！");
-
     try {
-      // 質問に対する回答を作成
-      await createAnswer(userId, pair.question.questionId, inputValue.trim());
-      
-      // キャッシュを無効化して他のタブでも最新データを反映
-      await invalidate("qna:data");
-    } catch (error) {
-      console.error("回答保存エラー:", error);
-      
-      // Revert optimistic update on error
-      unansweredQAPairs = previousPairs;
-      questionInputs[questionKey] = previousInput;
-      saveToStorage();
-      
-      toasts.error("回答の保存に失敗しました。もう一度お試しください。");
+      await withOptimisticUpdate(
+        {
+          operationId,
+          invalidateKey: "qna:data",
+          apiCall: () => createAnswer(userId, pair.question.questionId, inputValue.trim()),
+          onSuccess: () => {
+            toasts.success("回答を保存しました！");
+          },
+          onError: (error) => {
+            console.error("回答保存エラー:", error);
+            toasts.error("回答の保存に失敗しました。もう一度お試しください。");
+          },
+        },
+        { answer: inputValue.trim() },
+        // 楽観的UI更新
+        () => {
+          unansweredQAPairs = unansweredQAPairs.filter((p) => p.groupId !== pair.groupId);
+          questionInputs[questionKey] = "";
+          saveToStorage();
+        },
+        // ロールバック処理
+        () => {
+          unansweredQAPairs = previousPairs;
+          questionInputs[questionKey] = previousInput;
+          saveToStorage();
+        }
+      );
+    } catch {
+      // エラーは既にwithOptimisticUpdate内で処理済み
     }
   }
 
