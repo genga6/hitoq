@@ -84,9 +84,9 @@ class TestVisitService:
             # 異なるレコードが作成されている
             assert first_visit.visit_id != second_visit.visit_id
 
-    def test_get_user_visits_visible(self, test_db_session, create_user):
-        create_user(user_id="visitor", display_name="Visitor User")
-        create_user(user_id="visited", visits_visible=True)
+    def test_get_user_visits_visitor_visible(self, test_db_session, create_user):
+        create_user(user_id="visitor", display_name="Visitor User", visits_visible=True)
+        create_user(user_id="visited")
 
         visit_service.record_visit(test_db_session, "visited", "visitor")
 
@@ -96,9 +96,9 @@ class TestVisitService:
         assert result[0].visitor_user_id == "visitor"
         assert result[0].visitor_user.display_name == "Visitor User"
 
-    def test_get_user_visits_not_visible(self, test_db_session, create_user):
-        create_user(user_id="visitor")
-        create_user(user_id="visited", visits_visible=False)
+    def test_get_user_visits_visitor_not_visible(self, test_db_session, create_user):
+        create_user(user_id="visitor", visits_visible=False)
+        create_user(user_id="visited")
 
         visit_service.record_visit(test_db_session, "visited", "visitor")
 
@@ -115,7 +115,7 @@ class TestVisitService:
         self, test_db_session, create_user
     ):
         create_user(user_id="visitor")
-        create_user(user_id="visited", visits_visible=True)
+        create_user(user_id="visited")
 
         # 同じ訪問者が複数回訪問
         visit_service.record_visit(test_db_session, "visited", "visitor")
@@ -131,7 +131,7 @@ class TestVisitService:
     def test_get_user_visits_multiple_visitors(self, test_db_session, create_user):
         create_user(user_id="visitor1", display_name="Visitor 1")
         create_user(user_id="visitor2", display_name="Visitor 2")
-        create_user(user_id="visited", visits_visible=True)
+        create_user(user_id="visited")
 
         visit_service.record_visit(test_db_session, "visited", "visitor1")
         visit_service.record_visit(test_db_session, "visited", "visitor2")
@@ -145,7 +145,7 @@ class TestVisitService:
 
     def test_get_user_visits_with_anonymous(self, test_db_session, create_user):
         create_user(user_id="visitor")
-        create_user(user_id="visited", visits_visible=True)
+        create_user(user_id="visited")
 
         visit_service.record_visit(test_db_session, "visited", "visitor")
         visit_service.record_visit(test_db_session, "visited", None)  # 匿名訪問
@@ -249,8 +249,8 @@ class TestVisitService:
         assert result is False
 
     def test_visit_workflow(self, test_db_session, create_user):
-        create_user(user_id="visitor", display_name="Visitor User")
-        create_user(user_id="visited", visits_visible=True)
+        create_user(user_id="visitor", display_name="Visitor User", visits_visible=True)
+        create_user(user_id="visited")
 
         # 訪問記録
         visit = visit_service.record_visit(test_db_session, "visited", "visitor")
@@ -265,12 +265,12 @@ class TestVisitService:
         assert len(visits) == 1
         assert visits[0].visitor_user.display_name == "Visitor User"
 
-        # 表示設定を非表示にする
+        # 訪問者の表示設定を非表示にする
         result = visit_service.update_visits_visibility(
-            test_db_session, "visited", False
+            test_db_session, "visitor", False
         )
         assert result is True
 
-        # 非表示設定後は訪問リストが空になる
+        # 訪問者が非表示設定後は訪問リストが空になる
         visits_hidden = visit_service.get_user_visits(test_db_session, "visited")
         assert visits_hidden == []
