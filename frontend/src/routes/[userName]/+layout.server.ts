@@ -13,9 +13,9 @@ export const load: LayoutServerLoad = async ({
   const userName = params.userName;
   depends(`user:${userName}:profile`);
 
-  // 楽観的UIで即座更新するため、短時間キャッシュを設定
+  // 楽観的UIで十分高速なので、データ一貫性を最優先
   setHeaders({
-    "Cache-Control": "private, max-age=10, must-revalidate",
+    "Cache-Control": "private, no-cache, must-revalidate",
   });
 
   try {
