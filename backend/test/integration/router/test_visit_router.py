@@ -116,9 +116,9 @@ class TestVisitRouter:
         assert len(response_data) >= 1
 
         visit_data = response_data[0]
-        assert visit_data["visitor_info"]["user_id"] == visitor.user_id
-        assert visit_data["visitor_info"]["display_name"] == "Get Visitor"
-        assert visit_data["is_anonymous"] is False
+        assert visit_data["visitorInfo"]["userId"] == visitor.user_id
+        assert visit_data["visitorInfo"]["displayName"] == "Get Visitor"
+        assert visit_data["isAnonymous"] is False
 
     def test_get_user_visits_not_visible(self, client, create_user):
         visited = create_user(
@@ -167,8 +167,8 @@ class TestVisitRouter:
         assert len(response_data) >= 2
 
         # 認証済み訪問と匿名訪問の両方が含まれることを確認
-        has_authenticated = any(not visit["is_anonymous"] for visit in response_data)
-        has_anonymous = any(visit["is_anonymous"] for visit in response_data)
+        has_authenticated = any(not visit["isAnonymous"] for visit in response_data)
+        has_anonymous = any(visit["isAnonymous"] for visit in response_data)
 
         assert has_authenticated
         assert has_anonymous

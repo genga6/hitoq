@@ -1,4 +1,3 @@
-// Visit related interfaces
 export interface VisitorInfo {
   userId?: string;
   userName?: string;

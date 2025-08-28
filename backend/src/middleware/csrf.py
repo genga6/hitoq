@@ -1,3 +1,5 @@
+import re
+
 from fastapi import HTTPException, Request
 from starlette.middleware.base import BaseHTTPMiddleware
 
@@ -22,12 +24,26 @@ class CSRFMiddleware(BaseHTTPMiddleware):
             "/auth/refresh-token",
             "/auth/csrf-token",
         }
+        # Compile regex patterns for dynamic path matching
+        self.exempt_patterns = [
+            re.compile(r"^/users/[^/]+/visit$"),  # /users/{user_id}/visit
+        ]
+
+    def _is_exempt_path(self, path: str) -> bool:
+        if path in self.exempt_paths:
+            return True
+
+        for pattern in self.exempt_patterns:
+            if pattern.match(path):
+                return True
+
+        return False
 
     async def dispatch(self, request: Request, call_next):
         # Static files and exempt paths
         if (
             request.url.path.startswith("/static/")
-            or request.url.path in self.exempt_paths
+            or self._is_exempt_path(request.url.path)
             or request.method == "GET"
             or request.method == "HEAD"
             or request.method == "OPTIONS"

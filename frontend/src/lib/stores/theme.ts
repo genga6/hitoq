@@ -3,7 +3,6 @@ import { writable } from "svelte/store";
 
 export type Theme = "light" | "dark" | "system";
 
-// テーマの初期値を取得
 function getInitialTheme(): Theme {
   if (browser) {
     const stored = localStorage.getItem("hitoq-theme") as Theme;
@@ -14,10 +13,8 @@ function getInitialTheme(): Theme {
   return "system";
 }
 
-// テーマストア
 export const themeStore = writable<Theme>(getInitialTheme());
 
-// テーマを設定する関数
 export function setTheme(newTheme: Theme) {
   themeStore.set(newTheme);
   if (browser) {
@@ -25,7 +22,6 @@ export function setTheme(newTheme: Theme) {
   }
 }
 
-// 実際に適用されるテーマを取得（systemの場合はOSの設定に従う）
 export function getResolvedTheme(theme: Theme): "light" | "dark" {
   if (theme === "system") {
     if (browser && window.matchMedia("(prefers-color-scheme: dark)").matches) {
@@ -36,14 +32,12 @@ export function getResolvedTheme(theme: Theme): "light" | "dark" {
   return theme;
 }
 
-// HTMLクラスを更新する関数
 export function updateThemeClass(theme: Theme) {
   if (!browser) return;
 
   const resolvedTheme = getResolvedTheme(theme);
   const isDark = resolvedTheme === "dark";
 
-  // 確実にダーククラスを削除してから適用
   document.documentElement.classList.remove("dark");
 
   if (isDark) {
@@ -51,7 +45,6 @@ export function updateThemeClass(theme: Theme) {
   }
 }
 
-// システムテーマの変更を監視
 export function watchSystemTheme(currentTheme: Theme) {
   if (!browser) return;
 
