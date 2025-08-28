@@ -304,8 +304,23 @@ async def logout(request: Request):
         logger.info("User logged out", client_ip=get_remote_address(request))
 
     response = JSONResponse(content={"message": "Logged out successfully"})
-    response.delete_cookie(key="access_token", path="/")
-    response.delete_cookie(key="refresh_token", path="/")
-    response.delete_cookie(key="csrf_token", path="/")
+
+    # クッキー削除時も設定時と完全に同じ属性を指定
+    domain = ".hitoq.net" if os.getenv("ENVIRONMENT") == "production" else None
+    secure = (
+        True
+        if os.getenv("ENVIRONMENT") != "production"
+        else os.getenv("COOKIE_SECURE", "false").lower() == "true"
+    )
+
+    response.delete_cookie(
+        key="access_token", path="/", domain=domain, samesite="none", secure=secure
+    )
+    response.delete_cookie(
+        key="refresh_token", path="/", domain=domain, samesite="none", secure=secure
+    )
+    response.delete_cookie(
+        key="csrf_token", path="/", domain=domain, samesite="none", secure=secure
+    )
 
     return response

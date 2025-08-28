@@ -1,6 +1,7 @@
+import os
 from typing import Literal
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Response
 from sqlalchemy.orm import Session
 
 from src.db.session import get_db
@@ -86,4 +87,25 @@ def delete_user_endpoint(user_id: str, db: Session = Depends(get_db)):
     success = user_service.delete_user(db=db, user_id=user_id)
     if not success:
         raise HTTPException(status_code=404, detail="User not found")
-    return None
+
+    # ユーザー削除後はクッキーもクリア
+    response = Response(status_code=204)
+
+    domain = ".hitoq.net" if os.getenv("ENVIRONMENT") == "production" else None
+    secure = (
+        True
+        if os.getenv("ENVIRONMENT") != "production"
+        else os.getenv("COOKIE_SECURE", "false").lower() == "true"
+    )
+
+    response.delete_cookie(
+        key="access_token", path="/", domain=domain, samesite="none", secure=secure
+    )
+    response.delete_cookie(
+        key="refresh_token", path="/", domain=domain, samesite="none", secure=secure
+    )
+    response.delete_cookie(
+        key="csrf_token", path="/", domain=domain, samesite="none", secure=secure
+    )
+
+    return response
