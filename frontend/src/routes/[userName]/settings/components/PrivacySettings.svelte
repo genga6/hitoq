@@ -57,7 +57,7 @@
           足跡の公開
         </h3>
         <p class="theme-text-subtle mt-1 text-xs md:text-sm">
-          オンにすると、あなたのページを訪問したユーザーの一覧を他のユーザーが見ることができます。
+          オンにすると、あなたが他のユーザーのページを訪問した際に、あなたの足跡が公開されます。
         </p>
       </div>
       <div class="flex items-center">

@@ -93,11 +93,12 @@ class TestVisitRouter:
         self, client, test_db_session, create_user, csrf_headers
     ):
         visitor = create_user(
-            user_id="get_visitor", user_name="getvisitor", display_name="Get Visitor"
+            user_id="get_visitor",
+            user_name="getvisitor",
+            display_name="Get Visitor",
+            visits_visible=True,
         )
-        visited = create_user(
-            user_id="get_visited", user_name="getvisited", visits_visible=True
-        )
+        visited = create_user(user_id="get_visited", user_name="getvisited")
 
         visit = Visit(
             visitor_user_id=visitor.user_id,
@@ -120,10 +121,21 @@ class TestVisitRouter:
         assert visit_data["visitorInfo"]["displayName"] == "Get Visitor"
         assert visit_data["isAnonymous"] is False
 
-    def test_get_user_visits_not_visible(self, client, create_user):
-        visited = create_user(
-            user_id="private_visited", user_name="privatevisited", visits_visible=False
+    def test_get_user_visits_visitor_not_visible(
+        self, client, test_db_session, create_user
+    ):
+        visitor = create_user(
+            user_id="private_visitor", user_name="privatevisitor", visits_visible=False
         )
+        visited = create_user(user_id="private_visited", user_name="privatevisited")
+
+        visit = Visit(
+            visitor_user_id=visitor.user_id,
+            visited_user_id=visited.user_id,
+            is_anonymous=False,
+        )
+        test_db_session.add(visit)
+        test_db_session.commit()
 
         response = client.get(f"/users/{visited.user_id}/visits")
 

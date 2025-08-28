@@ -61,7 +61,7 @@ def record_visit(
 
 def get_user_visits(db: Session, user_id: str, limit: int = 50) -> list[Visit]:
     user = db.query(User).filter(User.user_id == user_id).first()
-    if not user or not user.visits_visible:
+    if not user:
         return []
 
     # Subquery to get the latest visit_id for each visitor
@@ -72,13 +72,18 @@ def get_user_visits(db: Session, user_id: str, limit: int = 50) -> list[Visit]:
         .subquery()
     )
 
-    # Main query to get the actual visit records
+    # Main query to get the actual visit records, filtering by visitor's privacy settings
     visits = (
         db.query(Visit)
         .options(joinedload(Visit.visitor_user))
         .join(
             latest_visits_subquery,
             Visit.visit_id == latest_visits_subquery.c.max_visit_id,
+        )
+        .outerjoin(User, Visit.visitor_user_id == User.user_id)
+        .filter(
+            # Show anonymous visits or visits from users who have visits_visible=True
+            (Visit.visitor_user_id.is_(None)) | (User.visits_visible)
         )
         .order_by(Visit.visited_at.desc())
         .limit(limit)
