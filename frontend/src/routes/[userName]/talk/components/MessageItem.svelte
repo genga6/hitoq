@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { Message, MessageCreate } from "$lib/types";
   import {
-    createMessage,
+    sendMessage,
     getMessageThread,
     deleteMessage,
     getHeartStates
@@ -105,7 +105,7 @@
     let optimisticallyAddedMessage: Message | null = null;
 
     try {
-      const newMessage = await createMessage(replyMessage);
+      const newMessage = await sendMessage(replyMessage);
 
       if (showThread && newMessage) {
         optimisticallyAddedMessage = newMessage;
@@ -160,7 +160,7 @@
     onMessageUpdate?.();
 
     try {
-      await createMessage(replyMessage);
+      await sendMessage(replyMessage);
       await loadThread();
       await invalidate(`talk:${profile.userName}:messages`);
     } catch (error) {

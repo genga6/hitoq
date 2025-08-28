@@ -22,40 +22,6 @@ class TestNotificationService:
         )
         assert result is expected
 
-    @pytest.mark.parametrize(
-        "notification_level,messages,expected_count",
-        [
-            (
-                NotificationLevelEnum.none,
-                [MessageTypeEnum.comment],
-                0,
-            ),
-            (
-                NotificationLevelEnum.important,
-                [MessageTypeEnum.comment, MessageTypeEnum.like],
-                1,
-            ),
-        ],
-    )
-    def test_get_notification_count(
-        self, test_db_session, create_user, notification_level, messages, expected_count
-    ):
-        create_user(user_id="recipient", notification_level=notification_level)
-        create_user(user_id="sender")
-
-        for i, message_type in enumerate(messages):
-            message_data = MessageCreate(
-                to_user_id="recipient",
-                message_type=message_type,
-                content=f"Message {i}",
-            )
-            message_service.create_message(test_db_session, message_data, "sender")
-
-        result = notification_service.get_notification_count(
-            test_db_session, "recipient"
-        )
-        assert result == expected_count
-
     def test_get_notifications_for_user(self, test_db_session, create_user):
         create_user(user_id="recipient", notification_level=NotificationLevelEnum.all)
         create_user(user_id="sender")
@@ -93,9 +59,3 @@ class TestNotificationService:
         )
 
         assert updated_count == 3
-
-        # Verify notification count is now 0
-        count = notification_service.get_notification_count(
-            test_db_session, "recipient"
-        )
-        assert count == 0

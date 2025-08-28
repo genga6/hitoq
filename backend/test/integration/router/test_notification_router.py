@@ -80,36 +80,6 @@ class TestNotificationRouter:
 
         assert len(response_data) == 10
 
-    def test_get_notification_count_success(self, client, test_db_session, create_user):
-        user = create_user(
-            user_id="count_user",
-            user_name="countuser",
-            notification_level=NotificationLevelEnum.all,
-        )
-        sender = create_user(user_id="count_sender", user_name="countsender")
-
-        # 通知メッセージを作成
-        for i in range(3):
-            message = Message(
-                message_id=str(uuid4()),
-                from_user_id=sender.user_id,
-                to_user_id=user.user_id,
-                message_type=MessageTypeEnum.comment,
-                content=f"通知カウントテスト {i + 1}",
-                status=MessageStatusEnum.unread,
-            )
-            test_db_session.add(message)
-        test_db_session.commit()
-
-        app.dependency_overrides[_get_current_user] = lambda: user
-        response = client.get("/notifications/count")
-        app.dependency_overrides = {}
-
-        assert response.status_code == status.HTTP_200_OK
-        response_data = response.json()
-
-        assert response_data["notification_count"] == 3
-
     def test_mark_all_notifications_as_read_success(
         self, client, test_db_session, create_user, csrf_headers
     ):
@@ -141,12 +111,6 @@ class TestNotificationRouter:
         response_data = response.json()
 
         assert response_data["updated_count"] == 5
-
-        # 通知カウントが0になることを確認
-        app.dependency_overrides[_get_current_user] = lambda: user
-        count_response = client.get("/notifications/count")
-        app.dependency_overrides = {}
-        assert count_response.json()["notification_count"] == 0
 
     def test_get_notifications_with_notification_level_none(
         self, client, test_db_session, create_user
@@ -225,10 +189,6 @@ class TestNotificationRouter:
 
     def test_get_notifications_unauthenticated(self, client):
         response = client.get("/notifications/")
-        assert response.status_code == status.HTTP_401_UNAUTHORIZED
-
-    def test_get_notification_count_unauthenticated(self, client):
-        response = client.get("/notifications/count")
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
     def test_mark_all_notifications_as_read_unauthenticated(self, client, csrf_headers):

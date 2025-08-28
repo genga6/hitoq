@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { getAnswerWithQuestion, type QAWithDetails } from "$lib/api-client/qna";
+  import { getAnswerWithQuestion } from "$lib/api-client/qna";
+  import type { QandA } from "$lib/types";
 
   type Props = {
     referenceAnswerId: number;
@@ -7,7 +8,7 @@
 
   const { referenceAnswerId }: Props = $props();
 
-  let qaData = $state<QAWithDetails | null>(null);
+  let qaData = $state<Required<QandA> | null>(null);
   let isLoading = $state(true);
   let error = $state<string | null>(null);
 

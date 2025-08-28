@@ -3,8 +3,7 @@ from unittest.mock import patch
 
 import pytest
 
-from src.db.tables import NotificationLevelEnum
-from src.schema.user import UserCreate, UserUpdate
+from src.schema.user import UserCreate
 from src.service import user_service
 
 
@@ -103,35 +102,6 @@ class TestUserService:
         assert result.display_name == "New Display Name"
         assert result.bio == "New bio"
         assert result.icon_url == "https://example.com/new_avatar.jpg"
-
-    def test_update_user_success(self, test_db_session, create_user):
-        create_user(
-            user_id="update_user",
-            user_name="updateuser",
-            display_name="Original Name",
-            bio="Original bio",
-        )
-
-        update_data = UserUpdate(
-            display_name="Updated Name",
-            bio="Updated bio",
-            notification_level=NotificationLevelEnum.important,
-        )
-
-        result = user_service.update_user(test_db_session, "update_user", update_data)
-
-        assert result.display_name == "Updated Name"
-        assert result.bio == "Updated bio"
-        assert result.notification_level == NotificationLevelEnum.important
-
-    def test_update_user_not_found(self, test_db_session):
-        update_data = UserUpdate(display_name="New Name")
-
-        result = user_service.update_user(
-            test_db_session, "nonexistent_user", update_data
-        )
-
-        assert result is None
 
     def test_delete_user_success(self, test_db_session, create_user):
         create_user(

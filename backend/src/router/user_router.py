@@ -5,8 +5,8 @@ from sqlalchemy.orm import Session
 
 from src.db.session import get_db
 from src.db.tables import User
-from src.router.auth import _get_current_user, get_current_user_optional
-from src.schema.user import UserCreate, Username, UserRead, UserUpdate
+from src.router.auth import get_current_user_optional
+from src.schema.user import UserCreate, Username, UserRead
 from src.service import user_service
 
 user_router = APIRouter(
@@ -71,14 +71,6 @@ def read_user_by_username_endpoint(user_name: Username, db: Session = Depends(ge
     return user
 
 
-@user_router.get("/resolve-users-id", response_model=UserRead)
-def resolve_user_by_username(user_name: Username, db: Session = Depends(get_db)):
-    user = user_service.get_user_by_username(db, user_name=user_name)
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-    return user
-
-
 @user_router.get("/search/users", response_model=list[UserRead])
 def search_users_by_display_name(
     q: str = Query(..., min_length=1, description="Search query for display name"),
@@ -87,18 +79,6 @@ def search_users_by_display_name(
 ):
     users = user_service.search_users_by_display_name(db, display_name=q, limit=limit)
     return users
-
-
-@user_router.patch("/me", response_model=UserRead)
-def update_current_user_endpoint(
-    user_update: UserUpdate,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(_get_current_user),
-):
-    updated_user = user_service.update_user(db, current_user.user_id, user_update)
-    if not updated_user:
-        raise HTTPException(status_code=404, detail="User not found")
-    return updated_user
 
 
 @user_router.delete("/{user_id}", status_code=204)

@@ -1,10 +1,4 @@
-import type {
-  Block,
-  BlockCreate,
-  Report,
-  ReportCreate,
-  ReportUpdate,
-} from "$lib/types";
+import type { Block, BlockCreate, Report, ReportCreate } from "$lib/types";
 import { fetchApiWithAuth } from "./base";
 
 export const blocksApi = {
@@ -29,11 +23,6 @@ export const blocksApi = {
     return response;
   },
 
-  async getBlockedUsers(): Promise<Block[]> {
-    const response = await fetchApiWithAuth<Block[]>("/blocks");
-    return response;
-  },
-
   async createReport(reportData: ReportCreate): Promise<Report> {
     const response = await fetchApiWithAuth<Report>("/report", {
       method: "POST",
@@ -41,32 +30,6 @@ export const blocksApi = {
         "Content-Type": "application/json",
       },
       body: JSON.stringify(reportData),
-    });
-    return response;
-  },
-
-  async getReports(skip = 0, limit = 100): Promise<Report[]> {
-    const response = await fetchApiWithAuth<Report[]>(
-      `/reports?skip=${skip}&limit=${limit}`,
-    );
-    return response;
-  },
-
-  async getReport(reportId: string): Promise<Report> {
-    const response = await fetchApiWithAuth<Report>(`/reports/${reportId}`);
-    return response;
-  },
-
-  async updateReport(
-    reportId: string,
-    reportUpdate: ReportUpdate,
-  ): Promise<Report> {
-    const response = await fetchApiWithAuth<Report>(`/reports/${reportId}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(reportUpdate),
     });
     return response;
   },

@@ -26,15 +26,6 @@ def get_notifications(
     return notifications
 
 
-@notification_router.get("/count")
-def get_notification_count(
-    db: Session = Depends(get_db),
-    current_user: User = Depends(_get_current_user),
-):
-    count = notification_service.get_notification_count(db, current_user.user_id)
-    return {"notification_count": count}
-
-
 @notification_router.patch("/mark-all-read")
 def mark_all_notifications_as_read(
     db: Session = Depends(get_db),

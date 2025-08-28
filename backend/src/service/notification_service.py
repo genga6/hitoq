@@ -20,24 +20,6 @@ def should_notify_user(
         return True
 
 
-def get_notification_count(db: Session, user_id: str) -> int:
-    user = db.query(User).filter(User.user_id == user_id).first()
-    if not user:
-        return 0
-
-    if user.notification_level == NotificationLevelEnum.none:
-        return 0
-
-    query = db.query(Message).filter(
-        Message.to_user_id == user_id, Message.status == MessageStatusEnum.unread
-    )
-
-    if user.notification_level == NotificationLevelEnum.important:
-        query = query.filter(Message.message_type == MessageTypeEnum.comment)
-
-    return query.count()
-
-
 def get_notifications_for_user(
     db: Session, user_id: str, skip: int = 0, limit: int = 50
 ) -> list[Message]:

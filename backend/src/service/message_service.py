@@ -11,7 +11,6 @@ from src.db.tables import (
     UserBlock,
 )
 from src.schema.message import MessageCreate, MessageUpdate
-from src.schema.user import UserRead
 
 
 def create_message(db: Session, message: MessageCreate, from_user_id: str) -> Message:
@@ -83,16 +82,6 @@ def update_message_status(
         db.commit()
         db.refresh(db_message)
     return db_message
-
-
-def get_unread_count(db: Session, user_id: str) -> int:
-    return (
-        db.query(Message)
-        .filter(
-            Message.to_user_id == user_id, Message.status == MessageStatusEnum.unread
-        )
-        .count()
-    )
 
 
 def get_message_thread(db: Session, message_id: str, user_id: str) -> list[Message]:
@@ -252,17 +241,6 @@ def get_conversation_messages_for_user(
     return messages
 
 
-def update_message_content(
-    db: Session, message_id: str, new_content: str
-) -> Message | None:
-    db_message = db.query(Message).filter(Message.message_id == message_id).first()
-    if db_message:
-        db_message.content = new_content
-        db.commit()
-        db.refresh(db_message)
-    return db_message
-
-
 def delete_message(db: Session, message_id: str) -> bool:
     try:
         replies = (
@@ -327,22 +305,6 @@ def toggle_heart_reaction(db: Session, user_id: str, target_message_id: str) -> 
     )
 
     return {"user_liked": user_liked, "like_count": like_count}
-
-
-def get_message_likes(db: Session, message_id: str) -> list[dict]:
-    likes = (
-        db.query(MessageLike)
-        .options(joinedload(MessageLike.user))
-        .filter(MessageLike.message_id == message_id)
-        .order_by(MessageLike.created_at.desc())
-        .all()
-    )
-
-    return [
-        UserRead.model_validate(like.user).model_dump(by_alias=True)
-        for like in likes
-        if like.user
-    ]
 
 
 def get_heart_states_for_messages(

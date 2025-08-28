@@ -147,21 +147,6 @@ class TestMessageService:
         )
         assert result is None
 
-    def test_get_unread_count(self, test_db_session, create_user):
-        create_user(user_id="from_user")
-        create_user(user_id="recipient")
-
-        for i in range(3):
-            message_data = MessageCreate(
-                to_user_id="recipient",
-                message_type=MessageTypeEnum.comment,
-                content=f"Message {i}",
-            )
-            message_service.create_message(test_db_session, message_data, "from_user")
-
-        result = message_service.get_unread_count(test_db_session, "recipient")
-        assert result == 3
-
     def test_get_messages_with_replies(self, test_db_session, create_user):
         create_user(user_id="from_user")
         create_user(user_id="recipient")
@@ -215,26 +200,6 @@ class TestMessageService:
         message_contents = [msg.content for msg in result]
         assert "From user1" in message_contents
         assert "From user2" in message_contents
-
-    def test_update_message_content(self, test_db_session, create_user):
-        create_user(user_id="from_user")
-        create_user(user_id="to_user")
-
-        message_data = MessageCreate(
-            to_user_id="to_user",
-            message_type=MessageTypeEnum.comment,
-            content="Original content",
-        )
-        created_message = message_service.create_message(
-            test_db_session, message_data, "from_user"
-        )
-
-        result = message_service.update_message_content(
-            test_db_session, created_message.message_id, "Updated content"
-        )
-
-        assert result is not None
-        assert result.content == "Updated content"
 
     def test_delete_message(self, test_db_session, create_user):
         create_user(user_id="from_user")
@@ -302,36 +267,6 @@ class TestMessageService:
 
         assert result["user_liked"] is False
         assert result["like_count"] == 0
-
-    def test_get_message_likes(self, test_db_session, create_user):
-        create_user(user_id="author")
-        create_user(user_id="liker1", display_name="Liker 1")
-        create_user(user_id="liker2", display_name="Liker 2")
-
-        message_data = MessageCreate(
-            to_user_id="author",
-            message_type=MessageTypeEnum.comment,
-            content="Popular message",
-        )
-        original_message = message_service.create_message(
-            test_db_session, message_data, "author"
-        )
-
-        message_service.toggle_heart_reaction(
-            test_db_session, "liker1", original_message.message_id
-        )
-        message_service.toggle_heart_reaction(
-            test_db_session, "liker2", original_message.message_id
-        )
-
-        result = message_service.get_message_likes(
-            test_db_session, original_message.message_id
-        )
-
-        assert len(result) == 2
-        user_ids = [like["userId"] for like in result]
-        assert "liker1" in user_ids
-        assert "liker2" in user_ids
 
     def test_get_heart_states_for_messages(self, test_db_session, create_user):
         create_user(user_id="user")

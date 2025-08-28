@@ -2,9 +2,9 @@
   import { useClickOutside } from "$lib/utils/useClickOutside";
   import {
     getNotifications,
-    markMessageAsRead,
     markAllNotificationsAsRead
-  } from "$lib/api-client/messages";
+  } from "$lib/api-client/notifications";
+  import { markMessageAsRead } from "$lib/api-client/messages";
   import type { Message } from "$lib/types";
   import NotificationTabs, { type NotificationTabId } from "./NotificationTabs.svelte";
   import NotificationList from "./NotificationList.svelte";

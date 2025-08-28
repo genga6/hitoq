@@ -7,6 +7,7 @@
   import { toasts } from "$lib/stores/toast";
   import { fly } from "svelte/transition";
   import { invalidate } from "$app/navigation";
+  import { getAllQuestions, getQuestionsByCategory, createAnswer } from "$lib/api-client/qna";
 
   type Props = {
     categories: Record<string, CategoryInfo>;
@@ -46,10 +47,8 @@
       let questions;
 
       if (categoryFilter) {
-        const { getQuestionsByCategory } = await import("$lib/api-client/qna");
         questions = await getQuestionsByCategory(categoryFilter);
       } else {
-        const { getAllQuestions } = await import("$lib/api-client/qna");
         const allQuestions = await getAllQuestions();
         questions = allQuestions;
       }
@@ -157,8 +156,6 @@
     toasts.success("回答を保存しました！");
 
     try {
-      const { createAnswer } = await import("$lib/api-client/qna");
-
       // 質問に対する回答を作成
       await createAnswer(userId, pair.question.questionId, inputValue.trim());
       

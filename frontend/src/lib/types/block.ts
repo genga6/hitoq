@@ -32,8 +32,3 @@ export interface ReportCreate {
   reportType: ReportType;
   description?: string;
 }
-
-export interface ReportUpdate {
-  status: ReportStatus;
-  reviewedAt?: string;
-}

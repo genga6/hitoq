@@ -6,7 +6,6 @@ from src.schema.answer import AnswerCreate, AnswerRead
 from src.schema.composite_schema import QAWithDetails
 from src.schema.question import QuestionRead
 from src.service import qna_service
-from src.service.categories import get_all_categories
 
 qna_router = APIRouter(
     prefix="/users/{user_id}",
@@ -51,19 +50,6 @@ def read_all_questions(db: Session = Depends(get_db)):
 @questions_router.get("/by-category/{category_id}", response_model=list[QuestionRead])
 def read_questions_by_category(category_id: str, db: Session = Depends(get_db)):
     return qna_service.get_questions_by_category(db=db, category_id=category_id)
-
-
-@questions_router.get("/categories", response_model=list[dict])
-def read_categories():
-    categories = get_all_categories()
-    return [
-        {
-            "id": category.id,
-            "name": category.name,
-            "description": category.description,
-        }
-        for category in categories
-    ]
 
 
 @answers_router.get("/{answer_id}/with-question", response_model=QAWithDetails)

@@ -68,15 +68,6 @@ def update_message(
     return updated_message
 
 
-@message_router.get("/unread-count")
-def get_unread_count(
-    db: Session = Depends(get_db),
-    current_user: User = Depends(_get_current_user),
-):
-    count = message_service.get_unread_count(db, current_user.user_id)
-    return {"unread_count": count}
-
-
 @message_router.get("/{message_id}/thread", response_model=list[MessageRead])
 def get_message_thread(
     message_id: str,
@@ -89,28 +80,6 @@ def get_message_thread(
             status_code=404, detail="Message thread not found or no access"
         )
     return thread
-
-
-@message_router.put("/{message_id}/content", response_model=MessageRead)
-def update_message_content(
-    message_id: str,
-    content_update: dict,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(_get_current_user),
-):
-    message = message_service.get_message(db, message_id)
-    if not message:
-        raise HTTPException(status_code=404, detail="Message not found")
-
-    if message.from_user_id != current_user.user_id:
-        raise HTTPException(
-            status_code=403, detail="Not authorized to edit this message"
-        )
-
-    updated_message = message_service.update_message_content(
-        db, message_id, content_update.get("content", "")
-    )
-    return updated_message
 
 
 @message_router.delete("/{message_id}")
@@ -149,20 +118,6 @@ def toggle_heart_reaction(
     result = message_service.toggle_heart_reaction(db, current_user.user_id, message_id)
 
     return result
-
-
-@message_router.get("/{message_id}/likes")
-def get_message_likes(
-    message_id: str,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(_get_current_user),
-):
-    target_message = message_service.get_message(db, message_id)
-    if not target_message:
-        raise HTTPException(status_code=404, detail="Message not found")
-
-    likes = message_service.get_message_likes(db, message_id)
-    return {"likes": likes}
 
 
 @message_router.post("/heart-states", response_model=HeartStatesResponse)

@@ -1,12 +1,6 @@
 import { fetchApi, fetchApiWithAuth, fetchApiWithCookies } from "./base";
 import type { Visit } from "$lib/types/visits";
 
-export const recordVisit = async (userId: string): Promise<void> => {
-  await fetchApiWithAuth<void>(`/users/${userId}/visit`, {
-    method: "POST",
-  });
-};
-
 export const getUserVisits = async (
   userId: string,
   limit: number = 50,
