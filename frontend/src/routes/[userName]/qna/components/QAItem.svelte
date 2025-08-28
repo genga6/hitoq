@@ -5,6 +5,8 @@
   import MessageThread from "./MessageThread.svelte";
   import ActionButtons from "./ActionButtons.svelte";
   import type { BaseUser, Message, CategoryInfo } from "$lib/types";
+  import { createOperationId } from "$lib/utils/optimisticUI";
+  import { loadingStore } from "$lib/stores/loadingStore";
 
   const {
     question,
@@ -13,6 +15,7 @@
     categoryInfo,
     isOwner,
     onUpdate,
+    onUpdateError, // エラー時のロールバック用
     profileUserId,
     profileUserName,
     relatedMessages = [],
@@ -24,7 +27,8 @@
     answerId?: number;
     categoryInfo?: CategoryInfo;
     isOwner: boolean;
-    onUpdate: (newAnswer: string) => void;
+    onUpdate: (newAnswer: string) => Promise<boolean>;
+    onUpdateError?: (originalAnswer: string) => void; // ロールバック用
     profileUserId?: string;
     profileUserName?: string;
     relatedMessages?: Message[];
@@ -36,15 +40,36 @@
   let showCommentForm = $state(false);
   let threadMessages = $state<Message[]>([]);
   let isEditing = $state(false);
+  
+  // 楽観的UI状態管理
+  const operationId = createOperationId('qa-answer-update', answerId?.toString() || 'new');
 
   async function handleAnswerSave(newAnswer: string): Promise<boolean> {
+    const originalAnswer = answer;
+    
     try {
-      // Update parent component's state immediately (optimistic UI)
-      onUpdate(newAnswer);
-      return true;
+      // 楽観的UI開始
+      loadingStore.startOperation(operationId);
+      
+      // 親コンポーネントの更新処理を呼び出し
+      const success = await onUpdate(newAnswer);
+      
+      if (success) {
+        loadingStore.finishOperation(operationId);
+        isEditing = false;
+        return true;
+      } else {
+        throw new Error('更新に失敗しました');
+      }
     } catch (error) {
       console.error("回答の保存に失敗しました:", error);
-      // Revert would need to be handled by parent component
+      
+      // エラー状態
+      loadingStore.finishOperation(operationId);
+      
+      // 親コンポーネントにロールバックを通知
+      onUpdateError?.(originalAnswer);
+      
       return false;
     }
   }
