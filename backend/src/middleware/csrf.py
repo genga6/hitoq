@@ -30,12 +30,9 @@ class CSRFMiddleware(BaseHTTPMiddleware):
         ]
 
     def _is_exempt_path(self, path: str) -> bool:
-        """Check if path is exempt from CSRF protection"""
-        # Check static paths
         if path in self.exempt_paths:
             return True
 
-        # Check regex patterns
         for pattern in self.exempt_patterns:
             if pattern.match(path):
                 return True

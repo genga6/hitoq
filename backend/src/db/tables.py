@@ -1,7 +1,6 @@
 import enum
 import uuid
 from datetime import datetime
-from typing import ClassVar
 
 from sqlalchemy import Boolean, DateTime, ForeignKey, String, UniqueConstraint
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
@@ -248,6 +247,11 @@ class Message(Base):
         DateTime(timezone=True), server_default=func.now()
     )
 
+    # 動的に設定される属性（DBには保存されない）
+    reply_count: int = 0
+    thread_depth: int = 0
+    thread_parent_id: str | None = None
+
     from_user: Mapped["User"] = relationship(
         "User", foreign_keys=[from_user_id], back_populates="messages_sent"
     )
@@ -266,12 +270,6 @@ class Message(Base):
         cascade="all, delete-orphan",
         overlaps="parent_message",
     )
-
-    # 動的に追加される属性（サービス層で計算される）
-    # これらはデータベースに保存されず、実行時に動的に設定される
-    reply_count: ClassVar[int]
-    thread_depth: ClassVar[int]
-    thread_parent_id: ClassVar[str | None]
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)

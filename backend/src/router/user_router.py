@@ -29,7 +29,6 @@ def read_all_users_endpoint(
     return user_service.get_users(db, skip=skip, limit=limit)
 
 
-# 特定のパスを先に配置（動的パスより前）
 @user_router.get("/discover", response_model=list[UserRead])
 def discover_users_endpoint(
     type: Literal["activity", "random", "recommend"] = Query(
@@ -41,8 +40,6 @@ def discover_users_endpoint(
     current_user: User | None = Depends(get_current_user_optional),
 ):
     """
-    新しいユーザーを発見する
-
     - activity: アクティブなユーザー（新規登録、最近の回答・メッセージ・ログイン）
     - random: ランダムなユーザー
     - recommend: アクティブ + ランダムの混合（デフォルト）
@@ -88,7 +85,6 @@ def search_users_by_display_name(
     limit: int = Query(10, ge=1, le=50, description="Maximum number of results"),
     db: Session = Depends(get_db),
 ):
-    """Search users by display name with partial matching."""
     users = user_service.search_users_by_display_name(db, display_name=q, limit=limit)
     return users
 
@@ -99,7 +95,6 @@ def update_current_user_endpoint(
     db: Session = Depends(get_db),
     current_user: User = Depends(_get_current_user),
 ):
-    """Update current user information including notification settings."""
     updated_user = user_service.update_user(db, current_user.user_id, user_update)
     if not updated_user:
         raise HTTPException(status_code=404, detail="User not found")

@@ -1,7 +1,6 @@
 import uuid
-from typing import Optional
 
-from sqlalchemy import func
+from sqlalchemy import func, text
 from sqlalchemy.orm import Session, joinedload
 
 from src.db.tables import (
@@ -9,28 +8,13 @@ from src.db.tables import (
     MessageLike,
     MessageStatusEnum,
     MessageTypeEnum,
-    NotificationLevelEnum,
-    User,
     UserBlock,
 )
 from src.schema.message import MessageCreate, MessageUpdate
 from src.schema.user import UserRead
 
 
-def should_notify_user(
-    notification_level: NotificationLevelEnum, message_type: MessageTypeEnum
-) -> bool:
-    """Determine if user should be notified based on their notification level and message type."""
-    if notification_level == NotificationLevelEnum.none:
-        return False
-    elif notification_level == NotificationLevelEnum.important:
-        return message_type == MessageTypeEnum.comment
-    else:
-        return True
-
-
 def create_message(db: Session, message: MessageCreate, from_user_id: str) -> Message:
-    # Check if the sender is blocked by the recipient
     is_blocked = (
         db.query(UserBlock)
         .filter(
@@ -63,8 +47,6 @@ def create_message(db: Session, message: MessageCreate, from_user_id: str) -> Me
 def get_messages_for_user(
     db: Session, user_id: str, skip: int = 0, limit: int = 50
 ) -> list[Message]:
-    """Get messages received by a user, excluding messages from blocked users."""
-    # Get blocked user IDs
     blocked_user_ids_subquery = db.query(UserBlock.blocked_user_id).filter(
         UserBlock.blocker_user_id == user_id
     )
@@ -83,8 +65,7 @@ def get_messages_for_user(
     )
 
 
-def get_message(db: Session, message_id: str) -> Optional[Message]:
-    """Get a message by ID."""
+def get_message(db: Session, message_id: str) -> Message | None:
     return (
         db.query(Message)
         .options(joinedload(Message.from_user), joinedload(Message.to_user))
@@ -95,8 +76,7 @@ def get_message(db: Session, message_id: str) -> Optional[Message]:
 
 def update_message_status(
     db: Session, message_id: str, status_update: MessageUpdate
-) -> Optional[Message]:
-    """Update message status."""
+) -> Message | None:
     db_message = db.query(Message).filter(Message.message_id == message_id).first()
     if db_message:
         db_message.status = status_update.status
@@ -106,7 +86,6 @@ def update_message_status(
 
 
 def get_unread_count(db: Session, user_id: str) -> int:
-    """Get count of unread messages for a user."""
     return (
         db.query(Message)
         .filter(
@@ -116,79 +95,7 @@ def get_unread_count(db: Session, user_id: str) -> int:
     )
 
 
-def get_notification_count(db: Session, user_id: str) -> int:
-    """Get count of unread messages that should notify the user based on their notification level."""
-    user = db.query(User).filter(User.user_id == user_id).first()
-    if not user:
-        return 0
-
-    if user.notification_level == NotificationLevelEnum.none:
-        return 0
-
-    query = db.query(Message).filter(
-        Message.to_user_id == user_id, Message.status == MessageStatusEnum.unread
-    )
-
-    if user.notification_level == NotificationLevelEnum.important:
-        query = query.filter(Message.message_type == MessageTypeEnum.comment)
-
-    return query.count()
-
-
-def get_notifications_for_user(
-    db: Session, user_id: str, skip: int = 0, limit: int = 50
-) -> list[Message]:
-    """Get notification messages for a user based on their notification level."""
-    user = db.query(User).filter(User.user_id == user_id).first()
-    if not user:
-        return []
-
-    if user.notification_level == NotificationLevelEnum.none:
-        return []
-
-    query = (
-        db.query(Message)
-        .options(joinedload(Message.from_user))
-        .filter(Message.to_user_id == user_id)
-    )
-
-    if user.notification_level == NotificationLevelEnum.important:
-        query = query.filter(Message.message_type == MessageTypeEnum.comment)
-
-    notifications = (
-        query.order_by(Message.created_at.desc()).offset(skip).limit(limit).all()
-    )
-
-    return notifications
-
-
-def mark_all_notifications_as_read(db: Session, user_id: str) -> int:
-    """Mark all notification messages as read for a user based on their notification level."""
-    user = db.query(User).filter(User.user_id == user_id).first()
-    if not user:
-        return 0
-
-    if user.notification_level == NotificationLevelEnum.none:
-        return 0
-
-    query = db.query(Message).filter(
-        Message.to_user_id == user_id, Message.status == MessageStatusEnum.unread
-    )
-
-    if user.notification_level == NotificationLevelEnum.important:
-        query = query.filter(Message.message_type == MessageTypeEnum.comment)
-
-    # Update all matching messages to read status
-    updated_count = query.update(
-        {Message.status: MessageStatusEnum.read}, synchronize_session="fetch"
-    )
-
-    db.commit()
-    return updated_count
-
-
 def get_message_thread(db: Session, message_id: str, user_id: str) -> list[Message]:
-    """Get a message thread with hierarchical structure like Twitter."""
     root_message = db.query(Message).filter(Message.message_id == message_id).first()
     if not root_message:
         return []
@@ -204,9 +111,6 @@ def get_message_thread(db: Session, message_id: str, user_id: str) -> list[Messa
 
     if root_message.from_user_id != user_id and root_message.to_user_id != user_id:
         return []
-
-    # Get all messages in the thread tree with depth level (excluding heart reactions)
-    from sqlalchemy import text
 
     thread_data = db.execute(
         text("""
@@ -233,10 +137,9 @@ def get_message_thread(db: Session, message_id: str, user_id: str) -> list[Messa
     if not thread_data:
         return []
 
-    # Get Message objects and add depth information
-    message_ids = [row[0] for row in thread_data]  # message_id is first column
-    depth_map = {row[0]: row[-2] for row in thread_data}  # message_id -> depth
-    parent_map = {row[0]: row[-1] for row in thread_data}  # message_id -> parent_id
+    message_ids = [row[0] for row in thread_data]
+    depth_map = {row[0]: row[-2] for row in thread_data}
+    parent_map = {row[0]: row[-1] for row in thread_data}
 
     thread_messages = (
         db.query(Message)
@@ -249,33 +152,30 @@ def get_message_thread(db: Session, message_id: str, user_id: str) -> list[Messa
         message.thread_depth = depth_map.get(message.message_id, 0)
         message.thread_parent_id = parent_map.get(message.message_id)
 
-    def sort_messages_hierarchically(messages):
-        children_map: dict = {}
-        root_messages: list = []
+    def sort_messages_hierarchically(messages: list[Message]) -> list[Message]:
+        children_map: dict[str, list[Message]] = {}
+        root_messages: list[Message] = []
 
         for msg in messages:
-            parent_id = getattr(msg, "thread_parent_id", None)
+            parent_id: str | None = getattr(msg, "thread_parent_id", None)
+
             if parent_id == root_message.message_id:
-                # Direct reply to root
                 root_messages.append(msg)
-            else:
-                # Reply to another reply
+            elif parent_id is not None:
                 if parent_id not in children_map:
                     children_map[parent_id] = []
                 children_map[parent_id].append(msg)
 
-        # Build hierarchical list
-        result = []
+        result: list[Message] = []
 
-        def add_message_and_children(msg):
+        def add_message_and_children(msg: Message) -> None:
             result.append(msg)
-            # Add children in chronological order
+
             children = children_map.get(msg.message_id, [])
             children.sort(key=lambda x: x.created_at)
             for child in children:
                 add_message_and_children(child)
 
-        # Add root messages and their descendants
         root_messages.sort(key=lambda x: x.created_at)
         for root_msg in root_messages:
             add_message_and_children(root_msg)
@@ -286,9 +186,6 @@ def get_message_thread(db: Session, message_id: str, user_id: str) -> list[Messa
 
 
 def _get_full_thread_count(db: Session, root_message_id: str) -> int:
-    from sqlalchemy import text
-
-    # This CTE is similar to get_message_thread, but only counts
     thread_count_data = db.execute(
         text("""
             WITH RECURSIVE thread_tree AS (
@@ -312,18 +209,15 @@ def _get_full_thread_count(db: Session, root_message_id: str) -> int:
     return thread_count_data if thread_count_data is not None else 0
 
 
-# Modify get_messages_with_replies
 def get_messages_with_replies(
     db: Session, user_id: str, skip: int = 0, limit: int = 50
 ) -> list[Message]:
-    """Get messages for a user with reply counts (excluding replies themselves)."""
-    # Get only root messages (messages without parent_message_id)
     messages = (
         db.query(Message)
         .options(joinedload(Message.from_user))
         .filter(
             Message.to_user_id == user_id,
-            Message.parent_message_id.is_(None),  # Only root messages
+            Message.parent_message_id.is_(None),
         )
         .order_by(Message.created_at.desc())
         .offset(skip)
@@ -331,9 +225,7 @@ def get_messages_with_replies(
         .all()
     )
 
-    # Add reply count to each message
     for message in messages:
-        # Calculate full thread count instead of just direct replies
         message.reply_count = _get_full_thread_count(db, message.message_id)
 
     return messages
@@ -342,24 +234,19 @@ def get_messages_with_replies(
 def get_conversation_messages_for_user(
     db: Session, user_id: str, skip: int = 0, limit: int = 50
 ) -> list[Message]:
-    """Get all conversation messages for a user (both sent and received, root messages only)."""
-    # Get root messages where user is either sender or receiver
     messages = (
         db.query(Message)
         .options(joinedload(Message.from_user), joinedload(Message.to_user))
         .filter(
             ((Message.to_user_id == user_id) | (Message.from_user_id == user_id)),
-            Message.parent_message_id.is_(None),  # Only root messages
+            Message.parent_message_id.is_(None),
         )
         .order_by(Message.created_at.desc())
         .offset(skip)
         .limit(limit)
         .all()
     )
-
-    # Add reply count to each message
     for message in messages:
-        # Calculate full thread count instead of just direct replies
         message.reply_count = _get_full_thread_count(db, message.message_id)
 
     return messages
@@ -367,8 +254,7 @@ def get_conversation_messages_for_user(
 
 def update_message_content(
     db: Session, message_id: str, new_content: str
-) -> Optional[Message]:
-    """Update message content."""
+) -> Message | None:
     db_message = db.query(Message).filter(Message.message_id == message_id).first()
     if db_message:
         db_message.content = new_content
@@ -378,16 +264,13 @@ def update_message_content(
 
 
 def delete_message(db: Session, message_id: str) -> bool:
-    """Delete a message and all its replies."""
     try:
-        # First delete all replies recursively
         replies = (
             db.query(Message).filter(Message.parent_message_id == message_id).all()
         )
         for reply in replies:
             delete_message(db, reply.message_id)
 
-        # Then delete the message itself
         db_message = db.query(Message).filter(Message.message_id == message_id).first()
         if db_message:
             db.delete(db_message)
@@ -401,8 +284,7 @@ def delete_message(db: Session, message_id: str) -> bool:
 
 def get_user_heart_reaction(
     db: Session, user_id: str, target_message_id: str
-) -> Optional[Message]:
-    """Get user's existing heart reaction to a specific message."""
+) -> Message | None:
     return (
         db.query(Message)
         .filter(
@@ -416,9 +298,6 @@ def get_user_heart_reaction(
 
 
 def toggle_heart_reaction(db: Session, user_id: str, target_message_id: str) -> dict:
-    """Toggle heart reaction for a message. Returns user_liked status and like count."""
-
-    # Check if user already liked this message
     existing_like = (
         db.query(MessageLike)
         .filter(
@@ -429,11 +308,9 @@ def toggle_heart_reaction(db: Session, user_id: str, target_message_id: str) -> 
     )
 
     if existing_like:
-        # Remove existing like
         db.delete(existing_like)
         user_liked = False
     else:
-        # Add new like
         new_like = MessageLike(
             message_id=target_message_id,
             user_id=user_id,
@@ -443,7 +320,6 @@ def toggle_heart_reaction(db: Session, user_id: str, target_message_id: str) -> 
 
     db.commit()
 
-    # Count total likes for this message
     like_count = (
         db.query(MessageLike)
         .filter(MessageLike.message_id == target_message_id)
@@ -454,7 +330,6 @@ def toggle_heart_reaction(db: Session, user_id: str, target_message_id: str) -> 
 
 
 def get_message_likes(db: Session, message_id: str) -> list[dict]:
-    """Get list of users who liked a specific message."""
     likes = (
         db.query(MessageLike)
         .options(joinedload(MessageLike.user))
@@ -473,11 +348,9 @@ def get_message_likes(db: Session, message_id: str) -> list[dict]:
 def get_heart_states_for_messages(
     db: Session, user_id: str, message_ids: list[str]
 ) -> dict:
-    """Get heart states (liked status and count) for multiple messages."""
     if not message_ids:
         return {}
 
-    # Get user's likes for these messages
     user_likes = (
         db.query(MessageLike.message_id)
         .filter(
@@ -488,7 +361,6 @@ def get_heart_states_for_messages(
     )
     user_liked_messages = {like[0] for like in user_likes}
 
-    # Get total like counts for these messages
     like_counts = (
         db.query(MessageLike.message_id, func.count(MessageLike.like_id).label("count"))
         .filter(MessageLike.message_id.in_(message_ids))
@@ -496,7 +368,6 @@ def get_heart_states_for_messages(
         .all()
     )
 
-    # Build result dictionary
     result = {}
     for message_id in message_ids:
         count = next(

@@ -10,7 +10,6 @@ from src.schema.message import (
     MessageCreate,
     MessageRead,
     MessageUpdate,
-    NotificationRead,
 )
 from src.service import message_service, user_service
 
@@ -76,39 +75,6 @@ def get_unread_count(
 ):
     count = message_service.get_unread_count(db, current_user.user_id)
     return {"unread_count": count}
-
-
-@message_router.get("/notifications", response_model=list[NotificationRead])
-def get_notifications(
-    skip: int = Query(0, ge=0, description="Offset"),
-    limit: int = Query(50, ge=1, le=100, description="Limit"),
-    db: Session = Depends(get_db),
-    current_user: User = Depends(_get_current_user),
-):
-    notifications = message_service.get_notifications_for_user(
-        db, current_user.user_id, skip, limit
-    )
-    return notifications
-
-
-@message_router.get("/notification-count")
-def get_notification_count(
-    db: Session = Depends(get_db),
-    current_user: User = Depends(_get_current_user),
-):
-    count = message_service.get_notification_count(db, current_user.user_id)
-    return {"notification_count": count}
-
-
-@message_router.patch("/notifications/mark-all-read")
-def mark_all_notifications_as_read(
-    db: Session = Depends(get_db),
-    current_user: User = Depends(_get_current_user),
-):
-    updated_count = message_service.mark_all_notifications_as_read(
-        db, current_user.user_id
-    )
-    return {"updated_count": updated_count}
 
 
 @message_router.get("/{message_id}/thread", response_model=list[MessageRead])

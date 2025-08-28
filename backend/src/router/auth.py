@@ -37,6 +37,36 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 120  # 2 hours (Twitter-aligned)
 REFRESH_TOKEN_EXPIRE_DAYS = 180  # 6 months (Twitter-aligned)
 
 
+def _set_auth_cookie(response, key: str, value: str, max_age: int) -> None:
+    response.set_cookie(
+        key=key,
+        value=value,
+        domain=".hitoq.net" if os.getenv("ENVIRONMENT") == "production" else None,
+        path="/",
+        max_age=max_age,
+        samesite="none",
+        httponly=True,
+        secure=True
+        if os.getenv("ENVIRONMENT") != "production"
+        else os.getenv("COOKIE_SECURE", "false").lower() == "true",
+    )
+
+
+def _set_csrf_cookie(response, csrf_token: str) -> None:
+    response.set_cookie(
+        key="csrf_token",
+        value=csrf_token,
+        domain=".hitoq.net" if os.getenv("ENVIRONMENT") == "production" else None,
+        path="/",
+        max_age=24 * 60 * 60,  # 24時間
+        httponly=False,  # JavaScriptからアクセス可能
+        samesite="none",
+        secure=True
+        if os.getenv("ENVIRONMENT") != "production"
+        else os.getenv("COOKIE_SECURE", "false").lower() == "true",
+    )
+
+
 def _get_current_user(request: Request, db: Session = Depends(get_db)):
     token = request.cookies.get("access_token")
     if not token:
@@ -55,21 +85,13 @@ def _get_current_user(request: Request, db: Session = Depends(get_db)):
 
 
 def get_current_user_optional(request: Request, db: Session = Depends(get_db)):
-    """
-    現在のユーザーを取得する（オプショナル版）
-    ログインしていない場合はNoneを返し、エラーを発生させない
-    """
     try:
         token = request.cookies.get("access_token")
         if not token:
             return None
 
-        # _verify_token を直接呼ばずに、エラーをキャッチ
-        try:
-            payload = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
-            if payload.get("type") != "access":
-                return None
-        except (jwt.ExpiredSignatureError, jwt.InvalidTokenError):
+        payload = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+        if payload.get("type") != "access":
             return None
 
         user_id = payload.get("sub")
@@ -217,30 +239,14 @@ async def auth_twitter_callback(
 
         response = RedirectResponse(url=f"{FRONTEND_URL}/{user.user_name}")
 
-        response.set_cookie(
-            key="access_token",
-            value=access_token,
-            domain=".hitoq.net" if os.getenv("ENVIRONMENT") == "production" else None,
-            path="/",
-            max_age=ACCESS_TOKEN_EXPIRE_MINUTES * 60,  # 15分
-            samesite="none",
-            httponly=True,
-            secure=True
-            if os.getenv("ENVIRONMENT") != "production"
-            else os.getenv("COOKIE_SECURE", "false").lower() == "true",
+        _set_auth_cookie(
+            response, "access_token", access_token, ACCESS_TOKEN_EXPIRE_MINUTES * 60
         )
-
-        response.set_cookie(
-            key="refresh_token",
-            value=refresh_token,
-            domain=".hitoq.net" if os.getenv("ENVIRONMENT") == "production" else None,
-            path="/",
-            max_age=REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60,  # 7日
-            samesite="none",
-            httponly=True,
-            secure=True
-            if os.getenv("ENVIRONMENT") != "production"
-            else os.getenv("COOKIE_SECURE", "false").lower() == "true",
+        _set_auth_cookie(
+            response,
+            "refresh_token",
+            refresh_token,
+            REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60,
         )
 
         return response
@@ -265,17 +271,8 @@ async def refresh_token(request: Request, db: Session = Depends(get_db)):
     new_access_token = TokenService.create_access_token(user.user_id)
 
     response = JSONResponse(content={"message": "Token refreshed successfully"})
-    response.set_cookie(
-        key="access_token",
-        value=new_access_token,
-        domain=".hitoq.net" if os.getenv("ENVIRONMENT") == "production" else None,
-        path="/",
-        max_age=ACCESS_TOKEN_EXPIRE_MINUTES * 60,
-        samesite="none",
-        httponly=True,
-        secure=True
-        if os.getenv("ENVIRONMENT") != "production"
-        else os.getenv("COOKIE_SECURE", "false").lower() == "true",
+    _set_auth_cookie(
+        response, "access_token", new_access_token, ACCESS_TOKEN_EXPIRE_MINUTES * 60
     )
 
     return response
@@ -292,18 +289,7 @@ async def get_csrf_token(request: Request):
     csrf_token = TokenService.create_csrf_token()
 
     response = JSONResponse(content={"csrf_token": csrf_token})
-    response.set_cookie(
-        key="csrf_token",
-        value=csrf_token,
-        domain=".hitoq.net" if os.getenv("ENVIRONMENT") == "production" else None,
-        path="/",
-        max_age=24 * 60 * 60,  # 24時間
-        httponly=False,  # JavaScriptからアクセス可能
-        samesite="none",
-        secure=True
-        if os.getenv("ENVIRONMENT") != "production"
-        else os.getenv("COOKIE_SECURE", "false").lower() == "true",
-    )
+    _set_csrf_cookie(response, csrf_token)
 
     return response
 

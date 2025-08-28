@@ -24,7 +24,6 @@ def record_visit_endpoint(
         except HTTPException:
             pass
 
-        # Skip self-visits silently (this is expected behavior)
         if visitor_user_id == user_id:
             return {
                 "message": "Visit processed successfully"
@@ -35,15 +34,12 @@ def record_visit_endpoint(
         )
 
         if recorded_visit is None:
-            # This means the visit was not recorded for a valid reason (e.g., visited user not found, or internal service error)
-            # We still return 200 OK as per original intent, but with a more specific message
             return {
                 "message": "Visit not recorded (e.g., user not found or self-visit)"
             }
 
         return {"message": "Visit processed successfully"}
     except Exception as e:
-        # Log non-self-visit errors only
         print(f"Visit recording failed: {e}")
         raise HTTPException(
             status_code=500, detail=f"Visit recording failed: {e}"

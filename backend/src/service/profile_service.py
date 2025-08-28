@@ -29,7 +29,6 @@ def _get_profile_item(
 def create_profile_item(
     db: Session, user_id: str, item_in: ProfileItemCreate
 ) -> ProfileItem:
-    # ユーザーが存在するかチェック
     user = db.query(User).filter(User.user_id == user_id).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")

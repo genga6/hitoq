@@ -2,7 +2,7 @@ from uuid import uuid4
 
 import pytest
 
-from src.db.tables import MessageStatusEnum, MessageTypeEnum, NotificationLevelEnum
+from src.db.tables import MessageStatusEnum, MessageTypeEnum
 from src.schema.block import BlockCreate
 from src.schema.message import MessageCreate, MessageUpdate
 from src.service import block_service, message_service
@@ -10,19 +10,6 @@ from src.service import block_service, message_service
 
 @pytest.mark.unit
 class TestMessageService:
-    @pytest.mark.parametrize(
-        "notification_level,message_type,expected",
-        [
-            (NotificationLevelEnum.none, MessageTypeEnum.comment, False),
-            (NotificationLevelEnum.important, MessageTypeEnum.comment, True),
-            (NotificationLevelEnum.important, MessageTypeEnum.like, False),
-            (NotificationLevelEnum.all, MessageTypeEnum.like, True),
-        ],
-    )
-    def test_should_notify_user(self, notification_level, message_type, expected):
-        result = message_service.should_notify_user(notification_level, message_type)
-        assert result is expected
-
     def test_create_message_success(self, test_db_session, create_user):
         create_user(user_id="from_user")
         create_user(user_id="to_user")
@@ -174,56 +161,6 @@ class TestMessageService:
 
         result = message_service.get_unread_count(test_db_session, "recipient")
         assert result == 3
-
-    @pytest.mark.parametrize(
-        "notification_level,messages,expected_count",
-        [
-            (
-                NotificationLevelEnum.none,
-                [MessageTypeEnum.comment],
-                0,
-            ),
-            (
-                NotificationLevelEnum.important,
-                [MessageTypeEnum.comment, MessageTypeEnum.like],
-                1,
-            ),
-        ],
-    )
-    def test_get_notification_count(
-        self, test_db_session, create_user, notification_level, messages, expected_count
-    ):
-        create_user(user_id="recipient", notification_level=notification_level)
-        create_user(user_id="sender")
-
-        for i, message_type in enumerate(messages):
-            message_data = MessageCreate(
-                to_user_id="recipient",
-                message_type=message_type,
-                content=f"Message {i}",
-            )
-            message_service.create_message(test_db_session, message_data, "sender")
-
-        result = message_service.get_notification_count(test_db_session, "recipient")
-        assert result == expected_count
-
-    def test_get_notifications_for_user(self, test_db_session, create_user):
-        create_user(user_id="recipient", notification_level=NotificationLevelEnum.all)
-        create_user(user_id="sender")
-
-        message_data = MessageCreate(
-            to_user_id="recipient",
-            message_type=MessageTypeEnum.comment,
-            content="Notification message",
-        )
-        message_service.create_message(test_db_session, message_data, "sender")
-
-        result = message_service.get_notifications_for_user(
-            test_db_session, "recipient"
-        )
-
-        assert len(result) == 1
-        assert result[0].content == "Notification message"
 
     def test_get_messages_with_replies(self, test_db_session, create_user):
         create_user(user_id="from_user")
