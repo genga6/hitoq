@@ -49,7 +49,7 @@
         replaceState: false,
         noScroll: false,
         keepFocus: false,
-        invalidateAll: true  // 新規タブ・リロード時に最新データを表示
+        invalidateAll: false  // キャッシュを活用して高速化
       });
     } finally {
       // ローディング終了（URL変更完了後に$effectでも呼ばれる）
