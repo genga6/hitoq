@@ -1,6 +1,7 @@
 <script lang="ts">
   import { sendMessage } from "$lib/api-client/messages";
   import { replaceState } from "$app/navigation";
+  import { withOptimisticUpdate, createOperationId } from "$lib/utils/optimisticUI";
 
   import type { Message } from "$lib/types";
 
@@ -39,36 +40,62 @@
       return;
     }
 
-    isSubmitting = true;
-    error = "";
+    const operationId = createOperationId('message-send', toUserId);
+    const messageContent = content.trim();
+    const originalContent = content;
+    const originalReferenceQuestion = referenceQuestion;
 
     try {
-      const newMessage = await sendMessage({
-        toUserId,
-        messageType: "comment",
-        content: content.trim(),
-        referenceAnswerId: referenceQuestion ? 1 : undefined // TODO: 実際のQ&AIDを取得
-      });
+      await withOptimisticUpdate(
+        {
+          operationId,
+          invalidateKey: `talk:${toUserName}:messages`,
+          apiCall: () => sendMessage({
+            toUserId,
+            messageType: "comment",
+            content: messageContent,
+            referenceAnswerId: referenceQuestion ? 1 : undefined // TODO: 実際のQ&AIDを取得
+          }),
+          onSuccess: (newMessage) => {
+            // URL パラメータをクリア
+            if (typeof window !== "undefined") {
+              const url = new URL(window.location.href);
+              url.searchParams.delete("compose");
+              url.searchParams.delete("reference");
+              url.searchParams.delete("type");
+              replaceState(url.toString(), {});
+            }
+            
+            if (onSuccess) {
+              onSuccess(newMessage);
+            } else {
+              window.location.reload();
+            }
+          },
+          onError: (err) => {
+            error = err instanceof Error ? err.message : "質問の送信に失敗しました";
+          },
+        },
+        { content: messageContent },
+        // 楽観的UI更新
+        () => {
+          isSubmitting = true;
+          content = "";
+          referenceQuestion = "";
+          error = "";
+        },
+        // ロールバック処理
+        () => {
+          content = originalContent;
+          referenceQuestion = originalReferenceQuestion;
+          isSubmitting = false;
+        }
+      );
 
-      content = "";
-      referenceQuestion = "";
-
-      if (typeof window !== "undefined") {
-        const url = new URL(window.location.href);
-        url.searchParams.delete("compose");
-        url.searchParams.delete("reference");
-        url.searchParams.delete("type");
-        replaceState(url.toString(), {});
-      }
-
-      if (onSuccess) {
-        onSuccess(newMessage);
-      } else {
-        window.location.reload();
-      }
-    } catch (err) {
-      error = err instanceof Error ? err.message : "質問の送信に失敗しました";
-    } finally {
+      // 成功時の最終処理
+      isSubmitting = false;
+    } catch {
+      // エラーは既にwithOptimisticUpdate内で処理済み
       isSubmitting = false;
     }
   }

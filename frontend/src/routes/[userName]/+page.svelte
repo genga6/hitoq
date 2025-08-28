@@ -2,8 +2,8 @@
   import ProfileItemCard from "./components/ProfileItemCard.svelte";
   import type { ProfileItem } from "$lib/types";
   import type { PageData } from "./$types";
-  import { invalidate } from "$app/navigation";
   import { updateProfileItem } from "$lib/api-client/profile";
+  import { withOptimisticUpdate, createOptimisticDataManager, createOperationId } from "$lib/utils/optimisticUI";
 
   type Props = {
     data: PageData;
@@ -12,31 +12,64 @@
   const { data }: Props = $props();
   const isOwner = $derived(data.isOwner);
 
-  let profileItems = $derived([...(data.profileItems || [])].sort((a, b) => a.displayOrder - b.displayOrder));
-
-  const updateProfileItemValue = async (
-    userId: string,
-    profileItemId: string,
-    newValue: string
-  ): Promise<ProfileItem> => {
-    return updateProfileItem(userId, profileItemId, { value: newValue });
-  };
+  // 楽観的UI管理
+  const sortedInitialItems = [...(data.profileItems || [])].sort((a, b) => a.displayOrder - b.displayOrder);
+  const dataManager = createOptimisticDataManager(sortedInitialItems);
+  let profileItems = $state(dataManager.data);
 
   const createSaveHandler = (item: ProfileItem) => {
     return async (newValue: string): Promise<boolean> => {
+      const operationId = createOperationId('profile-update', item.profileItemId);
+      const originalValue = item.value;
+
       try {
-        await updateProfileItemValue(data.profile.userId, item.profileItemId, newValue);
+        const result = await withOptimisticUpdate(
+          {
+            operationId,
+            invalidateKey: `user:${data.profile.userName}:profile`,
+            apiCall: () => updateProfileItem(data.profile.userId, item.profileItemId, { value: newValue }),
+            onSuccess: () => {
+              // サーバーからの最新データでコミット
+              dataManager.commit();
+            },
+            onError: (error) => {
+              console.error("プロフィールの更新に失敗しました:", error);
+            },
+          },
+          { value: newValue },
+          // 楽観的UI更新
+          () => {
+            dataManager.optimisticUpdate(
+              (i) => i.profileItemId === item.profileItemId,
+              (i) => ({ ...i, value: newValue })
+            );
+            profileItems = dataManager.data;
+          },
+          // ロールバック処理
+          () => {
+            dataManager.optimisticUpdate(
+              (i) => i.profileItemId === item.profileItemId,
+              (i) => ({ ...i, value: originalValue })
+            );
+            profileItems = dataManager.data;
+          }
+        );
 
-        // Wait for the data to be re-fetched and the prop to be updated
-        await invalidate(`user:${data.profile.userName}:profile`);
-
-        return true;
-      } catch (error) {
-        console.error("プロフィールの更新に失敗しました:", error);
+        return !!result;
+      } catch {
         return false;
       }
     };
   };
+
+  // データの同期（親からのpropsが更新された時）
+  $effect(() => {
+    if (data.profileItems) {
+      const newSortedItems = [...data.profileItems].sort((a, b) => a.displayOrder - b.displayOrder);
+      dataManager.commit(); // 現在の楽観的状態をコミット
+      profileItems = newSortedItems;
+    }
+  });
 </script>
 
 <div class="mt-8 space-y-4 md:space-y-8">
