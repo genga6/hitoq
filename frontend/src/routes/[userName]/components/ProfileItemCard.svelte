@@ -1,6 +1,6 @@
 <script lang="ts">
   import Editable from "$lib/components/form/Editable.svelte";
-  import type { ValidationType } from "$lib/utils/validation";
+  import { ValidationRules } from "$lib/utils/validation";
   import type { Snippet } from "svelte";
 
   type Props = {
@@ -9,7 +9,7 @@
     isOwner: boolean;
     onSave: (newValue: string) => Promise<boolean>;
     inputType?: "input" | "textarea";
-    validationType?: ValidationType;
+    validationType?: keyof typeof ValidationRules;
     placeholder?: string;
     showDivider?: boolean;
     children?: Snippet;

@@ -50,7 +50,7 @@
         {isOwner}
         onSave={createSaveHandler(introItem)}
         inputType="textarea"
-        validationType="selfIntroduction"
+        validationType="profileValue"
         placeholder="自己紹介を書いてみましょう..."
       >
         {#if isOwner}

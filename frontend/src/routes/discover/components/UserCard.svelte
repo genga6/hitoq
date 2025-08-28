@@ -74,11 +74,7 @@
   </div>
 
   <!-- 自己紹介 -->
-  {#if user.selfIntroduction}
-    <p class="theme-text-secondary mb-4 line-clamp-3 text-sm leading-relaxed">
-      {user.selfIntroduction}
-    </p>
-  {:else if user.bio}
+  {#if user.bio}
     <p class="theme-text-secondary mb-4 line-clamp-3 text-sm leading-relaxed">
       {user.bio}
     </p>
