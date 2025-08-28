@@ -1,10 +1,7 @@
-from datetime import datetime, timezone
-from uuid import uuid4
-
 import pytest
 
 from src.db.tables import ReportStatusEnum, ReportTypeEnum
-from src.schema.block import BlockCreate, ReportCreate, ReportUpdate
+from src.schema.block import BlockCreate, ReportCreate
 from src.service import block_service
 
 
@@ -106,35 +103,6 @@ class TestBlockService:
             test_db_session, "nonexistent_blocker", "nonexistent_blocked"
         )
         assert result is False
-
-    def test_get_blocked_users(self, test_db_session, create_user):
-        create_user(
-            user_id="list_blocker", user_name="listblocker", display_name="List Blocker"
-        )
-        create_user(
-            user_id="list_blocked1",
-            user_name="listblocked1",
-            display_name="List Blocked 1",
-        )
-        create_user(
-            user_id="list_blocked2",
-            user_name="listblocked2",
-            display_name="List Blocked 2",
-        )
-
-        # ブロック作成
-        block_data1 = BlockCreate(blocked_user_id="list_blocked1")
-        block_data2 = BlockCreate(blocked_user_id="list_blocked2")
-        block_service.create_block(test_db_session, "list_blocker", block_data1)
-        block_service.create_block(test_db_session, "list_blocker", block_data2)
-
-        # ブロック一覧取得
-        result = block_service.get_blocked_users(test_db_session, "list_blocker")
-
-        assert len(result) == 2
-        blocked_user_ids = [block.blocked_user_id for block in result]
-        assert "list_blocked1" in blocked_user_ids
-        assert "list_blocked2" in blocked_user_ids
 
     @pytest.mark.parametrize(
         "blocker_user, blocked_user, do_block, expected_result",
@@ -264,143 +232,6 @@ class TestReportService:
         assert result.report_type == report_type
         assert result.description == description
 
-    def test_get_reports_pagination(self, test_db_session, create_user):
-        create_user(
-            user_id="pagination_reporter",
-            user_name="paginationreporter",
-            display_name="Pagination Reporter",
-        )
-        create_user(
-            user_id="pagination_reported",
-            user_name="paginationreported",
-            display_name="Pagination Reported",
-        )
-
-        # 複数のレポートを作成
-        for i in range(15):
-            report_data = ReportCreate(
-                reported_user_id="pagination_reported",
-                report_type=ReportTypeEnum.spam,
-                description=f"レポート {i}",
-            )
-            block_service.create_report(
-                test_db_session, "pagination_reporter", report_data
-            )
-
-        # ページネーションテスト
-        first_page = block_service.get_reports(test_db_session, skip=0, limit=10)
-        second_page = block_service.get_reports(test_db_session, skip=10, limit=10)
-
-        assert len(first_page) == 10
-        assert len(second_page) == 5
-
-        # 重複がないことを確認
-        first_page_ids = {report.report_id for report in first_page}
-        second_page_ids = {report.report_id for report in second_page}
-        assert len(first_page_ids.intersection(second_page_ids)) == 0
-
-    @pytest.mark.parametrize(
-        "report_id_exists, expected_found",
-        [
-            (True, True),  # Report exists
-            (False, False),  # Report does not exist
-        ],
-    )
-    def test_get_report_by_id(
-        self, test_db_session, create_user, report_id_exists, expected_found
-    ):
-        reporter = create_user(user_id="id_reporter", user_name="idreporter")
-        reported = create_user(user_id="id_reported", user_name="idreported")
-
-        report_id = uuid4()
-        if report_id_exists:
-            report_data = ReportCreate(
-                reported_user_id=reported.user_id,
-                report_type=ReportTypeEnum.harassment,
-                description="テストレポート",
-            )
-            created_report = block_service.create_report(
-                test_db_session, reporter.user_id, report_data
-            )
-            report_id = created_report.report_id
-
-        result = block_service.get_report_by_id(test_db_session, report_id)
-
-        if expected_found:
-            assert result is not None
-            assert result.report_id == report_id
-        else:
-            assert result is None
-
-    @pytest.mark.parametrize(
-        "report_exists, expected_success",
-        [
-            (True, True),  # Report exists and should be updated
-            (False, False),  # Report does not exist
-        ],
-    )
-    def test_update_report(
-        self, test_db_session, create_user, report_exists, expected_success
-    ):
-        reporter = create_user(user_id="update_reporter", user_name="updatereporter")
-        reported = create_user(user_id="update_reported", user_name="updatereported")
-
-        report_id = uuid4()
-        if report_exists:
-            report_data = ReportCreate(
-                reported_user_id=reported.user_id,
-                report_type=ReportTypeEnum.other,
-                description="更新前レポート",
-            )
-            created_report = block_service.create_report(
-                test_db_session, reporter.user_id, report_data
-            )
-            report_id = created_report.report_id
-
-        update_data = ReportUpdate(
-            status=ReportStatusEnum.resolved, reviewed_at=datetime.now(timezone.utc)
-        )
-        result = block_service.update_report(test_db_session, report_id, update_data)
-
-        if expected_success:
-            assert result is not None
-            assert result.status == ReportStatusEnum.resolved
-            assert result.reviewed_at is not None
-        else:
-            assert result is None
-
-    @pytest.mark.parametrize(
-        "status",
-        [
-            ReportStatusEnum.pending,
-            ReportStatusEnum.reviewing,
-            ReportStatusEnum.resolved,
-            ReportStatusEnum.dismissed,
-        ],
-    )
-    def test_update_report_all_statuses(
-        self, test_db_session, create_user, status, csrf_headers
-    ):
-        create_user(user_id="status_reporter", user_name="statusreporter")
-        create_user(user_id="status_reported", user_name="statusreported")
-
-        report_data = ReportCreate(
-            reported_user_id="status_reported",
-            report_type=ReportTypeEnum.spam,
-            description=f"ステータステスト {status.value}",
-        )
-        created_report = block_service.create_report(
-            test_db_session, "status_reporter", report_data
-        )
-
-        update_data = ReportUpdate(status=status)
-        result = block_service.update_report(
-            test_db_session, created_report.report_id, update_data
-        )
-
-        assert result is not None
-        assert result.status == status
-
 
 @pytest.mark.unit
 class TestBlockServiceIntegration:
@@ -434,28 +265,19 @@ class TestBlockServiceIntegration:
         )
         assert block.blocked_user_id == "workflow_user2"
 
-        # 3. レポート状況確認・更新
-        update_data = ReportUpdate(
-            status=ReportStatusEnum.resolved, reviewed_at=datetime.now(timezone.utc)
-        )
-        updated_report = block_service.update_report(
-            test_db_session, report.report_id, update_data
-        )
-        assert updated_report.status == ReportStatusEnum.resolved
-
-        # 4. ブロック状況確認
+        # 3. ブロック状況確認
         is_blocked = block_service.is_blocked(
             test_db_session, "workflow_user1", "workflow_user2"
         )
         assert is_blocked is True
 
-        # 5. ブロック解除
+        # 4. ブロック解除
         unblock_result = block_service.remove_block(
             test_db_session, "workflow_user1", "workflow_user2"
         )
         assert unblock_result is True
 
-        # 6. ブロック解除確認
+        # 5. ブロック解除確認
         is_still_blocked = block_service.is_blocked(
             test_db_session, "workflow_user1", "workflow_user2"
         )

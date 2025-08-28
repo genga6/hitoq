@@ -1,9 +1,7 @@
-from uuid import UUID
-
 from sqlalchemy.orm import Session
 
 from src.db.tables import UserBlock, UserReport
-from src.schema.block import BlockCreate, ReportCreate, ReportUpdate
+from src.schema.block import BlockCreate, ReportCreate
 from src.service import user_service
 
 
@@ -56,10 +54,6 @@ def remove_block(db: Session, blocker_user_id: str, blocked_user_id: str) -> boo
     return True
 
 
-def get_blocked_users(db: Session, user_id: str) -> list[UserBlock]:
-    return db.query(UserBlock).filter(UserBlock.blocker_user_id == user_id).all()
-
-
 def is_blocked(db: Session, blocker_user_id: str, blocked_user_id: str) -> bool:
     return (
         db.query(UserBlock)
@@ -93,26 +87,3 @@ def create_report(
     db.commit()
     db.refresh(db_report)
     return db_report
-
-
-def get_reports(db: Session, skip: int = 0, limit: int = 100) -> list[UserReport]:
-    return db.query(UserReport).offset(skip).limit(limit).all()
-
-
-def get_report_by_id(db: Session, report_id: UUID) -> UserReport | None:
-    return db.query(UserReport).filter(UserReport.report_id == report_id).first()
-
-
-def update_report(
-    db: Session, report_id: UUID, report_update: ReportUpdate
-) -> UserReport | None:
-    report = get_report_by_id(db, report_id)
-    if not report:
-        return None
-
-    for field, value in report_update.model_dump(exclude_unset=True).items():
-        setattr(report, field, value)
-
-    db.commit()
-    db.refresh(report)
-    return report

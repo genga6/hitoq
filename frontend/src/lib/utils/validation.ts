@@ -70,7 +70,7 @@ export const ValidationRules = {
   },
   profileValue: {
     required: false,
-    maxLength: 100,
+    maxLength: 500,
   },
 
   // Q&A回答
@@ -89,10 +89,6 @@ export const ValidationRules = {
   bio: {
     required: false,
     maxLength: 200,
-  },
-  selfIntroduction: {
-    required: false,
-    maxLength: 500,
   },
 
   // お問い合わせフォーム

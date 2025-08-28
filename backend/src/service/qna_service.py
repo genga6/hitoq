@@ -79,7 +79,6 @@ def get_all_questions(db: Session) -> list[Question]:
 
 
 def get_questions_by_category(db: Session, category_id: str) -> list[Question]:
-    """指定されたカテゴリの質問を取得（ガチャ機能用）"""
     return (
         db.query(Question)
         .filter(Question.category_id == category_id)
@@ -91,12 +90,10 @@ def get_questions_by_category(db: Session, category_id: str) -> list[Question]:
 def create_answer(
     db: Session, user_id: str, question_id: int, answer_in: AnswerCreate
 ) -> Answer:
-    # ユーザーが存在するかチェック
     user = db.query(User).filter(User.user_id == user_id).first()
     if not user:
         raise ValueError("User not found")
 
-    # 質問が存在するかチェック
     question = db.query(Question).filter(Question.question_id == question_id).first()
     if not question:
         raise ValueError("Question not found")
@@ -111,7 +108,6 @@ def create_answer(
 
 
 def get_answer_with_question(db: Session, answer_id: int) -> QAWithDetails:
-    """指定されたanswer_idの回答とその質問を取得（トークのリファレンス表示用）"""
     answer = (
         db.query(Answer)
         .options(joinedload(Answer.question))
@@ -138,7 +134,6 @@ def initialize_default_questions(db: Session) -> None:
 
     loader = get_yaml_loader()
     templates = loader.load_templates()
-
     for template in templates:
         for i, question_text in enumerate(template.questions, 1):
             question = Question(

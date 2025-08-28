@@ -28,12 +28,10 @@
 
   let touched = $state(false);
 
-  const inputId = Math.random().toString(36).substr(2, 9);
+  const inputId = Math.random().toString(36).slice(2, 11);
 
-  // 入力値を管理
   let inputValue = $state(value);
 
-  // 入力時のバリデーション
   function handleInput(event: Event) {
     const target = event.target as HTMLInputElement | HTMLTextAreaElement;
     inputValue = target.value;

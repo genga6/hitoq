@@ -56,8 +56,6 @@ class MessageRead(MessageBase):
 
 
 class NotificationRead(MessageBase):
-    """通知専用のメッセージスキーマ（循環参照を避ける）"""
-
     message_id: str
     from_user_id: str
     to_user_id: str
@@ -66,3 +64,12 @@ class NotificationRead(MessageBase):
     from_user: UserRead | None = None
     to_user: UserRead | None = None
     parent_message: ParentMessageInfo | None = None  # 親メッセージの基本情報のみ
+
+
+class HeartReactionResponse(OrmBaseModel):
+    user_liked: bool
+    like_count: int
+
+
+class HeartStatesResponse(OrmBaseModel):
+    heart_states: dict[str, HeartReactionResponse]

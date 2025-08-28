@@ -2,8 +2,9 @@
   import { useClickOutside } from "$lib/utils/useClickOutside";
   import {
     getNotifications,
-    markMessageAsRead
-  } from "$lib/api-client/messages";
+    markAllNotificationsAsRead
+  } from "$lib/api-client/notifications";
+  import { markMessageAsRead } from "$lib/api-client/messages";
   import type { Message } from "$lib/types";
   import NotificationTabs, { type NotificationTabId } from "./NotificationTabs.svelte";
   import NotificationList from "./NotificationList.svelte";
@@ -52,6 +53,21 @@
       } catch (error) {
         console.error("Failed to mark message as read:", error);
         errorUtils.networkError("既読マークに失敗しました");
+      }
+    });
+  };
+
+  const handleMarkAllAsRead = async () => {
+    return await withLoading(loadingOperations.API_CALL, async () => {
+      try {
+        await markAllNotificationsAsRead();
+
+        // Update local state - mark all notifications as read
+        notifications = notifications.map((n) => ({ ...n, status: "read" as const }));
+
+      } catch (error) {
+        console.error("Failed to mark all notifications as read:", error);
+        errorUtils.networkError("すべての通知の既読マークに失敗しました");
       }
     });
   };
@@ -126,8 +142,16 @@
       role="menu"
       aria-orientation="vertical"
     >
-      <div class="px-4 py-3 dark:border-gray-700">
+      <div class="px-4 py-3 dark:border-gray-700 flex items-center justify-between">
         <h3 class="theme-text-primary text-lg font-medium">通知</h3>
+        {#if unreadCount > 0}
+          <button
+            onclick={handleMarkAllAsRead}
+            class="text-xs px-2 py-1 rounded text-orange-600 hover:text-orange-700 hover:bg-orange-50 dark:text-orange-400 dark:hover:text-orange-300 dark:hover:bg-orange-900/20 transition-colors"
+          >
+            すべて既読
+          </button>
+        {/if}
       </div>
 
       <NotificationTabs {notifications} {activeTab} onTabChange={handleTabChange} />

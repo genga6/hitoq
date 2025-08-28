@@ -3,8 +3,8 @@ import uuid
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
-from src.db.tables import ProfileItem, User
-from src.schema.profile_item import ProfileItemCreate, ProfileItemUpdate
+from src.db.tables import ProfileItem
+from src.schema.profile_item import ProfileItemUpdate
 
 
 def _get_profile_item(
@@ -26,23 +26,6 @@ def _get_profile_item(
     return item
 
 
-def create_profile_item(
-    db: Session, user_id: str, item_in: ProfileItemCreate
-) -> ProfileItem:
-    # ユーザーが存在するかチェック
-    user = db.query(User).filter(User.user_id == user_id).first()
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-
-    db_item = ProfileItem(
-        profile_item_id=uuid.uuid4(), user_id=user_id, **item_in.model_dump()
-    )
-    db.add(db_item)
-    db.commit()
-    db.refresh(db_item)
-    return db_item
-
-
 def update_profile_item(
     db: Session, user_id: str, item_id: str, item_in: ProfileItemUpdate
 ) -> ProfileItem:
@@ -54,10 +37,3 @@ def update_profile_item(
     db.commit()
     db.refresh(db_item)
     return db_item
-
-
-def delete_profile_item(db: Session, user_id: str, item_id: str):
-    db_item = _get_profile_item(db, user_id, item_id)
-    db.delete(db_item)
-    db.commit()
-    return {"ok": True}

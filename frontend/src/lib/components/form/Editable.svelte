@@ -20,8 +20,7 @@
       | "profileValue"
       | "qaAnswer"
       | "displayName"
-      | "bio"
-      | "selfIntroduction";
+      | "bio";
   };
 
   const {

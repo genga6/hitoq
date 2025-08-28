@@ -35,7 +35,6 @@ class YamlTemplateLoader:
             if not category_name:
                 raise ValueError("Missing 'category' field")
 
-            # カテゴリ情報を統一管理から取得
             category_info = get_category_by_name(category_name)
             if not category_info:
                 raise ValueError(f"Unknown category: {category_name}")
@@ -61,7 +60,6 @@ class YamlTemplateLoader:
         yaml_files = list(self.config_dir.glob("*.yaml")) + list(
             self.config_dir.glob("*.yml")
         )
-
         if not yaml_files:
             raise RuntimeError(f"No YAML files found in {self.config_dir}")
 
@@ -102,6 +100,7 @@ def load_default_labels() -> list[str]:
             return data.get("profile_labels", [])
     except Exception:
         return [
+            "自己紹介",
             "趣味・今ハマっていること",
             "好きなコンテンツ",
             "好きな食べ物",

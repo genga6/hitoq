@@ -22,11 +22,6 @@ class ReportCreate(OrmBaseModel):
     description: str | None = None
 
 
-class ReportUpdate(OrmBaseModel):
-    status: ReportStatusEnum
-    reviewed_at: datetime | None = None
-
-
 class ReportRead(OrmBaseModel):
     report_id: UUID
     reporter_user_id: str

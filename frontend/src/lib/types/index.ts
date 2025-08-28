@@ -53,7 +53,6 @@ export type {
   BlockCreate,
   Report,
   ReportCreate,
-  ReportUpdate,
 } from "./block";
 
 // 認証関連の型

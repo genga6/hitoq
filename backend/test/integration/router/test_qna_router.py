@@ -147,21 +147,6 @@ class TestQnARouter:
         assert isinstance(response_data, list)
         assert len(response_data) == 0
 
-    def test_read_categories_success(self, client):
-        response = client.get("/questions/categories")
-
-        assert response.status_code == status.HTTP_200_OK
-        response_data = response.json()
-
-        assert isinstance(response_data, list)
-        assert len(response_data) > 0
-
-        for category in response_data:
-            assert "id" in category
-            assert "name" in category
-            assert isinstance(category["id"], str)
-            assert isinstance(category["name"], str)
-
     def test_answer_text_length_validation(
         self, client, create_user, create_question, csrf_headers
     ):

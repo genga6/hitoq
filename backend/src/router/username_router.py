@@ -24,6 +24,7 @@ def read_profile_page_data(user_name: Username, db: Session = Depends(get_db)):
     user = user_service.get_user_by_username(db, user_name=user_name)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
+
     user_with_items = user_service.get_user_with_profile_items(db, user.user_id)
     if not user_with_items:
         raise HTTPException(status_code=404, detail="User not found")
@@ -39,14 +40,14 @@ def read_qna_page_data(user_name: Username, db: Session = Depends(get_db)):
     user_with_items = user_service.get_user_with_qna_items(db, user.user_id)
     if not user_with_items:
         raise HTTPException(status_code=404, detail="User not found")
-    user_answer_groups = qna_service.get_user_qna(db, user.user_id)
 
+    user_answer_groups = qna_service.get_user_qna(db, user.user_id)
     all_questions = qna_service.get_all_questions(db)
+
     questions_by_category = defaultdict(list)
     for question in all_questions:
         questions_by_category[question.category_id].append(question)
 
-    # 新しいフラットカテゴリ構造でテンプレート情報を作成
     available_templates = []
     categories = get_all_categories()
     for category in categories:
@@ -61,7 +62,6 @@ def read_qna_page_data(user_name: Username, db: Session = Depends(get_db)):
             }
         )
 
-    # カテゴリ情報を新しい構造で作成
     categories_info = {
         category.id: {
             "id": category.id,
