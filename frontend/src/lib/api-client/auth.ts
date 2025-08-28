@@ -13,13 +13,6 @@ export const logout = async () => {
     });
   } catch (error) {
     console.error("ログアウトに失敗しました:", error);
-  } finally {
-    const isProduction = window.location.hostname.includes("hitoq.net");
-    const domainPart = isProduction ? "; domain=.hitoq.net" : "";
-
-    document.cookie = `access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=None; Secure${domainPart}`;
-    document.cookie = `refresh_token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=None; Secure${domainPart}`;
-    document.cookie = `csrf_token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=None; Secure${domainPart}`;
   }
 };
 
@@ -57,12 +50,7 @@ export const deleteUser = async (userId: string): Promise<void> => {
     method: "DELETE",
   });
 
-  const isProduction = window.location.hostname.includes("hitoq.net");
-  const domainPart = isProduction ? "; domain=.hitoq.net" : "";
-
-  document.cookie = `access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=None; Secure${domainPart}`;
-  document.cookie = `refresh_token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=None; Secure${domainPart}`;
-  document.cookie = `csrf_token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=None; Secure${domainPart}`;
+  await logout();
 };
 
 // Server-side authentication APIs
