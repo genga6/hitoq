@@ -1,7 +1,5 @@
 <script lang="ts">
-  import { goto } from "$app/navigation";
   import { browser } from "$app/environment";
-  import { invalidateAll } from "$app/navigation";
   import {
     redirectToTwitterLogin,
     logout as authLogout,
@@ -43,12 +41,12 @@
   const logout = async () => {
     try {
       await authLogout();
-      await invalidateAll();
-      currentUser = null;
-      isLoggedIn = false;
-      goto("/");
     } catch (error) {
       console.error("Logout failed:", error);
+    } finally {
+      if (browser) {
+        window.location.href = "/";
+      }
     }
   };
 

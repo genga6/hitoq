@@ -13,13 +13,14 @@ export const logout = async () => {
     });
   } catch (error) {
     console.error("ログアウトに失敗しました:", error);
-    // Manual cookie deletion as fallback
-    document.cookie =
-      "access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT";
-    document.cookie =
-      "refresh_token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT";
+  } finally {
+    const isProduction = window.location.hostname.includes("hitoq.net");
+    const domainPart = isProduction ? "; domain=.hitoq.net" : "";
+
+    document.cookie = `access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=None; Secure${domainPart}`;
+    document.cookie = `refresh_token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=None; Secure${domainPart}`;
+    document.cookie = `csrf_token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=None; Secure${domainPart}`;
   }
-  // Don't redirect here - let the calling component handle navigation
 };
 
 export const getCurrentUser = async () => {
@@ -56,13 +57,12 @@ export const deleteUser = async (userId: string): Promise<void> => {
     method: "DELETE",
   });
 
-  // アカウント削除後、クッキーをクリアしてセッションを無効化
-  document.cookie =
-    "access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT";
-  document.cookie =
-    "refresh_token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT";
-  document.cookie =
-    "csrf_token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT";
+  const isProduction = window.location.hostname.includes("hitoq.net");
+  const domainPart = isProduction ? "; domain=.hitoq.net" : "";
+
+  document.cookie = `access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=None; Secure${domainPart}`;
+  document.cookie = `refresh_token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=None; Secure${domainPart}`;
+  document.cookie = `csrf_token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=None; Secure${domainPart}`;
 };
 
 // Server-side authentication APIs
@@ -73,7 +73,6 @@ export const getCurrentUserServer = async (fetcher: typeof fetch) => {
     });
     return user;
   } catch (error) {
-    // 認証エラーやユーザーが見つからない場合は正常な状態なので、詳細なログは出力しない
     if (
       error instanceof Error &&
       (error.message.includes("Not authenticated") ||
@@ -81,7 +80,6 @@ export const getCurrentUserServer = async (fetcher: typeof fetch) => {
     ) {
       return null;
     }
-    // 予期しないエラーの場合のみログを出力
     console.error("サーバーサイドでのユーザー情報の取得に失敗しました:", error);
     return null;
   }
@@ -96,7 +94,6 @@ export const refreshAccessTokenServer = async (
     });
     return true;
   } catch (error) {
-    // ユーザーが見つからない場合は削除された可能性があるので、ログを出力しない
     if (error instanceof Error && error.message.includes("User not found")) {
       return false;
     }

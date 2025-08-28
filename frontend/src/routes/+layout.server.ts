@@ -18,18 +18,40 @@ async function getAuthenticatedUser(
     if (user) return user;
 
     const refreshToken = cookies.get("refresh_token");
-    if (!refreshToken) return null;
+    if (!refreshToken) {
+      cookies.delete("access_token", { path: "/" });
+      cookies.delete("csrf_token", { path: "/" });
+      return null;
+    }
 
     const refreshSuccess = await refreshAccessTokenServer(fetcher);
-    if (!refreshSuccess) return null;
+    if (!refreshSuccess) {
+      cookies.delete("access_token", { path: "/" });
+      cookies.delete("refresh_token", { path: "/" });
+      cookies.delete("csrf_token", { path: "/" });
+      return null;
+    }
 
     const newAccessToken = cookies.get("access_token");
-    if (!newAccessToken) return null;
+    if (!newAccessToken) {
+      cookies.delete("refresh_token", { path: "/" });
+      cookies.delete("csrf_token", { path: "/" });
+      return null;
+    }
 
     user = await getCurrentUserServer(fetcher);
+    if (!user) {
+      cookies.delete("access_token", { path: "/" });
+      cookies.delete("refresh_token", { path: "/" });
+      cookies.delete("csrf_token", { path: "/" });
+    }
     return user;
   } catch (e) {
     console.error("getAuthenticatedUser failed:", e);
+
+    cookies.delete("access_token", { path: "/" });
+    cookies.delete("refresh_token", { path: "/" });
+    cookies.delete("csrf_token", { path: "/" });
     return null;
   }
 }
