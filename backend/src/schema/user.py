@@ -24,9 +24,6 @@ class UserBase(OrmBaseModel):
         ..., min_length=1, max_length=50, description="Display name cannot be empty"
     )
     bio: str | None = Field(None, max_length=200, description="Bio")
-    self_introduction: str | None = Field(
-        None, max_length=500, description="Self introduction"
-    )
     icon_url: str | None = Field(None, max_length=500, description="Icon URL")
 
 
@@ -38,7 +35,6 @@ class UserUpdate(OrmBaseModel):
     user_name: str | None = None
     display_name: str | None = None
     bio: str | None = None
-    self_introduction: str | None = None
     icon_url: str | None = None
     notification_level: NotificationLevelEnum | None = None
 

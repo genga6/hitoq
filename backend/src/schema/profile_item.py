@@ -16,7 +16,7 @@ class ProfileItemCreate(ProfileItemBase):
 
 
 class ProfileItemUpdate(OrmBaseModel):
-    value: str | None = None
+    value: str | None = Field(None, max_length=500)
 
 
 class ProfileItemRead(ProfileItemBase):

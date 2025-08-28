@@ -5,10 +5,11 @@ from src.db.session import get_db
 from src.db.tables import User
 from src.router.auth import _get_current_user
 from src.schema.message import (
+    HeartReactionResponse,
+    HeartStatesResponse,
     MessageCreate,
     MessageRead,
     MessageUpdate,
-    NotificationRead,
 )
 from src.service import message_service, user_service
 
@@ -67,37 +68,6 @@ def update_message(
     return updated_message
 
 
-@message_router.get("/unread-count")
-def get_unread_count(
-    db: Session = Depends(get_db),
-    current_user: User = Depends(_get_current_user),
-):
-    count = message_service.get_unread_count(db, current_user.user_id)
-    return {"unread_count": count}
-
-
-@message_router.get("/notifications", response_model=list[NotificationRead])
-def get_notifications(
-    skip: int = Query(0, ge=0, description="Offset"),
-    limit: int = Query(50, ge=1, le=100, description="Limit"),
-    db: Session = Depends(get_db),
-    current_user: User = Depends(_get_current_user),
-):
-    notifications = message_service.get_notifications_for_user(
-        db, current_user.user_id, skip, limit
-    )
-    return notifications
-
-
-@message_router.get("/notification-count")
-def get_notification_count(
-    db: Session = Depends(get_db),
-    current_user: User = Depends(_get_current_user),
-):
-    count = message_service.get_notification_count(db, current_user.user_id)
-    return {"notification_count": count}
-
-
 @message_router.get("/{message_id}/thread", response_model=list[MessageRead])
 def get_message_thread(
     message_id: str,
@@ -110,28 +80,6 @@ def get_message_thread(
             status_code=404, detail="Message thread not found or no access"
         )
     return thread
-
-
-@message_router.put("/{message_id}/content", response_model=MessageRead)
-def update_message_content(
-    message_id: str,
-    content_update: dict,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(_get_current_user),
-):
-    message = message_service.get_message(db, message_id)
-    if not message:
-        raise HTTPException(status_code=404, detail="Message not found")
-
-    if message.from_user_id != current_user.user_id:
-        raise HTTPException(
-            status_code=403, detail="Not authorized to edit this message"
-        )
-
-    updated_message = message_service.update_message_content(
-        db, message_id, content_update.get("content", "")
-    )
-    return updated_message
 
 
 @message_router.delete("/{message_id}")
@@ -157,7 +105,7 @@ def delete_message(
     return {"message": "Message deleted successfully"}
 
 
-@message_router.post("/{message_id}/heart")
+@message_router.post("/{message_id}/heart", response_model=HeartReactionResponse)
 def toggle_heart_reaction(
     message_id: str,
     db: Session = Depends(get_db),
@@ -167,32 +115,12 @@ def toggle_heart_reaction(
     if not target_message:
         raise HTTPException(status_code=404, detail="Message not found")
 
-    result = message_service.toggle_heart_reaction(
-        db, current_user.user_id, message_id, target_message.from_user_id
-    )
+    result = message_service.toggle_heart_reaction(db, current_user.user_id, message_id)
 
-    return {
-        "action": result["action"],
-        "like_count": result["like_count"],
-        "user_liked": result["action"] == "added",
-    }
+    return result
 
 
-@message_router.get("/{message_id}/likes")
-def get_message_likes(
-    message_id: str,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(_get_current_user),
-):
-    target_message = message_service.get_message(db, message_id)
-    if not target_message:
-        raise HTTPException(status_code=404, detail="Message not found")
-
-    likes = message_service.get_message_likes(db, message_id)
-    return {"likes": likes}
-
-
-@message_router.post("/heart-states")
+@message_router.post("/heart-states", response_model=HeartStatesResponse)
 def get_heart_states(
     message_ids: list[str],
     db: Session = Depends(get_db),

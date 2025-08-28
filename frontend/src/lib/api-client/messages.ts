@@ -1,10 +1,5 @@
 import { fetchApiWithAuth, fetchApiWithCookies } from "./base";
-import type {
-  Message,
-  MessageCreate,
-  MessageLike,
-  MessagesPageData,
-} from "$lib/types";
+import type { Message, MessageCreate, MessagesPageData } from "$lib/types";
 
 export async function getMessagesPageData(
   userName: string,
@@ -17,7 +12,7 @@ export async function getMessagesPageData(
   }
 }
 
-export async function createMessage(message: MessageCreate): Promise<Message> {
+export async function sendMessage(message: MessageCreate): Promise<Message> {
   try {
     return await fetchApiWithAuth("/messages", {
       method: "POST",
@@ -27,12 +22,10 @@ export async function createMessage(message: MessageCreate): Promise<Message> {
       body: JSON.stringify(message),
     });
   } catch (error) {
-    console.error("Failed to create message:", error);
+    console.error("Failed to send message:", error);
     throw error;
   }
 }
-
-export const sendMessage = createMessage;
 
 export async function getMyMessages(): Promise<Message[]> {
   try {
@@ -58,58 +51,11 @@ export async function markMessageAsRead(messageId: string): Promise<Message> {
   }
 }
 
-export async function getUnreadCount(): Promise<{ unreadCount: number }> {
-  try {
-    return await fetchApiWithAuth("/messages/unread-count");
-  } catch (error) {
-    console.error("Failed to get unread count:", error);
-    throw error;
-  }
-}
-
-export async function getNotifications(): Promise<Message[]> {
-  try {
-    return await fetchApiWithAuth("/messages/notifications");
-  } catch (error) {
-    console.error("Failed to fetch notifications:", error);
-    throw error;
-  }
-}
-
-export async function getNotificationCount(): Promise<{
-  notification_count: number;
-}> {
-  try {
-    return await fetchApiWithAuth("/messages/notification-count");
-  } catch (error) {
-    console.error("Failed to get notification count:", error);
-    throw error;
-  }
-}
-
 export async function getMessageThread(messageId: string): Promise<Message[]> {
   try {
     return await fetchApiWithAuth(`/messages/${messageId}/thread`);
   } catch (error) {
     console.error("Failed to get message thread:", error);
-    throw error;
-  }
-}
-
-export async function updateMessageContent(
-  messageId: string,
-  content: string,
-): Promise<Message> {
-  try {
-    return await fetchApiWithAuth(`/messages/${messageId}/content`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ content }),
-    });
-  } catch (error) {
-    console.error("Failed to update message:", error);
     throw error;
   }
 }
@@ -127,7 +73,7 @@ export async function deleteMessage(messageId: string): Promise<void> {
 
 export async function toggleHeartReaction(
   messageId: string,
-): Promise<{ action: string; like_count: number; user_liked: boolean }> {
+): Promise<{ likeCount: number; userLiked: boolean }> {
   try {
     return await fetchApiWithAuth(`/messages/${messageId}/heart`, {
       method: "POST",
@@ -138,19 +84,8 @@ export async function toggleHeartReaction(
   }
 }
 
-export async function getMessageLikes(
-  messageId: string,
-): Promise<{ likes: MessageLike[] }> {
-  try {
-    return await fetchApiWithAuth(`/messages/${messageId}/likes`);
-  } catch (error) {
-    console.error("Failed to get message likes:", error);
-    throw error;
-  }
-}
-
 export async function getHeartStates(messageIds: string[]): Promise<{
-  heart_states: Record<string, { liked: boolean; count: number }>;
+  heartStates: Record<string, { liked: boolean; count: number }>;
 }> {
   try {
     return await fetchApiWithAuth(`/messages/heart-states`, {

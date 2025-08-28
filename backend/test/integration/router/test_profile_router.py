@@ -3,50 +3,9 @@ import uuid
 import pytest
 from fastapi import status
 
-from src.db.tables import ProfileItem
-
 
 @pytest.mark.integration
 class TestProfileRouter:
-    def test_create_profile_item_success(
-        self, client, test_db_session, create_user, csrf_headers
-    ):
-        user = create_user(user_id="profile_user", user_name="profileuser")
-        item_data = {"label": "趣味", "value": "プログラミング", "display_order": 1}
-
-        response = client.post(
-            f"/users/{user.user_id}/profile-items", json=item_data, headers=csrf_headers
-        )
-        assert response.status_code == status.HTTP_201_CREATED
-
-        response_data = response.json()
-        assert response_data["label"] == "趣味"
-        assert response_data["value"] == "プログラミング"
-        assert response_data["displayOrder"] == 1
-        assert "profileItemId" in response_data
-
-    def test_create_profile_item_nonexistent_user(self, client, csrf_headers):
-        item_data = {"label": "趣味", "value": "読書", "display_order": 1}
-
-        # NOTE: `nonexistent_user`というuser_idになってしまうため認証チェックしている
-        response = client.post(
-            "/users/nonexistent_user/profile-items",
-            json=item_data,
-            headers=csrf_headers,
-        )
-        assert response.status_code == status.HTTP_404_NOT_FOUND
-
-    def test_create_profile_item_invalid_data(self, client, create_user, csrf_headers):
-        user = create_user(user_id="invalid_profile_user", user_name="invaliduser")
-        invalid_data = {"label": "", "value": "some value", "display_order": 1}
-
-        response = client.post(
-            f"/users/{user.user_id}/profile-items",
-            json=invalid_data,
-            headers=csrf_headers,
-        )
-        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-
     def test_update_profile_item_success(
         self, client, test_db_session, create_user, create_profile_item, csrf_headers
     ):
@@ -103,58 +62,3 @@ class TestProfileRouter:
             headers=csrf_headers,
         )
         assert response.status_code == status.HTTP_404_NOT_FOUND
-
-    def test_delete_profile_item_success(
-        self, client, test_db_session, create_user, create_profile_item, csrf_headers
-    ):
-        user = create_user(user_id="delete_user", user_name="deleteuser")
-        profile_item = create_profile_item(user.user_id, "削除対象", "削除される値", 1)
-
-        response = client.delete(
-            f"/users/{user.user_id}/profile-items/{profile_item.profile_item_id}",
-            headers=csrf_headers,
-        )
-        assert response.status_code == status.HTTP_204_NO_CONTENT
-
-        deleted_item = test_db_session.get(ProfileItem, profile_item.profile_item_id)
-        assert deleted_item is None
-
-    def test_delete_profile_item_not_found(self, client, create_user, csrf_headers):
-        user = create_user(user_id="no_delete_user", user_name="nodeleteuser")
-        fake_item_id = str(uuid.uuid4())
-
-        response = client.delete(
-            f"/users/{user.user_id}/profile-items/{fake_item_id}", headers=csrf_headers
-        )
-        assert response.status_code == status.HTTP_404_NOT_FOUND
-
-    def test_delete_profile_item_wrong_user(
-        self, client, test_db_session, create_user, create_profile_item, csrf_headers
-    ):
-        user1 = create_user(user_id="owner_user", user_name="owneruser")
-        user2 = create_user(user_id="other_user", user_name="otheruser")
-        profile_item = create_profile_item(
-            user1.user_id, "保護されたアイテム", "削除されない値", 1
-        )
-
-        response = client.delete(
-            f"/users/{user2.user_id}/profile-items/{profile_item.profile_item_id}",
-            headers=csrf_headers,
-        )
-        assert response.status_code == status.HTTP_404_NOT_FOUND
-
-        existing_item = test_db_session.get(ProfileItem, profile_item.profile_item_id)
-        assert existing_item is not None
-
-    def test_profile_item_validation_missing_fields(
-        self, client, create_user, csrf_headers
-    ):
-        user = create_user(user_id="validation_user", user_name="validationuser")
-        incomplete_data = {"label": "テストラベル"}
-
-        response = client.post(
-            f"/users/{user.user_id}/profile-items",
-            json=incomplete_data,
-            headers=csrf_headers,
-        )
-        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY

@@ -210,32 +210,6 @@ class TestMessageRouter:
             status.HTTP_422_UNPROCESSABLE_ENTITY,
         ]
 
-    def test_get_notifications_success(self, client, test_db_session, create_user):
-        user = create_user(user_id="notif_user", user_name="notifuser")
-        sender = create_user(user_id="notif_sender", user_name="notifsender")
-
-        # 通知用メッセージを作成
-        message = Message(
-            message_id=str(uuid4()),
-            from_user_id=sender.user_id,
-            to_user_id=user.user_id,
-            message_type=MessageTypeEnum.like,
-            content="いいね！",
-            status=MessageStatusEnum.unread,
-        )
-        test_db_session.add(message)
-        test_db_session.commit()
-
-        app.dependency_overrides[_get_current_user] = lambda: user
-        response = client.get("/messages/notifications")
-        app.dependency_overrides = {}
-
-        # 通知エンドポイントが実装されている場合
-        assert response.status_code in [
-            status.HTTP_200_OK,
-            status.HTTP_404_NOT_FOUND,
-        ]
-
     def test_message_content_length_validation(self, client, create_user, csrf_headers):
         sender = create_user(user_id="length_sender", user_name="lengthsender")
         receiver = create_user(user_id="length_receiver", user_name="lengthreceiver")

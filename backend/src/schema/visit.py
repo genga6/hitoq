@@ -3,6 +3,8 @@ from typing import Optional
 
 from pydantic import BaseModel
 
+from .common import OrmBaseModel
+
 
 class VisitBase(BaseModel):
     visitor_user_id: Optional[str] = None
@@ -14,7 +16,7 @@ class VisitCreate(VisitBase):
     pass
 
 
-class VisitorInfo(BaseModel):
+class VisitorInfo(OrmBaseModel):
     user_id: Optional[str] = None
     user_name: Optional[str] = None
     display_name: Optional[str] = None
@@ -22,16 +24,13 @@ class VisitorInfo(BaseModel):
     is_anonymous: bool = False
 
 
-class VisitRead(BaseModel):
+class VisitRead(OrmBaseModel):
     visit_id: int
     visitor_user_id: Optional[str] = None
     visited_user_id: str
     is_anonymous: bool
     visited_at: datetime
     visitor_info: Optional[VisitorInfo] = None
-
-    class Config:
-        from_attributes = True
 
 
 class VisitsVisibilityUpdate(BaseModel):

@@ -6,7 +6,7 @@ from sqlalchemy import func, or_
 from sqlalchemy.orm import Session, joinedload
 
 from src.db.tables import Answer, Message, ProfileItem, User
-from src.schema.user import UserCreate, UserUpdate
+from src.schema.user import UserCreate
 from src.service.qna_service import initialize_default_questions
 from src.service.yaml_loader import load_default_labels
 
@@ -66,20 +66,6 @@ def create_default_profile_items(db: Session, user_id: str) -> None:
         db.add(profile_item)
 
     db.commit()
-
-
-def update_user(db: Session, user_id: str, user_update: UserUpdate) -> User | None:
-    db_user = get_user(db, user_id)
-    if not db_user:
-        return None
-
-    update_data = user_update.model_dump(exclude_unset=True)
-    for key, value in update_data.items():
-        setattr(db_user, key, value)
-
-    db.commit()
-    db.refresh(db_user)
-    return db_user
 
 
 def delete_user(db: Session, user_id: str) -> bool:

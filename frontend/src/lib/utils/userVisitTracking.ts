@@ -27,7 +27,7 @@ export const trackUserVisit = async (
 export const checkBlockStatus = async (userId: string): Promise<boolean> => {
   try {
     const result = await blocksApi.checkIsBlocked(userId);
-    return result.is_blocked;
+    return result.isBlocked;
   } catch (error) {
     console.debug("Failed to check block status:", error);
     return false;

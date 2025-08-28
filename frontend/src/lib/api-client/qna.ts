@@ -6,9 +6,9 @@ import type {
   UserAnswerGroupBackend,
   QATemplate,
   CategoryInfo,
+  QandA,
 } from "$lib/types";
 
-// Q&A Page Data
 export const getQnAPageData = async (
   userName: string,
 ): Promise<{
@@ -31,7 +31,6 @@ export const getQnAPageData = async (
   };
 };
 
-// Q&A APIs
 export const createAnswer = async (
   userId: string,
   questionId: number,
@@ -51,25 +50,14 @@ export const getAllQuestions = async (): Promise<Question[]> => {
   return fetchApi<Question[]>(`/questions`);
 };
 
-// ガチャ機能用の新しいAPI
 export const getQuestionsByCategory = async (
   categoryId: string,
 ): Promise<Question[]> => {
   return fetchApi<Question[]>(`/questions/by-category/${categoryId}`);
 };
 
-export const getCategories = async (): Promise<CategoryInfo[]> => {
-  return fetchApi<CategoryInfo[]>(`/questions/categories`);
-};
-
-// Q&A詳細取得（トークのリファレンス表示用）
-export interface QAWithDetails {
-  question: Question;
-  answer: Answer;
-}
-
 export const getAnswerWithQuestion = async (
   answerId: number,
-): Promise<QAWithDetails> => {
-  return fetchApi<QAWithDetails>(`/answers/${answerId}/with-question`);
+): Promise<Required<QandA>> => {
+  return fetchApi<Required<QandA>>(`/answers/${answerId}/with-question`);
 };

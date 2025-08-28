@@ -24,20 +24,26 @@ def record_visit_endpoint(
         except HTTPException:
             pass
 
-        # Skip self-visits silently (this is expected behavior)
         if visitor_user_id == user_id:
             return {
                 "message": "Visit processed successfully"
             }  # Self-visit, no recording needed
 
-        visit_service.record_visit(
+        recorded_visit = visit_service.record_visit(
             db=db, visited_user_id=user_id, visitor_user_id=visitor_user_id
         )
+
+        if recorded_visit is None:
+            return {
+                "message": "Visit not recorded (e.g., user not found or self-visit)"
+            }
+
         return {"message": "Visit processed successfully"}
     except Exception as e:
-        # Log non-self-visit errors only
         print(f"Visit recording failed: {e}")
-        return {"message": "Visit processed successfully"}  # Still return success
+        raise HTTPException(
+            status_code=500, detail=f"Visit recording failed: {e}"
+        ) from e
 
 
 @visit_router.get("/visits", response_model=list[VisitRead])

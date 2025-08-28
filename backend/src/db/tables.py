@@ -1,9 +1,8 @@
 import enum
 import uuid
 from datetime import datetime
-from typing import ClassVar
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, String
+from sqlalchemy import Boolean, DateTime, ForeignKey, String, UniqueConstraint
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
 
@@ -28,7 +27,6 @@ class User(Base):
     )
     display_name: Mapped[str] = mapped_column(String(100), nullable=False)
     bio: Mapped[str | None] = mapped_column(String(300), nullable=True)
-    self_introduction: Mapped[str | None] = mapped_column(String(500), nullable=True)
     icon_url: Mapped[str | None] = mapped_column(String(512), nullable=True)
     visits_visible: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     notification_level: Mapped[NotificationLevelEnum] = mapped_column(
@@ -268,14 +266,47 @@ class Message(Base):
         overlaps="parent_message",
     )
 
-    # 動的に追加される属性（サービス層で計算される）
-    # これらはデータベースに保存されず、実行時に動的に設定される
-    reply_count: ClassVar[int]
-    thread_depth: ClassVar[int]
-    thread_parent_id: ClassVar[str | None]
-
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+        # 動的に設定される属性（DBには保存されない）
         self.reply_count = 0
         self.thread_depth = 0
         self.thread_parent_id = None
+
+
+class MessageLike(Base):
+    __tablename__ = "message_likes"
+
+    like_id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
+    message_id: Mapped[str] = mapped_column(ForeignKey("messages.message_id"))
+    user_id: Mapped[str] = mapped_column(ForeignKey("users.user_id"))
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+
+    message: Mapped["Message"] = relationship("Message", foreign_keys=[message_id])
+    user: Mapped["User"] = relationship("User", foreign_keys=[user_id])
+
+    __table_args__ = (
+        UniqueConstraint("message_id", "user_id", name="uq_message_user_like"),
+        {"comment": "メッセージのいいね機能"},
+    )
+
+
+class AnswerLike(Base):
+    __tablename__ = "answer_likes"
+
+    like_id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
+    answer_id: Mapped[int] = mapped_column(ForeignKey("answers.answer_id"))
+    user_id: Mapped[str] = mapped_column(ForeignKey("users.user_id"))
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+
+    answer: Mapped["Answer"] = relationship("Answer", foreign_keys=[answer_id])
+    user: Mapped["User"] = relationship("User", foreign_keys=[user_id])
+
+    __table_args__ = (
+        UniqueConstraint("answer_id", "user_id", name="uq_answer_user_like"),
+        {"comment": "QA回答のいいね機能"},
+    )
