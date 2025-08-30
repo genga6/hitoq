@@ -1,26 +1,24 @@
-import { getMessagesPageDataServer } from "$lib/api-client/messages";
-import type { MessagesPageData } from "$lib/types";
+import { getUserMessages } from "$lib/api-client/messages";
+import type { Message } from "$lib/types";
 import type { PageServerLoad } from "./$types";
 
 export const load: PageServerLoad = async ({
   params,
-  fetch,
   parent,
   depends,
-}): Promise<
-  MessagesPageData & {
-    isLoggedIn: boolean;
-    isOwner: boolean;
-  }
-> => {
+}): Promise<{
+  messages: Message[];
+  isLoggedIn: boolean;
+  isOwner: boolean;
+}> => {
   const { userName } = params;
   depends(`talk:${userName}:messages`);
   const { isOwner, isLoggedIn } = await parent();
 
-  const messagesData = await getMessagesPageDataServer(userName, fetch);
+  const messages = await getUserMessages(userName);
 
   return {
-    ...messagesData,
+    messages,
     isLoggedIn,
     isOwner,
   };

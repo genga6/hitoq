@@ -36,6 +36,7 @@
           onclick={() => onDelete(message.messageId)}
           disabled={isEditingOrDeleting}
           class="theme-button-action hover:text-red-600 dark:hover:text-red-500 disabled:opacity-50"
+          aria-label="削除"
           title="削除"
         >
           <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

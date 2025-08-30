@@ -1,5 +1,5 @@
 import type { PageServerLoad } from "./$types";
-import { getProfilePageData } from "$lib/api-client/profile";
+import { getProfileItems } from "$lib/api-client/profile";
 import { error } from "@sveltejs/kit";
 
 export const load: PageServerLoad = async ({ params, parent, depends }) => {
@@ -9,11 +9,9 @@ export const load: PageServerLoad = async ({ params, parent, depends }) => {
   try {
     const { isOwner } = await parent();
 
-    const rawData = await getProfilePageData(userName);
-    const { profile, profileItems } = rawData;
+    const profileItems = await getProfileItems(userName);
 
     return {
-      profile,
       profileItems,
       isOwner,
     };

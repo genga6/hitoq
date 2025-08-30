@@ -43,6 +43,7 @@
     {#if variant === "navigation"}
       <button
         onclick={() => handleTabClick(tab)}
+        data-sveltekit-preload-data="hover"
         class="{tabClasses[variant][size]} {activeTab === tab.id
           ? 'theme-tab-active'
           : 'theme-tab-inactive'}"
@@ -58,6 +59,7 @@
     {:else}
       <button
         onclick={() => handleTabClick(tab)}
+        data-sveltekit-preload-data="hover"
         class="{tabClasses[variant][size]} {activeTab === tab.id
           ? 'theme-tab-active'
           : 'theme-tab-inactive'}"

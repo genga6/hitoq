@@ -1,34 +1,22 @@
 import { fetchApi, fetchApiWithAuth } from "./base";
 import type {
-  Profile,
   Question,
   Answer,
   UserAnswerGroupBackend,
-  QATemplate,
   CategoryInfo,
   QandA,
 } from "$lib/types";
 
-export const getQnAPageData = async (
+export const getUserQnAData = async (
   userName: string,
 ): Promise<{
-  profile: Profile;
   userAnswerGroups: UserAnswerGroupBackend[];
-  availableTemplates: QATemplate[];
   categories: Record<string, CategoryInfo>;
 }> => {
-  const data = await fetchApi<{
-    profile: Profile;
+  return fetchApi<{
     userAnswerGroups: UserAnswerGroupBackend[];
-    availableTemplates: QATemplate[];
     categories: Record<string, CategoryInfo>;
-  }>(`/users/by-username/${userName}/qna`);
-  return {
-    profile: data.profile,
-    userAnswerGroups: data.userAnswerGroups,
-    availableTemplates: data.availableTemplates,
-    categories: data.categories,
-  };
+  }>(`/by-username/${userName}/qna`);
 };
 
 export const createAnswer = async (

@@ -6,12 +6,9 @@ export const getUserByUserName = async (
   fetcher?: typeof fetch,
 ): Promise<Profile> => {
   if (fetcher) {
-    return fetchApiWithCookies<Profile>(
-      `/users/by-username/${userName}`,
-      fetcher,
-    );
+    return fetchApiWithCookies<Profile>(`/by-username/${userName}`, fetcher);
   }
-  return fetchApi<Profile>(`/users/by-username/${userName}`);
+  return fetchApi<Profile>(`/by-username/${userName}`);
 };
 
 export const searchUsersByDisplayName = async (

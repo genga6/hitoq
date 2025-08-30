@@ -1,16 +1,5 @@
-import { fetchApiWithAuth, fetchApiWithCookies } from "./base";
-import type { Message, MessageCreate, MessagesPageData } from "$lib/types";
-
-export async function getMessagesPageData(
-  userName: string,
-): Promise<MessagesPageData> {
-  try {
-    return await fetchApiWithAuth(`/users/by-username/${userName}/messages`);
-  } catch (error) {
-    console.error("Failed to fetch messages page data:", error);
-    throw error;
-  }
-}
+import { fetchApiWithAuth } from "./base";
+import type { Message, MessageCreate } from "$lib/types";
 
 export async function sendMessage(message: MessageCreate): Promise<Message> {
   try {
@@ -101,18 +90,11 @@ export async function getHeartStates(messageIds: string[]): Promise<{
   }
 }
 
-// Server-side API functions
-export async function getMessagesPageDataServer(
-  userName: string,
-  fetcher: typeof fetch,
-): Promise<MessagesPageData> {
+export async function getUserMessages(userName: string): Promise<Message[]> {
   try {
-    return await fetchApiWithCookies(
-      `/users/by-username/${userName}/messages`,
-      fetcher,
-    );
+    return await fetchApiWithAuth(`/by-username/${userName}/messages`);
   } catch (error) {
-    console.error("Failed to fetch messages page data (server):", error);
+    console.error("Failed to fetch user messages:", error);
     throw error;
   }
 }
