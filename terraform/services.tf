@@ -2,7 +2,7 @@
 resource "render_web_service" "hitoq_backend" {
   name   = "hitoq-backend"
   plan   = "starter"
-  region = "oregon"
+  region = "singapore"
 
   runtime_source = {
     docker = {
@@ -97,7 +97,7 @@ resource "render_web_service" "hitoq_backend" {
 resource "render_web_service" "hitoq_frontend" {
   name   = "hitoq-frontend"
   plan   = "starter"
-  region = "oregon"
+  region = "singapore"
 
   runtime_source = {
     docker = {
