@@ -19,7 +19,7 @@ export const load: LayoutServerLoad = async ({
 
   try {
     const { user: currentUser } = await parent();
-    const profile = await getUserByUserName(userName);
+    const profile = await getUserByUserName(userName, fetch);
 
     const isOwner = currentUser?.userName === userName;
 
