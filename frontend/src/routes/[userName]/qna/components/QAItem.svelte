@@ -27,7 +27,7 @@
     answerId?: number;
     categoryInfo?: CategoryInfo;
     isOwner: boolean;
-    onUpdate: (newAnswer: string) => Promise<boolean>;
+    onUpdate: (newAnswer: string) => Promise<void>;
     onUpdateError?: (originalAnswer: string) => void; // ロールバック用
     profileUserId?: string;
     profileUserName?: string;
@@ -52,15 +52,11 @@
       loadingStore.startOperation(operationId);
       
       // 親コンポーネントの更新処理を呼び出し
-      const success = await onUpdate(newAnswer);
+      await onUpdate(newAnswer);
       
-      if (success) {
-        loadingStore.finishOperation(operationId);
-        isEditing = false;
-        return true;
-      } else {
-        throw new Error('更新に失敗しました');
-      }
+      loadingStore.finishOperation(operationId);
+      isEditing = false;
+      return true;
     } catch (error) {
       console.error("回答の保存に失敗しました:", error);
       

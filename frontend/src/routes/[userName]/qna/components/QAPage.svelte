@@ -172,7 +172,7 @@
     selectedCategories = [];
   }
 
-  async function handleAnswerUpdate(groupIndex: number, questionIndex: number, newAnswer: string) {
+  async function handleAnswerUpdate(groupIndex: number, questionIndex: number, newAnswer: string): Promise<void> {
     const group = allDisplayGroups[groupIndex];
     const answer = group.answers[questionIndex];
 
@@ -183,6 +183,7 @@
     const answerGroupIndex = answerGroups.findIndex((g) => g.groupId === group.groupId);
     const previousAnswer = answer.answerText;
 
+    // 楽観的UI更新
     if (answerGroupIndex !== -1) {
       const newAnswerGroups = [...answerGroups];
       const updatedGroup = { ...newAnswerGroups[answerGroupIndex] };
@@ -203,6 +204,7 @@
     } catch (error) {
       console.error("回答の保存に失敗しました:", error);
 
+      // ロールバック処理
       if (answerGroupIndex !== -1) {
         const rollbackAnswerGroups = [...answerGroups];
         const rollbackGroup = { ...rollbackAnswerGroups[answerGroupIndex] };
@@ -215,6 +217,7 @@
         rollbackAnswerGroups[answerGroupIndex] = rollbackGroup;
         answerGroups = rollbackAnswerGroups;
       }
+      throw error; // エラーを再スローして呼び出し元に失敗を通知
     } finally {
       isSaving = false;
     }
