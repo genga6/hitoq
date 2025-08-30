@@ -40,19 +40,23 @@
     // UI即座更新（オレンジバーをすぐに移動）
     localActiveTab = tabId;
     
-    // ローディング開始
-    onLoadingChange?.(true);
+    // ローディング開始（短時間の遅延で表示）
+    const loadingTimeout = setTimeout(() => {
+      onLoadingChange?.(true);
+    }, 150); // 150ms後にローディング表示
     
     try {
       // 非同期でページ遷移
       await goto(tabId as `/${string}`, { 
         replaceState: false,
-        noScroll: false,
-        keepFocus: false,
+        noScroll: true, // スクロール位置を保持
+        keepFocus: true, // フォーカスを保持
         invalidateAll: false  // キャッシュを活用して高速化
       });
     } finally {
-      // ローディング終了（URL変更完了後に$effectでも呼ばれる）
+      // ローディングタイムアウトをクリア
+      clearTimeout(loadingTimeout);
+      // ローディング終了
       onLoadingChange?.(false);
     }
   }

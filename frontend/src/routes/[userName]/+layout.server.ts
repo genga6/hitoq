@@ -13,14 +13,13 @@ export const load: LayoutServerLoad = async ({
   const userName = params.userName;
   depends(`user:${userName}:profile`);
 
-  // 楽観的UIで十分高速なので、データ一貫性を最優先
   setHeaders({
     "Cache-Control": "private, no-cache, must-revalidate",
   });
 
   try {
     const { user: currentUser } = await parent();
-    const profile = await getUserByUserName(userName);
+    const profile = await getUserByUserName(userName, fetch);
 
     const isOwner = currentUser?.userName === userName;
 

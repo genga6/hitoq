@@ -28,7 +28,7 @@
     };
     currentUser?: BaseUser | null;
     isLoggedIn?: boolean;
-    onAnswerUpdate: (groupIndex: number, questionIndex: number, newAnswer: string) => void;
+    onAnswerUpdate: (groupIndex: number, questionIndex: number, newAnswer: string) => Promise<void>;
     onClearFilters: () => void;
     onToggleCategory: (categoryId: string) => void;
   };

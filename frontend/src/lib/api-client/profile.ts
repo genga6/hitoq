@@ -1,14 +1,10 @@
 import { fetchApi, fetchApiWithAuth } from "./base";
-import type { Profile, ProfileItem } from "$lib/types";
+import type { ProfileItem } from "$lib/types";
 
-export const getProfilePageData = async (
+export const getProfileItems = async (
   userName: string,
-): Promise<{ profile: Profile; profileItems: ProfileItem[] }> => {
-  const data = await fetchApi<{
-    profile: Profile;
-    profileItems: ProfileItem[];
-  }>(`/users/by-username/${userName}/profile`);
-  return { profile: data.profile, profileItems: data.profileItems };
+): Promise<ProfileItem[]> => {
+  return fetchApi<ProfileItem[]>(`/by-username/${userName}/profile-items`);
 };
 
 export const updateProfileItem = async (

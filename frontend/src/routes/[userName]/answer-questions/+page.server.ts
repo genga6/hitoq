@@ -1,5 +1,5 @@
 import type { PageServerLoad } from "./$types";
-import { getQnAPageData } from "$lib/api-client/qna";
+import { getUserQnAData } from "$lib/api-client/qna";
 import { error, redirect } from "@sveltejs/kit";
 
 export const load: PageServerLoad = async ({ params, parent, depends }) => {
@@ -14,7 +14,7 @@ export const load: PageServerLoad = async ({ params, parent, depends }) => {
       throw redirect(302, `/${userName}/qna`);
     }
 
-    const rawData = await getQnAPageData(userName);
+    const rawData = await getUserQnAData(userName);
     const { categories } = rawData;
 
     return {

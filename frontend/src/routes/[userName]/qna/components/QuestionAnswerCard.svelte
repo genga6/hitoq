@@ -13,7 +13,6 @@
     isOwner = false,
     placeholder = "回答を入力...",
     onAnswerChange,
-    primaryAction,
     secondaryAction,
     children,
     // いいね・コメント機能用の新しいプロパティ
@@ -60,11 +59,22 @@
   let isLikeSubmitting = $state(false);
 
   async function handleSave(newValue: string): Promise<boolean> {
-    localAnswer = newValue;
-    onAnswerChange?.(newValue);
-    if (primaryAction && !primaryAction.disabled) {
-      primaryAction.onClick();
-      return true;
+    if (onAnswerChange) {
+      // onAnswerChangeが非同期処理の場合に対応
+      const result = onAnswerChange(newValue);
+      if (result instanceof Promise) {
+        try {
+          await result;
+          localAnswer = newValue;
+          return true;
+        } catch (error) {
+          console.error('Save failed:', error);
+          return false;
+        }
+      } else {
+        localAnswer = newValue;
+        return true;
+      }
     }
     return false;
   }
@@ -72,7 +82,6 @@
   function handleCancel() {
     // 入力をキャンセルして元の値に戻す
     localAnswer = answer;
-    onAnswerChange?.(answer);
     isEditing = false;
   }
 

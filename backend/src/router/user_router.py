@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from src.db.session import get_db
 from src.db.tables import User
 from src.router.auth import get_current_user_optional
-from src.schema.user import UserCreate, Username, UserRead
+from src.schema.user import UserCreate, UserRead
 from src.service import user_service
 
 user_router = APIRouter(
@@ -59,14 +59,6 @@ def discover_users_endpoint(
 @user_router.get("/{user_id}", response_model=UserRead)
 def read_user_by_id_endpoint(user_id: str, db: Session = Depends(get_db)):
     user = user_service.get_user(db, user_id=user_id)
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-    return user
-
-
-@user_router.get("/by-username/{user_name}", response_model=UserRead)
-def read_user_by_username_endpoint(user_name: Username, db: Session = Depends(get_db)):
-    user = user_service.get_user_by_username(db, user_name=user_name)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     return user

@@ -1,5 +1,5 @@
 import type { PageServerLoad } from "./$types";
-import { getQnAPageData } from "$lib/api-client/qna";
+import { getUserQnAData } from "$lib/api-client/qna";
 import { error } from "@sveltejs/kit";
 
 export const load: PageServerLoad = async ({ params, parent, depends }) => {
@@ -11,11 +11,9 @@ export const load: PageServerLoad = async ({ params, parent, depends }) => {
   try {
     const { isOwner, isLoggedIn } = await parent();
 
-    const rawData = await getQnAPageData(userName);
-    const { profile, userAnswerGroups, categories } = rawData;
+    const { userAnswerGroups, categories } = await getUserQnAData(userName);
 
     return {
-      profile,
       userAnswerGroups,
       categories,
       isOwner,

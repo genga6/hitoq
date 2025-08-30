@@ -29,17 +29,9 @@ class CategoryInfoRead(OrmBaseModel):
     description: str
 
 
-class AvailableQATemplateRead(OrmBaseModel):
-    id: str
-    title: str
-    questions: list[QuestionRead]
-    category: str
-
-
 class QnAPageData(OrmBaseModel):
     profile: UserRead
     user_answer_groups: list[UserAnswerGroupRead]
-    available_templates: list[AvailableQATemplateRead]
     categories: dict[str, CategoryInfoRead]
 
 

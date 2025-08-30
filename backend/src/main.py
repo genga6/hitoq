@@ -16,12 +16,12 @@ from src.middleware.csrf import CSRFMiddleware
 from src.middleware.logging import LoggingMiddleware
 from src.router import auth
 from src.router.block_router import block_router
+from src.router.by_username_router import by_username_router
 from src.router.message_router import message_router
 from src.router.notification_router import notification_router
 from src.router.profile_router import profile_router
 from src.router.qna_router import answers_router, qna_router, questions_router
 from src.router.user_router import user_router
-from src.router.username_router import username_router
 from src.router.visit_router import visit_router
 
 configure_logging()
@@ -99,8 +99,8 @@ if os.getenv("ENVIRONMENT") != "test":
 
 app.add_middleware(LoggingMiddleware)
 
-app.include_router(username_router, tags=["Username"])
 app.include_router(user_router, tags=["Users"])
+app.include_router(by_username_router, tags=["By Username User Resources"])
 app.include_router(profile_router, tags=["Profile"])
 app.include_router(message_router, tags=["Messages"])
 app.include_router(notification_router, tags=["Notifications"])

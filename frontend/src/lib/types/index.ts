@@ -35,8 +35,6 @@ export type {
   Answer,
   QandA,
   CategoryInfo,
-  QuestionTemplate,
-  QuestionTemplate as QATemplate, // Alias for backward compatibility
   UserAnswerGroupBackend,
   UserAnswerGroup,
   UserAnswerGroupTemplate,

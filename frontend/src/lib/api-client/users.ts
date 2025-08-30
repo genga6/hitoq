@@ -1,8 +1,14 @@
-import { fetchApi, fetchApiWithAuth } from "./base";
+import { fetchApi, fetchApiWithAuth, fetchApiWithCookies } from "./base";
 import type { Profile, UserCandidate, UserUpdate } from "$lib/types";
 
-export const getUserByUserName = async (userName: string): Promise<Profile> => {
-  return fetchApi<Profile>(`/users/by-username/${userName}`);
+export const getUserByUserName = async (
+  userName: string,
+  fetcher?: typeof fetch,
+): Promise<Profile> => {
+  if (fetcher) {
+    return fetchApiWithCookies<Profile>(`/by-username/${userName}`, fetcher);
+  }
+  return fetchApi<Profile>(`/by-username/${userName}`);
 };
 
 export const searchUsersByDisplayName = async (

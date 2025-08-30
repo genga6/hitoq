@@ -37,13 +37,6 @@ export interface CategoryInfo {
   description: string;
 }
 
-export interface QuestionTemplate {
-  id: string;
-  title: string;
-  questions: Question[];
-  category?: string;
-}
-
 export interface UserAnswerGroupBackend {
   templateId: string;
   templateTitle: string;
