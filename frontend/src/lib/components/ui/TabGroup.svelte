@@ -44,7 +44,7 @@
       <a
         href={tab.href}
         onclick={(e) => { e.preventDefault(); handleTabClick(tab); }}
-        data-sveltekit-preload-data="hover"
+        data-sveltekit-preload-data="hover tap"
         class="{tabClasses[variant][size]} {activeTab === tab.id
           ? 'theme-tab-active'
           : 'theme-tab-inactive'}"
@@ -58,9 +58,10 @@
         </span>
       </a>
     {:else}
-      <button
-        onclick={() => handleTabClick(tab)}
-        data-sveltekit-preload-data="hover"
+      <a
+        href={tab.href}
+        onclick={(e) => { e.preventDefault(); handleTabClick(tab); }}
+        data-sveltekit-preload-data="hover tap"
         class="{tabClasses[variant][size]} {activeTab === tab.id
           ? 'theme-tab-active'
           : 'theme-tab-inactive'}"
@@ -70,7 +71,7 @@
       >
         {tab.icon ? `${tab.icon} ` : ""}{tab.label}
         {tab.count !== undefined ? ` (${tab.count})` : ""}
-      </button>
+      </a>
     {/if}
   {/each}
 </div>
