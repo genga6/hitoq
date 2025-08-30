@@ -12,7 +12,7 @@
   const { userName, isOwner, onLoadingChange }: Props = $props();
 
   // UI即座更新用のローカル状態
-   
+  
   let localActiveTab: string = $state(page.url.pathname);
 
   // 実際に表示するアクティブタブ（UI即座更新 + URL同期）

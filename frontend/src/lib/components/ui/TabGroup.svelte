@@ -41,8 +41,9 @@
 <div class={containerClasses[variant]} role="tablist" aria-label="タブナビゲーション">
   {#each tabs as tab (tab.id)}
     {#if variant === "navigation"}
-      <button
-        onclick={() => handleTabClick(tab)}
+      <a
+        href={tab.href}
+        onclick={(e) => { e.preventDefault(); handleTabClick(tab); }}
         data-sveltekit-preload-data="hover"
         class="{tabClasses[variant][size]} {activeTab === tab.id
           ? 'theme-tab-active'
@@ -55,7 +56,7 @@
           {tab.icon ? `${tab.icon} ` : ""}{tab.label}
           {tab.count !== undefined ? ` (${tab.count})` : ""}
         </span>
-      </button>
+      </a>
     {:else}
       <button
         onclick={() => handleTabClick(tab)}
